@@ -1,0 +1,35 @@
+// Colors
+$color-main: #3d63ff;
+$color-main-light: #6785fd;
+$color-majestic: #8282e1;
+$color-background: #192039;
+$color-content-background: #1f2646;
+$color-content-background-light: #262f56;
+$color-text: #fff;
+$color-text-not-intrusive: #6c6c6c;
+$color-hover: #343d58;
+$color-border: #3a405b;
+$color-focus: $color-main;
+$color-success: #33a769;
+$color-error: #ff3737;
+$color-warning: #ffbc00;
+$color-info: #0087d7;
+
+// Sizes
+$min-width: 320px;
+
+// Other
+$transition-time: 0.2s;
+
+@function border($size: 1px, $color: $color-border, $type: solid) {
+  @return $size $type $color;
+}
+
+@mixin hover($to: $color-hover, $time: $transition-time) {
+  cursor: pointer;
+  transition: background-color $time;
+
+  &:hover {
+    background-color: $to;
+  }
+}

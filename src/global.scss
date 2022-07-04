@@ -1,0 +1,163 @@
+@use 'vars' as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  color: inherit;
+  font-family: inherit;
+}
+
+body {
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  background: $color-background;
+  color: $color-text;
+  font-family: 'Segoe UI', tahoma, geneva, verdana, sans-serif;
+  overscroll-behavior-y: contain;
+}
+
+/* stylelint-disable-next-line selector-max-id */
+#root {
+  height: 100%;
+}
+
+button {
+  @include hover;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background-color: $color-content-background;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+input[type='text'],
+textarea {
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: border();
+  background-color: transparent;
+  outline: none;
+  transition: border-color $transition-time;
+
+  &:focus {
+    border-color: $color-focus;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.error {
+    border-color: $color-error;
+  }
+
+  &.correct {
+    border-color: $color-success;
+  }
+}
+
+input[type='range'] {
+  width: 100%;
+}
+
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  overflow-y: auto;
+  width: 100%;
+  padding: 8px;
+}
+
+.card {
+  flex-grow: 1;
+  overflow: hidden;
+  min-width: 240px;
+  margin: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background-color: $color-content-background;
+
+  .card-title {
+    width: 100%;
+    margin-bottom: 16px;
+    font-weight: bold;
+    font-size: 24px;
+  }
+}
+
+.tooltip {
+  position: relative;
+
+  &::after {
+    content: attr(data-tooltip);
+    top: 0;
+    left: 0;
+    padding: 4px;
+    border-radius: 4px;
+    background-color: $color-background;
+  }
+}
+
+.em {
+  height: 1em;
+}
+
+.stroke-order {
+  display: block;
+  width: 128px;
+  height: 128px;
+  margin: 0 auto;
+}
+
+.subject {
+  @include hover($color-main-light);
+
+  display: inline-block;
+  margin: 2px;
+  padding: 0 2px;
+  border-radius: 2px;
+  background-color: $color-main;
+  text-decoration: none;
+
+  img {
+    height: 1em;
+  }
+}
+
+// Skeleton
+
+$shine-width: 40px;
+
+.skeleton,
+.skeleton-main {
+  background-color: $color-content-background-light;
+  background-image: linear-gradient(90deg, rgba($color-hover, 0), rgba($color-hover, 0.5), rgba($color-hover, 0));
+  background-position: left (-$shine-width) top 0;
+  background-size: $shine-width 100%;
+  background-repeat: no-repeat;
+  color: transparent;
+  animation: shine 1s ease infinite;
+}
+
+.skeleton-main {
+  background-color: $color-main-light;
+  background-image: linear-gradient(90deg, rgba($color-main, 0), rgba($color-main, 0.5), rgba($color-main, 0));
+}
+
+@keyframes shine {
+  to {
+    background-position: right (-$shine-width) top 0;
+  }
+}

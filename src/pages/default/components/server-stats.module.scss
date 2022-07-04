@@ -1,0 +1,28 @@
+@use '@/vars' as *;
+
+.server-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .counter {
+    position: relative;
+    width: fit-content;
+    color: $color-border;
+    font-weight: bold;
+    font-size: 48px;
+    font-family: 'Digital-7', 'Segoe UI', tahoma, geneva, verdana, sans-serif;
+
+    div:first-of-type {
+      position: absolute;
+      top: 0;
+      right: 0;
+      color: $color-main;
+      text-shadow: 0 0 16px $color-main;
+    }
+
+    div:last-of-type {
+      user-select: none;
+    }
+  }
+}

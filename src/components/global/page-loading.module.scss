@@ -1,0 +1,21 @@
+@use '@/vars' as *;
+
+.page-loading-component {
+  position: fixed;
+  top: 0;
+  left: -50vw;
+  width: 50vw;
+  height: 1px;
+  background-color: $color-main;
+  animation: load 1s infinite;
+}
+
+@keyframes load {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(300%);
+  }
+}

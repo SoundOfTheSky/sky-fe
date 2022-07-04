@@ -1,0 +1,30 @@
+@use '@/vars' as *;
+
+.tabs-component {
+  width: 100%;
+
+  .titles {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    border-bottom: border();
+
+    button {
+      flex-grow: 1;
+      height: 32px;
+      padding: 0 16px;
+
+      &.active {
+        border-bottom: border(1px, $color-main);
+      }
+    }
+  }
+
+  .content {
+    padding: 16px;
+
+    img {
+      max-width: 100%;
+    }
+  }
+}

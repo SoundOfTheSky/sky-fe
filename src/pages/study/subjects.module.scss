@@ -1,0 +1,30 @@
+@use '@/vars' as *;
+
+.subjects-component {
+  .search {
+    display: flex;
+    width: 100%;
+    height: fit-content;
+  }
+
+  .result {
+    @include hover;
+
+    min-width: 128px;
+    max-height: 128px;
+    text-decoration: none;
+  }
+
+  .title {
+    height: 50%;
+
+    img {
+      height: 1em;
+    }
+  }
+
+  .error {
+    width: 100%;
+    text-align: center;
+  }
+}

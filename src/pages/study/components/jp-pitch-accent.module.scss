@@ -1,0 +1,20 @@
+@use '@/vars' as *;
+
+.jp-pitch-accent {
+  span {
+    margin-left: -2px;
+    padding-right: 2px;
+  }
+
+  .h {
+    border-top: 2px solid $color-main;
+  }
+
+  .l {
+    border-bottom: 2px solid $color-main;
+  }
+
+  .c {
+    border-left: 2px solid $color-main;
+  }
+}

@@ -1,0 +1,469 @@
+/* eslint-disable sonarjs/cognitive-complexity */
+import { Component, createEffect, onMount, onCleanup } from 'solid-js';
+import { bezier, binarySearch, createCashedFunction, cutNumber, distance2d } from '@/services/utils';
+
+export type GraphProperties = {
+  data: {
+    title: string;
+    withoutLine?: boolean;
+    bezier?: boolean;
+    pointColor?: string;
+    pointRadius?: number;
+    withoutPoints?: boolean;
+    width?: number;
+    color?: string | string[];
+    dash?: number[];
+    points: {
+      x: number;
+      y: number;
+      withoutLine?: boolean;
+      pointColor?: string;
+      pointRadius?: number;
+      withoutPoint?: boolean;
+    }[];
+  }[];
+  width: number;
+  height: number;
+  textSize?: number;
+  textColor?: string;
+  yStep?: number;
+  xTitle?: (n: number) => string;
+  yTitle?: (n: number) => string;
+  cursorTitle?: (n: number) => string;
+  chartOffset?: [number, number, number, number];
+  visibleRange?: number;
+  cursorLineColor?: string;
+  cursorLineWidth?: number;
+};
+
+const Graph: Component<GraphProperties> = (properties) => {
+  let canvas: HTMLCanvasElement;
+  let scrollX = 0;
+
+  /**
+   * Chart sizes.
+   */
+  let chartMargin = [20, 20, 20, 30];
+  let chartSize = [0, 0];
+  let chartCoords = [0, 0];
+  let padding = 28;
+  const realChartSize = [0, 0];
+  createEffect(() => {
+    chartMargin = properties.chartOffset ?? [20, 20, 20, 30];
+    chartCoords = [properties.width - chartMargin[1], properties.height - chartMargin[2]];
+    chartSize = [chartCoords[0] - chartMargin[3], chartCoords[1] - chartMargin[0]];
+    padding = (properties.textSize ?? 14) * 2;
+    realChartSize[0] = chartSize[0] - padding * 2;
+    realChartSize[1] = chartSize[1] - padding * 2;
+    draw?.();
+  });
+
+  let maxScroll = 0;
+  /**
+   * Minimum and maximum values for both axis
+   */
+  let minMaxData = [
+    [0, 0],
+    [0, 0],
+  ];
+  /**
+   * Difference between maximum and minimum values
+   */
+  const minMaxDeltas = [0, 0];
+
+  /**
+   * Get X coord on chart for value
+   * @param x number
+   * @returns coord
+   */
+  const getX = (x: number) =>
+    realChartSize[0] * ((x - minMaxData[0][0]) / minMaxDeltas[0]) + chartMargin[3] - scrollX + padding;
+
+  /**
+   * Get Y coord on chart for value
+   * @param y number
+   * @returns coord
+   */
+  const getY = (y: number) =>
+    realChartSize[1] - realChartSize[1] * ((y - minMaxData[1][0]) / minMaxDeltas[1]) + chartMargin[0] + padding;
+  createEffect(() => {
+    minMaxData = [
+      [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY],
+      [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY],
+    ];
+    for (const line of properties.data) {
+      for (const point of line.points) {
+        if (point.x < minMaxData[0][0]) {
+          minMaxData[0][0] = point.x;
+        }
+
+        if (point.x > minMaxData[0][1]) {
+          minMaxData[0][1] = point.x;
+        }
+
+        if (point.y < minMaxData[1][0]) {
+          minMaxData[1][0] = point.y;
+        }
+
+        if (point.y > minMaxData[1][1]) {
+          minMaxData[1][1] = point.y;
+        }
+      }
+    }
+    const realMaxData = minMaxData[0][1];
+    if (properties.visibleRange) minMaxData[0][1] = minMaxData[0][0] + properties.visibleRange;
+    minMaxDeltas[0] = minMaxData[0][1] - minMaxData[0][0];
+    minMaxDeltas[1] = minMaxData[1][1] - minMaxData[1][0];
+    maxScroll = getX(realMaxData) - chartSize[0];
+    draw?.();
+  });
+
+  let mouseDown = false;
+  let cursor: [number, number] = [-1, -1];
+  function onMouseMove(event: MouseEvent | TouchEvent) {
+    const nextCoords: [number, number] =
+      event instanceof MouseEvent
+        ? [event.clientX - boundingRect.x, event.clientY - boundingRect.y]
+        : [event.touches[0].clientX - boundingRect.x, event.touches[0].clientY - boundingRect.y];
+    if (mouseDown) {
+      scrollX = Math.max(0, Math.min(maxScroll, scrollX + cursor[0] - nextCoords[0]));
+    }
+
+    cursor = nextCoords;
+    draw?.();
+  }
+
+  function onMouseLeave() {
+    mouseDown = false;
+    cursor = [-1, -1];
+    draw?.();
+  }
+
+  function onWheel(event: WheelEvent) {
+    event.preventDefault();
+    scrollX = Math.max(0, Math.min(maxScroll, scrollX + (event.deltaX || -event.deltaY)));
+    draw?.();
+  }
+
+  function onMouseDown() {
+    mouseDown = true;
+  }
+
+  function onMouseUp() {
+    mouseDown = false;
+  }
+
+  let draw: undefined | (() => void);
+  let boundingRect: DOMRect;
+  let frame: number;
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  onMount(() => {
+    const context = canvas.getContext('2d')!;
+    context.scale(window.devicePixelRatio, window.devicePixelRatio);
+    boundingRect = canvas.getBoundingClientRect();
+    draw = () => {
+      // Clear chart area
+      context.clearRect(chartMargin[3], chartMargin[0], chartSize[0], chartSize[1]);
+      drawCursorLine();
+      let cursorPointToDraw:
+        | {
+            x: number;
+            y: number;
+            distance: number;
+            radius: number;
+            color: string;
+          }
+        | undefined;
+      const xLabelsToDraw: {
+        value: number;
+        x: number;
+      }[] = [];
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let lineNumber = 0; lineNumber < properties.data.length; lineNumber++) {
+        const line = properties.data[lineNumber];
+        const [getPointX] = createCashedFunction((index: number) => getX(line.points[index].x));
+        const [getPointY] = createCashedFunction((index: number) => getY(line.points[index].y));
+        const drawLines = () => {
+          if (line.withoutLine) return;
+
+          context.strokeStyle = Array.isArray(line.color)
+            ? getColor(chartMargin[3], 0, chartCoords[0], 0, line.color)
+            : line.color ?? 'purple';
+
+          context.setLineDash(line.dash ?? []);
+          context.lineWidth = line.width ?? 4;
+          for (let index = 1; index < line.points.length; index++) {
+            const point = line.points[index - 1];
+            if (point.withoutLine) {
+              continue;
+            }
+            const nextPointX = getPointX(index);
+            if (nextPointX < chartMargin[3]) {
+              continue;
+            }
+            const pointX = getPointX(index - 1);
+            const pointY = getPointY(index - 1);
+            const nextPointY = getPointY(index);
+            context.beginPath();
+            context.moveTo(pointX, pointY);
+            if (line.bezier) {
+              const midX = (pointX + nextPointX) / 2;
+              context.bezierCurveTo(midX, pointY, midX, nextPointY, nextPointX, nextPointY);
+            } else {
+              context.lineTo(nextPointX, nextPointY);
+            }
+
+            context.stroke();
+            if (nextPointX > chartCoords[0]) {
+              break;
+            }
+          }
+        };
+        const drawPoints = () => {
+          if (line.withoutPoints) {
+            return;
+          }
+          for (let index = 0; index < line.points.length; index++) {
+            const point = line.points[index];
+
+            if (point.withoutPoint) {
+              continue;
+            }
+
+            const pointX = getPointX(index);
+            xLabelsToDraw.push({
+              value: point.x,
+              x: pointX,
+            });
+            if (pointX < chartMargin[3]) {
+              continue;
+            }
+
+            if (pointX > chartCoords[0]) {
+              break;
+            }
+
+            const pointY = getPointY(index);
+            drawLine(pointX, chartMargin[0], pointX, chartMargin[0] + chartSize[1], 'gray', 1, [10]);
+            context.fillStyle = point.pointColor ?? line.pointColor ?? 'pink';
+            context.beginPath();
+            context.arc(pointX, pointY, point.pointRadius ?? line.pointRadius ?? 6, 0, 2 * Math.PI);
+            context.fill();
+          }
+        };
+        const drawCursorPoint = () => {
+          if (cursor[0] === -1) {
+            return;
+          }
+
+          const pointI = line.points.findIndex((_, index) => getPointX(index) > cursor[0]);
+          if (pointI < 1) {
+            return;
+          }
+
+          const x1 = getPointX(pointI - 1);
+          const x2 = getPointX(pointI);
+          const y1 = getPointY(pointI - 1);
+          const y2 = getPointY(pointI);
+          let x: number;
+          let y: number;
+          if (line.bezier) {
+            const midX = (x1 + x2) / 2;
+            const deltaX = Math.floor(x2 - x1) * 2;
+            const p =
+              binarySearch(deltaX, (index) => Math.round(bezier(index / deltaX, x1, midX, midX, x2) - cursor[0])) /
+              deltaX;
+            x = bezier(p, x1, midX, midX, x2);
+            y = bezier(p, y1, y1, y2, y2);
+          } else {
+            x = cursor[0];
+            y = ((cursor[0] - x1) / (x2 - x1)) * (y2 - y1) + y1;
+          }
+
+          const distance = distance2d(x, y, ...cursor);
+          if (!cursorPointToDraw || cursorPointToDraw.distance > distance) {
+            cursorPointToDraw = {
+              x,
+              y,
+              distance,
+              color: line.pointColor ?? 'pink',
+              radius: line.pointRadius ?? 4,
+            };
+          }
+        };
+
+        drawLines();
+        drawPoints();
+        drawCursorPoint();
+      }
+
+      // Clear area around chart
+      context.clearRect(0, 0, chartMargin[3], chartCoords[1]);
+      context.clearRect(chartMargin[3], 0, chartSize[0], chartMargin[0]);
+      context.clearRect(chartCoords[0], 0, chartMargin[1], chartCoords[1]);
+      context.clearRect(0, chartCoords[1], properties.width, chartMargin[2]);
+
+      drawAxisLabels();
+      if (cursorPointToDraw) {
+        context.fillStyle = cursorPointToDraw.color;
+        context.beginPath();
+        context.arc(cursorPointToDraw.x, cursorPointToDraw.y, cursorPointToDraw.radius, 0, 2 * Math.PI);
+        context.fill();
+        context.textBaseline = 'bottom';
+        // Solved getY for value
+        const value =
+          -(
+            minMaxDeltas[1] * cursorPointToDraw.y -
+            minMaxDeltas[1] * realChartSize[1] -
+            realChartSize[1] * minMaxData[1][0] -
+            minMaxDeltas[1] * chartMargin[0] -
+            minMaxDeltas[1] * padding
+          ) / realChartSize[1];
+        context.fillText(
+          properties.cursorTitle ? properties.cursorTitle(value) : cutNumber(value, 5),
+          cursorPointToDraw.x,
+          cursorPointToDraw.y - (properties.textSize ?? 14),
+        );
+      }
+
+      function drawAxisLabels() {
+        const fontSize = properties.textSize ?? 14;
+        context.font = `${fontSize}px serif`;
+        const steps =
+          Math.floor(properties.yStep ? minMaxDeltas[1] / properties.yStep : realChartSize[1] / fontSize / 2) + 1;
+        const step = properties.yStep ?? minMaxDeltas[1] / steps;
+        context.textAlign = 'left';
+        context.textBaseline = 'middle';
+        const titles = [];
+        let lastTitle = '';
+        for (let index = 0; index <= steps; index++) {
+          const value = minMaxData[1][0] + step * index;
+          const title = properties.yTitle ? properties.yTitle(value) : cutNumber(value, 5);
+          if (lastTitle === title) {
+            continue;
+          }
+
+          lastTitle = title;
+          titles.push(title);
+        }
+        for (let index = 0; index < titles.length; index++) {
+          context.fillText(
+            titles[index],
+            0,
+            realChartSize[1] - (index / (titles.length - 1)) * realChartSize[1] + chartMargin[0] + padding,
+          );
+        }
+
+        context.textBaseline = 'bottom';
+        context.textAlign = 'center';
+        xLabelsToDraw.sort((a, b) => a.x - b.x);
+        let lastpx = 0;
+        let starti = -1;
+        const [getYTitle] = createCashedFunction((value: number) =>
+          properties.xTitle ? properties.xTitle(value) : cutNumber(value, 5),
+        );
+        for (let index = 0; index < xLabelsToDraw.length; index++) {
+          const label = xLabelsToDraw[index];
+          if (index && label.x === xLabelsToDraw[index - 1].x) continue;
+          if (starti === -1) starti = index;
+          const title = getYTitle(label.value);
+          const toGroup = label.x < lastpx || title === lastTitle;
+          lastTitle = title;
+          lastpx = context.measureText(title).width + xLabelsToDraw[index].x;
+          const notLast = index !== xLabelsToDraw.length - 1;
+          if ((toGroup && notLast) || index === 0 || index === starti) continue;
+          const midX = (xLabelsToDraw[starti].x + xLabelsToDraw[index - 1].x) / 2;
+          context.fillText(
+            getYTitle(
+              xLabelsToDraw
+                .slice(starti, notLast ? index : undefined)
+                .map((element) => ({
+                  d: Math.abs(element.x - midX),
+                  value: element.value,
+                }))
+                .sort((a, b) => a.d - b.d)[0].value,
+            ),
+            midX,
+            properties.height,
+          );
+          starti = index;
+        }
+      }
+    };
+
+    function drawCursorLine() {
+      if (cursor[0] === -1) {
+        return;
+      }
+
+      drawLine(
+        cursor[0],
+        chartMargin[0],
+        cursor[0],
+        chartCoords[1],
+        properties.cursorLineColor ?? 'gray',
+        properties.cursorLineWidth ?? 2,
+      );
+    }
+
+    // eslint-disable-next-line max-params
+    function drawLine(
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+      color: string | string[],
+      width: number,
+      dash?: number[],
+    ) {
+      context.strokeStyle = typeof color === 'string' ? color : getColor(x1, y1, x2, y2, color);
+
+      context.lineWidth = width;
+      context.beginPath();
+      context.setLineDash(dash ?? []);
+      context.moveTo(x1, y1);
+      context.lineTo(x2, y2);
+      context.stroke();
+    }
+
+    // eslint-disable-next-line max-params
+    function getColor(x1: number, y1: number, x2: number, y2: number, color: string | string[]) {
+      if (typeof color === 'string') {
+        return color;
+      }
+
+      const gradient = context.createLinearGradient(x1, y1, x2, y2);
+      for (let index = 0; index < color.length; index++) {
+        gradient.addColorStop(index / (color.length - 1), color[index]);
+      }
+
+      return gradient;
+    }
+
+    frame = requestAnimationFrame(draw);
+    onCleanup(() => {
+      cancelAnimationFrame(frame);
+    });
+  });
+  return (
+    <canvas
+      ref={canvas!}
+      width={properties.width * window.devicePixelRatio}
+      height={properties.height * window.devicePixelRatio}
+      style={{
+        width: `${properties.width}px`,
+        height: `${properties.height}px`,
+      }}
+      onMouseLeave={onMouseLeave}
+      onTouchEnd={onMouseLeave}
+      onMouseMove={onMouseMove}
+      onTouchMove={onMouseMove}
+      onMouseDown={onMouseDown}
+      onTouchStart={onMouseDown}
+      onMouseUp={onMouseUp}
+      onWheel={onWheel}
+    />
+  );
+};
+
+export default Graph;

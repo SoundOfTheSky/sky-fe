@@ -1,0 +1,120 @@
+@use '@/vars' as *;
+
+.question {
+  position: relative;
+  display: flex;
+  flex-grow: 0;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 196px;
+  max-height: 196px;
+  padding: 48px 16px 32px;
+  font-size: 16px;
+  text-align: center;
+
+  img {
+    height: 1em;
+  }
+
+  .title {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    height: 100%;
+  }
+
+  .progress {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background-color: $color-border;
+
+    .line {
+      width: 100%;
+      height: 8px;
+      background-color: $color-main;
+      transition: transform $transition-time;
+      transform-origin: left;
+    }
+  }
+
+  .story {
+    position: absolute;
+    bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: auto;
+    width: 100%;
+
+    button {
+      flex-grow: 1;
+      min-width: 4px;
+      max-width: 24px;
+      height: 8px;
+      margin: 0 1px 1px 0;
+      padding: 0;
+      background-color: $color-border;
+
+      &.correct {
+        background-color: $color-success;
+      }
+
+      &.error {
+        background-color: $color-error;
+      }
+
+      &.correct-after-wrong {
+        background-color: $color-warning;
+      }
+
+      &.unlearned {
+        background-color: darkcyan;
+      }
+
+      &.current {
+        border: border(1px, $color-main);
+      }
+    }
+  }
+
+  .stage {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+
+    span {
+      position: absolute;
+      top: 2px;
+      left: 1px;
+      width: 100%;
+      height: 100%;
+      font-size: 24px;
+      opacity: 0;
+      transition: opacity $transition-time;
+    }
+
+    &:hover span {
+      opacity: 1;
+    }
+
+    .progress-bar {
+      height: 100%;
+      margin-left: 50%;
+      border-radius: 0 100% 100% 0 / 50%;
+      transition: transform $transition-time;
+      transform-origin: left;
+    }
+  }
+
+  .stats {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 12px;
+  }
+}

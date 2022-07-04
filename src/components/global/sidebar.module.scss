@@ -1,0 +1,102 @@
+@use '@/vars' as *;
+
+.sidebar-component {
+  position: relative;
+  z-index: 1;
+  min-width: 256px;
+  height: 100%;
+  background: $color-content-background;
+  box-shadow: 0 0 2px 2px rgb(0 0 0 / 20%);
+
+  h1 {
+    margin: 0;
+    padding: 24px;
+  }
+
+  .menu {
+    .item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 48px;
+      padding: 0 24px;
+      background: linear-gradient(to right, rgb(0 0 0 / 0%) 50%, $color-content-background);
+      background-color: $color-content-background;
+      font-size: 20px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover,
+      &.active:nth-last-child(1 of .active) {
+        background-color: $color-hover;
+      }
+
+      .title {
+        margin-left: 8px;
+      }
+
+      .notifications {
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        margin-left: auto;
+        border-radius: 50%;
+        background: rgb(255 255 255);
+        color: $color-content-background;
+        font-size: 16px;
+      }
+    }
+  }
+
+  .profile {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    & > div {
+      display: flex;
+      align-items: center;
+
+      .avatar {
+        min-width: 32px;
+        max-width: 32px;
+        min-height: 32px;
+        max-height: 32px;
+      }
+    }
+  }
+}
+
+@media screen and (width <= 900px) {
+  .sidebar-component {
+    width: 100vw;
+    height: 48px;
+
+    .menu {
+      display: flex;
+      height: 100%;
+
+      .item {
+        flex-grow: 1;
+        justify-content: center;
+        height: 100%;
+        padding: 0;
+        background: $color-content-background;
+      }
+
+      .profile {
+        position: static;
+      }
+    }
+
+    h1 {
+      display: none;
+    }
+
+    span {
+      display: none;
+    }
+  }
+}

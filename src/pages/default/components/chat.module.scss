@@ -1,0 +1,70 @@
+/* stylelint-disable scale-unlimited/declaration-strict-value */
+@use '@/vars' as *;
+@use 'sass:color';
+
+.chat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 310px;
+
+  .avatar-view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    backdrop-filter: blur(4px);
+
+    img {
+      width: 220px;
+      height: 220px;
+    }
+  }
+
+  .messages {
+    display: flex;
+    flex-direction: column-reverse;
+    overflow-y: scroll;
+    height: 100%;
+
+    .message {
+      display: flex;
+      margin-bottom: 8px;
+
+      .avatar {
+        min-width: 24px;
+        max-width: 24px;
+        height: 24px;
+        margin-right: 8px;
+
+        img {
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      .username {
+        color: $color-main;
+        white-space: nowrap;
+      }
+
+      .text {
+        min-width: auto;
+        white-space: break-spaces;
+        word-wrap: break-word;
+      }
+
+      .time {
+        min-width: fit-content;
+        margin-left: auto;
+        color: $color-text-not-intrusive;
+        white-space: nowrap;
+      }
+    }
+  }
+}

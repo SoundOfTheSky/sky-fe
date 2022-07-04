@@ -1,0 +1,53 @@
+{
+  "scripts": {
+    "start": "vite --host",
+    "build": "vite build",
+    "serve": "vite preview --port 5173",
+    "lint": "stylelint \"src/**/*.{css,scss,sass}\" --fix && eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix"
+  },
+  "dependencies": {
+    "@mdi/js": "latest",
+    "@simplewebauthn/browser": "latest",
+    "@solid-primitives/map": "latest",
+    "@solid-primitives/memo": "latest",
+    "@solid-primitives/set": "latest",
+    "@solid-primitives/trigger": "latest",
+    "@solidjs/meta": "latest",
+    "@solidjs/router": "latest",
+    "solid-js": "latest",
+    "solid-transition-group": "latest",
+    "wanakana": "latest"
+  },
+  "devDependencies": {
+    "@simplewebauthn/typescript-types": "latest",
+    "@types/wanakana": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "latest",
+    "autoprefixer": "latest",
+    "eslint": "latest",
+    "eslint-config-prettier": "latest",
+    "eslint-plugin-jsx-a11y": "latest",
+    "eslint-plugin-prettier": "latest",
+    "eslint-plugin-solid": "latest",
+    "eslint-plugin-sonarjs": "latest",
+    "postcss": "latest",
+    "postcss-scss": "latest",
+    "prettier": "latest",
+    "sass": "latest",
+    "stylelint": "latest",
+    "stylelint-config-hudochenkov": "latest",
+    "stylelint-config-prettier-scss": "latest",
+    "stylelint-config-standard-scss": "latest",
+    "stylelint-declaration-block-no-ignored-properties": "latest",
+    "stylelint-high-performance-animation": "latest",
+    "stylelint-order": "latest",
+    "stylelint-prettier": "latest",
+    "stylelint-scss": "latest",
+    "ts-css-modules-vite-plugin": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "vite-plugin-compression2": "latest",
+    "vite-plugin-pwa": "latest",
+    "vite-plugin-solid": "latest"
+  }
+}

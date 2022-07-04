@@ -1,0 +1,30 @@
+/* stylelint-disable scale-unlimited/declaration-strict-value */
+@use '@/vars' as *;
+
+.about {
+  flex-grow: 10;
+
+  .icons {
+    display: flex;
+    flex-wrap: wrap;
+
+    img {
+      width: 24px;
+      height: 24px;
+      margin: 4px;
+    }
+  }
+
+  .me {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    height: fit-content;
+  }
+
+  .stupido {
+    width: 160px;
+    height: 160px;
+    border-radius: 16px;
+  }
+}

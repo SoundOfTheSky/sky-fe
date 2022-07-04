@@ -1,0 +1,98 @@
+@use '@/vars' as *;
+
+.themes {
+  display: flex;
+  align-items: center;
+  overflow-x: scroll;
+  width: calc(100% - 96px);
+  height: 64px;
+
+  .theme {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    overflow: hidden;
+    height: 100%;
+    margin: 0 4px;
+    border: border();
+    border-radius: 8px;
+    transition: opacity $transition-time;
+
+    button {
+      display: flex;
+      align-items: center;
+      width: fit-content;
+      height: 100%;
+      padding: 0 4px;
+      background-color: transparent;
+      font-weight: bold;
+      white-space: nowrap;
+
+      &:nth-child(2) {
+        border-left: border();
+      }
+
+      &:hover {
+        background-color: rgb(255 255 255 / 20%);
+      }
+    }
+
+    &.added {
+      background-color: $color-main;
+    }
+
+    &.loading {
+      opacity: 0.5;
+    }
+  }
+}
+
+.subjects {
+  @include hover;
+
+  display: grid;
+  place-items: center;
+  min-width: 64px;
+  height: 64px;
+  padding: 0;
+}
+
+.special {
+  position: relative;
+  width: calc(50% - 16px);
+  height: 200px;
+  background: linear-gradient(to bottom, transparent, $color-main-light);
+  background-color: $color-main;
+  text-align: left;
+  text-decoration: none;
+  transition: background-color $transition-time;
+
+  &:hover {
+    background-color: $color-main-light;
+  }
+
+  /* stylelint-disable-next-line selector-pseudo-class-no-unknown */
+  :global {
+    .skeleton {
+      background-color: $color-main-light;
+      background-image: linear-gradient(90deg, rgba($color-main, 0), rgba($color-main, 0.5), rgba($color-main, 0));
+    }
+  }
+
+  .reviews-amount {
+    height: 29.5px;
+  }
+
+  .settings-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 2px;
+    border-radius: 4px;
+    background-color: transparent;
+
+    &:hover {
+      background-color: $color-main;
+    }
+  }
+}
