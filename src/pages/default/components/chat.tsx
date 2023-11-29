@@ -3,7 +3,7 @@ import { Transition } from 'solid-transition-group';
 
 import * as webSocket from '@/services/web-socket';
 import Loading from '@/components/loading/loading';
-import { atom, model, tabSynchedAtom, useGlobalEvent } from '@/services/reactive';
+import { atom, model, useGlobalEvent } from '@/services/reactive';
 import { opacityTransitionImmediate } from '@/services/transition';
 
 import s from './chat.module.scss';
@@ -20,13 +20,14 @@ type Credentials = {
   username: string;
   avatar?: string;
 };
-export default (() => {
+
+const Chat: Component = () => {
   // === State ===
   const viewAvatar = atom<string>();
   const sendingMessage = atom(false);
   const message = atom('');
   const messages = atom<ChatMessage[]>([]);
-  const credentials = tabSynchedAtom<Credentials>('publicChatCredentials');
+  const credentials = atom<Credentials>();
 
   // === Functions ===
   function lostConnection() {
@@ -78,7 +79,7 @@ export default (() => {
   webSocket.on('publicChat', addMessages);
   webSocket.on('error', onWSError);
   onCleanup(() => {
-    webSocket.send(`unsubscribePublicChat`);
+    if (webSocket.status === webSocket.WebSocketStatus.connected) webSocket.send(`unsubscribePublicChat`);
     webSocket.off('connected', subscribe);
     webSocket.off('close', lostConnection);
     webSocket.off('connecting', lostConnection);
@@ -121,4 +122,6 @@ export default (() => {
       </div>
     </Loading>
   );
-}) as Component;
+};
+
+export default Chat;

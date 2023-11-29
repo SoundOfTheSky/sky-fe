@@ -5,7 +5,7 @@ import BasicStore, { NotificationType } from '@/services/basic.store';
 export class RequestError<T = unknown> extends Error {
   code;
   body;
-  constructor(code: number, body: T) {
+  constructor(code: number, body?: T) {
     super(typeof body === 'string' ? body : '');
     this.name = 'RequestError';
     this.code = code;
@@ -61,6 +61,10 @@ export async function request<T>(url: string, options: RequestOptions = {}): Pro
     if (!response.ok) throw new RequestError(response.status, body);
     if (options.useCache) options.useCache.set(key!, body);
     return body;
+  } catch (error) {
+    if (error instanceof RequestError) throw error;
+    if (error instanceof Error) throw new RequestError(0, error.message);
+    throw new RequestError(0);
   } finally {
     BasicStore.activeRequests((x) => x - 1);
   }
@@ -74,15 +78,18 @@ function getBody<T>(response: Response): Promise<T> {
 
 export const CacheContext = createContext<Map<string, unknown>>();
 
-export function showError(error: unknown) {
+export function handleError(error: unknown) {
   let title = 'Unknown error';
-  if (error instanceof RequestError) title = typeof error.body === 'string' ? error.body : error.message;
-  else if (error instanceof Error) title = error.message;
+  if (error instanceof RequestError) {
+    if (error.code === 0 || error.code >= 500) BasicStore.online(false);
+    title = typeof error.body === 'string' ? error.body : error.message;
+  } else if (error instanceof Error) title = error.message;
   else if (typeof error === 'string') title = error;
-  else if (typeof error === 'object' && error !== null) return showError(Object.values(error)[0]);
+  else if (typeof error === 'object' && error !== null) return handleError(Object.values(error)[0]);
   BasicStore.notify({
     title,
     type: NotificationType.Error,
     timeout: 5000,
   });
+  console.error(error);
 }

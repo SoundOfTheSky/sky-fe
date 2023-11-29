@@ -6,7 +6,7 @@ import AuthStore from '@/services/auth.store';
 import Icon from '@/components/icon';
 import BasicStore, { NotificationType } from '@/services/basic.store';
 import { atomize, model, modelCheckbox, persistentAtom } from '@/services/reactive';
-import { showError } from '@/services/fetch';
+import { handleError } from '@/services/fetch';
 import Auth from '@/components/auth';
 
 import s from './profile.module.scss';
@@ -37,7 +37,7 @@ export default (() => {
         username: username(),
       });
     } catch (error) {
-      showError(error);
+      handleError(error);
     }
   }
 

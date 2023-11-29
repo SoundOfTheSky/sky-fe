@@ -1,9 +1,10 @@
 import { Component, For } from 'solid-js';
 import { mdiCloseCircle } from '@mdi/js';
 
-import s from './tags.module.scss';
-import Icon from './icon';
 import { Atom } from '@/services/reactive';
+import Icon from './icon';
+
+import s from './tags.module.scss';
 
 const Tags: Component<{
   model: Atom<string[]>;

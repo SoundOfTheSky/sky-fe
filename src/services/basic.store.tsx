@@ -1,10 +1,11 @@
-import { createRoot, JSX, createUniqueId, createEffect } from 'solid-js';
+import { createRoot, JSX, createUniqueId, createEffect, createMemo } from 'solid-js';
+import { createScheduled, debounce } from '@solid-primitives/scheduled';
 import { useRegisterSW } from 'virtual:pwa-register/solid';
 import { mdiReload } from '@mdi/js';
 
 import Icon from '@/components/icon';
 import { SimpleRequestOptions, request } from './fetch';
-import { atom, atomize, useTimeout } from './reactive';
+import { atom, useTimeout } from './reactive';
 
 export enum NotificationType {
   Info,
@@ -21,20 +22,11 @@ export type Notification = {
 };
 
 export default createRoot(() => {
-  // === API ===
-  const getWord = async (id: number, options?: SimpleRequestOptions) => request<string>(`/api/words/${id}`, options);
-
-  // === State ===
-  const online = atom(true);
-  const notifications = atom<Notification[]>([]);
-  const activeRequests = atom(0);
-  const defferedIsRequesting = atom(false);
-  let defferedIsRequestingTimeout: number;
-
-  // === Other ===
+  // === Hooks ===
+  window.addEventListener('load', () => windowLoad(false));
   window.addEventListener('online', () => online(true));
   window.addEventListener('offline', () => online(false));
-  const { needRefresh, offlineReady, updateServiceWorker } = useRegisterSW({
+  const { updateServiceWorker } = useRegisterSW({
     immediate: true,
     onRegisteredSW(swScriptUrl, registration) {
       if (registration)
@@ -58,7 +50,38 @@ export default createRoot(() => {
         type: NotificationType.Error,
       });
     },
+    onNeedRefresh() {
+      notify({
+        id: 'updateSW',
+        title: (
+          <div>
+            <div>Please refresh application for update to install!</div>
+            <button onClick={() => updateServiceWorker(true)}>
+              <Icon path={mdiReload} size='24' inline />
+              <b>Reload application</b>
+            </button>
+          </div>
+        ),
+        timeout: 30_000,
+      });
+    },
   });
+
+  // === API ===
+  const getWord = async (id: number, options?: SimpleRequestOptions) => request<string>(`/api/words/${id}`, options);
+
+  // === State ===
+  const online = atom(true);
+  const windowLoad = atom(true);
+  const notifications = atom<Notification[]>([]);
+  const activeRequests = atom(0);
+
+  // === Memos ===
+  const loadingScheduler = createScheduled((fn) => debounce(fn, 200));
+  const loading = createMemo<boolean>(
+    (last) => (!loadingScheduler() ? last : windowLoad() || activeRequests() > 0),
+    true,
+  );
 
   // === Functions ===
   function notify(notification: Omit<Notification, 'id' | 'type'> & { id?: string; type?: NotificationType }) {
@@ -93,47 +116,15 @@ export default createRoot(() => {
     }
     return $online;
   });
-  // On application installed
-  createEffect(() => {
-    if (offlineReady[0]())
-      notify({
-        title: 'Application can now be used offline!',
-        timeout: 5000,
-      });
-  });
-  // On update installed
-  createEffect(() => {
-    if (needRefresh[0]())
-      notify({
-        id: 'updateSW',
-        title: (
-          <div>
-            <div>Please refresh application for update to install!</div>
-            <button onClick={() => updateServiceWorker(true)}>
-              <Icon path={mdiReload} size='24' inline />
-              <b>Reload application</b>
-            </button>
-          </div>
-        ),
-        timeout: 30_000,
-      });
-  });
-  // Deffered is requesting
-  createEffect(() => {
-    clearTimeout(defferedIsRequestingTimeout);
-    if (activeRequests() > 0) defferedIsRequesting(true);
-    else defferedIsRequestingTimeout = useTimeout(200, () => defferedIsRequesting(false));
-  });
 
   return {
     getWord,
-    updateServiceWorker,
-    needRefresh: atomize(needRefresh),
-    offlineReady: atomize(offlineReady),
     notify,
     notifications,
     removeNotification,
     activeRequests,
-    defferedIsRequesting,
+    loading,
+    online,
+    windowLoad,
   };
 });

@@ -160,8 +160,12 @@ export function japaneseInput(
   onCleanup(() => wkUnbind(element));
 }
 export function resizeTextToFit(element: HTMLElement, accessor: () => [number, ...unknown[]]) {
+  const mounted = atom(false);
+  onMounted(element, () => () => mounted(true));
   createRenderEffect(() => {
     let [fontSize] = accessor();
+    console.log(mounted(), element.clientHeight, element.scrollHeight);
+    if (!mounted()) return;
     setTimeout(() => {
       do {
         element.style.fontSize = `${fontSize}px`;

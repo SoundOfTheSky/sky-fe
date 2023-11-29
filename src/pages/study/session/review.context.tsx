@@ -15,7 +15,7 @@ import { useLocation } from '@solidjs/router';
 
 import basicStore, { NotificationType } from '@/services/basic.store';
 import { atom, atomize, persistentAtom, useInterval, useTimeout } from '@/services/reactive';
-import { CacheContext, request } from '@/services/fetch';
+import { CacheContext, handleError, request } from '@/services/fetch';
 import { shuffleArray } from '@/services/utils';
 import { Question, useStudy } from '../services/study.context';
 
@@ -191,7 +191,9 @@ function getProvided() {
     };
   });
   /** Is something loading */
-  const isLoading = createMemo(() => isThemesLoading() || !subject() || !question());
+  const isLoading = createMemo(
+    () => isThemesLoading() || !subject() || subject.loading || !question() || question.loading,
+  );
   /** Is current question answered */
   const questionAnswered = createMemo(() => !!previousState() || subjectStats()?.status === StatusCode.Unlearned);
 
@@ -233,6 +235,15 @@ function getProvided() {
   });
   // On question change
   createEffect(onQuestionChange);
+  // On subject change, change current question
+  createEffect(() => {
+    subject();
+    questionI(
+      untrack(subjectQuestionsStatuses).findIndex(
+        (q) => q === StatusCode.Unlearned || q === StatusCode.Unanswered || q === StatusCode.Wrong,
+      ),
+    );
+  });
 
   // === Functions ===
   /** Clear some state on question change. Also used as effect */
@@ -473,7 +484,8 @@ function getProvided() {
           );
           // Invalidate study context
           outdated(true);
-        } catch {
+        } catch (error) {
+          handleError(error);
           notify({
             title: 'Error while trying to commit your answer!',
             timeout: 10_000,

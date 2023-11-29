@@ -1,11 +1,11 @@
 import { Show, For, createMemo } from 'solid-js';
 
-import Loading from '@/components/loading/loading';
 import { resizeTextToFit } from '@/services/reactive';
 import { StatusCode, useReview } from '../session/review.context';
 import parseHTML from '../services/parseHTML';
 
 import s from './review-question.module.scss';
+import Skeleton from '@/components/loading/skeleton';
 
 resizeTextToFit;
 
@@ -25,6 +25,7 @@ export default function ReviewQuestion() {
     currentSubjectQuestionsStatuses,
     questionI,
     srs,
+    isThemesLoading,
   } = useReview()!;
 
   /** Current subject stage. Automatically changes based on status. */
@@ -73,43 +74,43 @@ export default function ReviewQuestion() {
 
   return (
     <div class={`card ${s.question}`}>
-      <Loading when={!isLoading()}>
-        <div class={s.progress}>
-          <div
-            class={s.line}
-            style={{
-              transform: `scaleX(${stats().progress})`,
-            }}
-          />
-        </div>
+      <div class={s.progress}>
         <div
-          class={s.stage}
+          class={s.line}
           style={{
-            background: `linear-gradient(to right, ${progressSpinnerOptions().bgColor} 50%, ${
-              progressSpinnerOptions().color
-            } 50%)`,
+            transform: `scaleX(${stats().progress})`,
           }}
-        >
-          <div
-            class={s.progressBar}
-            style={{
-              'background-color':
-                progressSpinnerOptions().progress > 0.5
-                  ? progressSpinnerOptions().color
-                  : progressSpinnerOptions().bgColor,
-              transform: `rotate(${
-                progressSpinnerOptions().progress > 0.5
-                  ? (progressSpinnerOptions().progress - 0.5) * 360
-                  : (1 - progressSpinnerOptions().progress) * -360
-              }deg)`,
-            }}
-          />
-          <span>{subjectStage()}</span>
-        </div>
-        <div class={s.stats}>
-          {stats().passed}/{subjectIds().length} {Math.floor(stats().correctPercent * 100)}% {timePassed()} {eta()}m
-        </div>
-        <div class={s.title} use:resizeTextToFit={[48, question(), hint()]}>
+        />
+      </div>
+      <div
+        class={s.stage}
+        style={{
+          background: `linear-gradient(to right, ${progressSpinnerOptions().bgColor} 50%, ${
+            progressSpinnerOptions().color
+          } 50%)`,
+        }}
+      >
+        <div
+          class={s.progressBar}
+          style={{
+            'background-color':
+              progressSpinnerOptions().progress > 0.5
+                ? progressSpinnerOptions().color
+                : progressSpinnerOptions().bgColor,
+            transform: `rotate(${
+              progressSpinnerOptions().progress > 0.5
+                ? (progressSpinnerOptions().progress - 0.5) * 360
+                : (1 - progressSpinnerOptions().progress) * -360
+            }deg)`,
+          }}
+        />
+        <span>{subjectStage()}</span>
+      </div>
+      <div class={s.stats}>
+        {stats().passed}/{subjectIds().length} {Math.floor(stats().correctPercent * 100)}% {timePassed()} {eta()}m
+      </div>
+      <Skeleton class={s.titleSkeleton} loading={isLoading()}>
+        <div class={s.title} use:resizeTextToFit={[48, question(), hint(), isLoading()]}>
           <Show
             when={
               (previousState() || subjectStats()?.status === StatusCode.Unlearned) &&
@@ -123,23 +124,23 @@ export default function ReviewQuestion() {
           <div>{parseHTML(question()!.question, autoplayAudio())}</div>
           {hint()}
         </div>
-        <div class={s.story}>
-          <For each={currentSubjectQuestionsStatuses()}>
-            {(element, index) => (
-              <button
-                classList={{
-                  [s.current]: subject()?.questionIds[index()] === question()!.id,
-                  [s.correct]: element === StatusCode.Correct,
-                  [s.error]: element === StatusCode.Wrong,
-                  [s.correctAfterWrong]: element === StatusCode.CorrectAfterWrong,
-                  [s.unlearned]: element === StatusCode.Unlearned,
-                }}
-                onClick={() => questionI(index())}
-              />
-            )}
-          </For>
-        </div>
-      </Loading>
+      </Skeleton>
+      <div class={s.story}>
+        <For each={currentSubjectQuestionsStatuses()}>
+          {(element, index) => (
+            <button
+              classList={{
+                [s.current]: subject()?.questionIds[index()] === question()?.id,
+                [s.correct]: element === StatusCode.Correct,
+                [s.error]: element === StatusCode.Wrong,
+                [s.correctAfterWrong]: element === StatusCode.CorrectAfterWrong,
+                [s.unlearned]: element === StatusCode.Unlearned,
+              }}
+              onClick={() => questionI(index())}
+            />
+          )}
+        </For>
+      </div>
     </div>
   );
 }

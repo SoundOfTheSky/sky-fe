@@ -7,11 +7,11 @@ import { opacityTransition } from '@/services/transition';
 import s from './page-loading.module.scss';
 
 const PageLoading: Component = () => {
-  const { defferedIsRequesting } = BasicStore;
+  const { loading } = BasicStore;
 
   return (
     <Transition {...opacityTransition}>
-      <Show when={defferedIsRequesting()}>
+      <Show when={loading()}>
         <div class={s.pageLoadingComponent} />
       </Show>
     </Transition>

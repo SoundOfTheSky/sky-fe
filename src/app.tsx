@@ -1,4 +1,4 @@
-import { Component, createRenderEffect } from 'solid-js';
+import { Component, Show, createRenderEffect } from 'solid-js';
 import { Transition } from 'solid-transition-group';
 import { MetaProvider } from '@solidjs/meta';
 import { Router } from '@solidjs/router';
@@ -11,6 +11,10 @@ import { opacityTransition } from '@/services/transition';
 
 import './global.scss';
 import './fonts.scss';
+import basicStore from './services/basic.store';
+import FatalError from './pages/fatal-error';
+import Icon from './components/icon';
+import { mdiServerNetworkOff } from '@mdi/js';
 
 const App: Component = () => {
   const fontPixelization = persistentAtom('fontPixelization', true);
@@ -28,7 +32,19 @@ const App: Component = () => {
     <MetaProvider>
       <Router>
         <Transition {...opacityTransition} mode='outin'>
-          <Routes />
+          <Show
+            when={basicStore.online()}
+            fallback={
+              <FatalError>
+                <Icon path={mdiServerNetworkOff} size='48' />
+                <h1>We're offline</h1>
+                <p>Unable to connect to server.</p>
+                <p>Please come back later!</p>
+              </FatalError>
+            }
+          >
+            <Routes />
+          </Show>
         </Transition>
         <Notifications />
         <PageLoading />

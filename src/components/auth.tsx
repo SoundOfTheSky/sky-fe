@@ -6,7 +6,7 @@ import AuthStore from '@/services/auth.store';
 import Icon from '@/components/icon';
 import Loading from '@/components/loading/loading';
 import { atom, model, persistentAtom, useGlobalEvent } from '@/services/reactive';
-import { RequestError, showError } from '@/services/fetch';
+import { RequestError, handleError } from '@/services/fetch';
 
 import s from './auth.module.scss';
 
@@ -26,9 +26,9 @@ export default ((properties) => {
         try {
           await AuthStore.register(username);
         } catch (error) {
-          showError(error);
+          handleError(error);
         }
-      } else showError(error);
+      } else handleError(error);
     }
     sendingCredentials(false);
   }

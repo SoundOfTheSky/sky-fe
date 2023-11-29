@@ -32,7 +32,7 @@ export default (() => {
   webSocket.on('connected', subscribe);
   webSocket.on('serverStats', onData);
   onCleanup(() => {
-    webSocket.send(`unsubscribeServerStats`);
+    if (webSocket.status === webSocket.WebSocketStatus.connected) webSocket.send(`unsubscribeServerStats`);
     webSocket.off('connected', subscribe);
     webSocket.off('serverStats', onData);
   });
