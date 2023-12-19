@@ -5,12 +5,13 @@ import { A } from '@solidjs/router';
 import AuthStore from '@/services/auth.store';
 import Icon from '@/components/icon';
 import Loading from '@/components/loading/loading';
-import { atom, model, persistentAtom, useGlobalEvent } from '@/services/reactive';
+import { atom, persistentAtom, useGlobalEvent } from '@/services/reactive';
 import { RequestError, handleError } from '@/services/fetch';
+import Input from './form/input';
+import Button from './form/button';
 
 import s from './auth.module.scss';
 
-model;
 
 export default ((properties) => {
   const sendingCredentials = atom(false);
@@ -48,17 +49,10 @@ export default ((properties) => {
               <div class={s.webauthn}>
                 <div class={s.welcome}>What is your name?</div>
                 <div class={s.userLine}>
-                  <input
-                    type='text'
-                    use:model={username}
-                    name='username'
-                    placeholder='Username'
-                    autocomplete='on'
-                    autofocus
-                  />
-                  <button onClick={() => void login(username())} disabled={sendingCredentials()}>
+                  <Input value={username} name='username' placeholder='Username' autocomplete='on' autofocus />
+                  <Button onClick={() => void login(username())} disabled={sendingCredentials()}>
                     <Icon path={mdiFingerprint} size='48' inline />
-                  </button>
+                  </Button>
                 </div>
               </div>
               <A class={s.navigate} href='/'>

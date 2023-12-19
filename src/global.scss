@@ -24,53 +24,24 @@ body {
 }
 
 button {
-  @include hover;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
   padding: 0;
   border: none;
-  background-color: $color-content-background;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-input[type='text'],
-textarea {
-  width: 100%;
-  padding: 8px 16px;
-  border: none;
-  border-bottom: border();
   background-color: transparent;
-  outline: none;
-  transition: border-color $transition-time;
-
-  &:focus {
-    border-color: $color-focus;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &.error {
-    border-color: $color-error;
-  }
-
-  &.correct {
-    border-color: $color-success;
-  }
 }
 
-input[type='range'] {
-  width: 100%;
+.tooltip-content {
+  padding: 4px;
+  border-radius: 4px;
+  background-color: $color-background;
+  box-shadow: 0 0 4px 4px rgb(0 0 0 / 20%);
+  font-size: 16px;
 }
 
+.em {
+  height: 1em;
+}
+
+// === Card ===
 .card-container {
   display: flex;
   flex-wrap: wrap;
@@ -88,32 +59,16 @@ input[type='range'] {
   padding: 16px;
   border-radius: 16px;
   background-color: $color-content-background;
-
-  .card-title {
-    width: 100%;
-    margin-bottom: 16px;
-    font-weight: bold;
-    font-size: 24px;
-  }
 }
 
-.tooltip {
-  position: relative;
-
-  &::after {
-    content: attr(data-tooltip);
-    top: 0;
-    left: 0;
-    padding: 4px;
-    border-radius: 4px;
-    background-color: $color-background;
-  }
+.card-title {
+  width: 100%;
+  margin-bottom: 16px;
+  font-weight: bold;
+  font-size: 24px;
 }
 
-.em {
-  height: 1em;
-}
-
+// === Japanese ===
 .stroke-order {
   display: block;
   width: 128px;
@@ -136,7 +91,7 @@ input[type='range'] {
   }
 }
 
-// Skeleton
+// === Skeleton ===
 
 $shine-width: 40px;
 

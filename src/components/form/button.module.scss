@@ -1,0 +1,17 @@
+@use '@/vars' as *;
+
+.button {
+  @include hover;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background-color: $color-content-background;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

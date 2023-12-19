@@ -1,0 +1,28 @@
+@use '@/vars' as *;
+
+.input {
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: border();
+  background-color: transparent;
+  outline: none;
+  transition: border-color $transition-time;
+
+  &:focus {
+    border-color: $color-focus;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.error {
+    border-color: $color-error;
+  }
+
+  &.success {
+    border-color: $color-success;
+  }
+}

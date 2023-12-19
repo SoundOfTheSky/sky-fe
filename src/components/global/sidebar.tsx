@@ -1,7 +1,7 @@
 import { For } from 'solid-js';
 import type { Component } from 'solid-js';
 import { A } from '@solidjs/router';
-import { mdiHome, mdiBookOpenPageVariant } from '@mdi/js';
+import { mdiHome, mdiBookOpenPageVariant, mdiIdeogramCjk } from '@mdi/js';
 
 import Skeleton from '@/components/loading/skeleton';
 import AuthStore from '@/services/auth.store';
@@ -17,8 +17,13 @@ const items = [
   },
   {
     icon: mdiBookOpenPageVariant,
-    title: 'Study Japanese',
+    title: 'Study',
     link: '/study',
+  },
+  {
+    icon: mdiIdeogramCjk,
+    title: 'JP Conjugation',
+    link: '/jp-conjugation',
   },
 ] as const;
 const Sidebar: Component = () => {

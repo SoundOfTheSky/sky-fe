@@ -1,0 +1,6 @@
+@use '@/vars' as *;
+
+.tooltip {
+  position: fixed;
+  transform: translate(-50%, -100%);
+}

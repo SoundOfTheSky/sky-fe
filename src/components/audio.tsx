@@ -5,6 +5,7 @@ import AudioStore from '@/services/audio.store';
 import { atom, onMounted } from '@/services/reactive';
 import { request } from '@/services/fetch';
 import Icon from './icon';
+import Button from './form/button';
 
 onMounted;
 
@@ -74,10 +75,10 @@ const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (pr
   });
   onCleanup(cleanup);
   return (
-    <button onClick={() => play()} disabled={loading()} use:onMounted={mounted}>
+    <Button onClick={() => play()} disabled={loading()} use:onMounted={mounted}>
       <Icon path={playingCurrent() ? mdiPause : mdiPlay} inline />
       {properties.title}
-    </button>
+    </Button>
   );
 };
 export default Audio;

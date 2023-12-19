@@ -4,6 +4,8 @@ import { useRegisterSW } from 'virtual:pwa-register/solid';
 import { mdiReload } from '@mdi/js';
 
 import Icon from '@/components/icon';
+import Button from '@/components/form/button';
+
 import { SimpleRequestOptions, request } from './fetch';
 import { atom, useTimeout } from './reactive';
 
@@ -56,10 +58,10 @@ export default createRoot(() => {
         title: (
           <div>
             <div>Please refresh application for update to install!</div>
-            <button onClick={() => updateServiceWorker(true)}>
+            <Button onClick={() => updateServiceWorker(true)}>
               <Icon path={mdiReload} size='24' inline />
               <b>Reload application</b>
-            </button>
+            </Button>
           </div>
         ),
         timeout: 30_000,

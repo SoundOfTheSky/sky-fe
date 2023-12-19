@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { InitializedResourceOptions, InitializedResourceReturn, NoInfer, ResourceOptions } from 'solid-js';
 
 import * as broadcastChannel from '@/services/broadcast-channel';
@@ -15,11 +18,10 @@ import {
   ResourceSource,
   ResourceFetcher,
 } from 'solid-js';
-import { bind as wkBind, unbind as wkUnbind } from 'wanakana';
 
 // === Reactive ===
 
-export type Atom<T> = (setTo?: Parameters<Setter<T>>[0]) => T;
+export type Atom<in out T> = (setTo?: Parameters<Setter<T>>[0]) => T;
 export function atomize<T>([state, setState]: [Accessor<T>, Setter<T>]): Atom<T> {
   return (...arguments_) => (arguments_.length === 1 ? setState(arguments_[0]!) : state());
 }
@@ -55,14 +57,14 @@ export function tabSynchedAtom<T>(key: string, initialValue?: T): Atom<T> {
   return atom;
 }
 export function persistentAtom<T>(key: string, initialValue: T): Atom<T> {
-  const rawData = window.localStorage.getItem(key);
+  const rawData = localStorage.getItem(key);
   const state = tabSynchedAtom<T>(key, !rawData || rawData === 'undefined' ? initialValue : (JSON.parse(rawData) as T));
   createEffect(() => {
-    window.localStorage.setItem(key, JSON.stringify(state()));
+    localStorage.setItem(key, JSON.stringify(state()));
   });
   return state;
 }
-
+/** Isn't called untill subscribed */
 export function createLazyResource<T, R = unknown>(
   fetcher: ResourceFetcher<true, T, R>,
   options: InitializedResourceOptions<NoInfer<T>, true>,
@@ -129,36 +131,6 @@ export function debugReactive(data: Record<string, () => unknown>) {
 }
 
 // === Use directives ===
-export function model(element: HTMLInputElement, accessor: () => Atom<string>) {
-  const atom = accessor();
-  const handler: EventListener = (event) => setTimeout(() => atom((event.target as HTMLInputElement).value));
-  element.addEventListener('input', handler);
-  createRenderEffect(() => {
-    element.value = atom();
-  });
-  onCleanup(() => {
-    element.removeEventListener('input', handler);
-  });
-}
-export function modelCheckbox(element: HTMLInputElement, accessor: () => Atom<boolean>) {
-  const atom = accessor();
-  const handler: EventListener = (event) => setTimeout(() => atom((event.target as HTMLInputElement).checked));
-  element.addEventListener('input', handler);
-  createRenderEffect(() => {
-    element.checked = atom();
-  });
-  onCleanup(() => {
-    element.removeEventListener('input', handler);
-  });
-}
-export function japaneseInput(
-  element: HTMLInputElement | HTMLTextAreaElement,
-  accessor: () => Parameters<typeof wkBind>[1] | true | undefined,
-) {
-  const options = accessor();
-  wkBind(element, options === true ? undefined : options);
-  onCleanup(() => wkUnbind(element));
-}
 export function resizeTextToFit(element: HTMLElement, accessor: () => [number, ...unknown[]]) {
   const mounted = atom(false);
   onMounted(element, () => () => mounted(true));
@@ -198,29 +170,6 @@ export function onMounted(element: HTMLElement, accessor: () => (element: HTMLEl
     onCleanup(() => observer.disconnect());
   }
 }
-export function tooltip(element: HTMLInputElement, accessor: () => string) {
-  createRenderEffect(() => {
-    element.dataset.tooltip = accessor();
-  });
-  const handler: EventListener = () => element.classList.add('tooltip');
-  onOutside(element, () => ['click', () => element.classList.remove('tooltip')]);
-  element.addEventListener('click', handler);
-  element.addEventListener('hover', handler);
-  onCleanup(() => {
-    element.removeEventListener('click', handler);
-    element.removeEventListener('hover', handler);
-  });
-}
-export function autoExpandTextarea(element: HTMLTextAreaElement) {
-  const handler = () => {
-    element.rows = element.value.split('\n').length;
-  };
-  handler();
-  element.addEventListener('input', handler);
-  onCleanup(() => {
-    element.removeEventListener('input', handler);
-  });
-}
 
 declare module 'solid-js' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -228,13 +177,8 @@ declare module 'solid-js' {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
     interface Directives {
       onOutside: ReturnType<Parameters<typeof onOutside>[1]>;
-      model: ReturnType<Parameters<typeof model>[1]>;
-      modelCheckbox: ReturnType<Parameters<typeof modelCheckbox>[1]>;
-      japaneseInput: ReturnType<Parameters<typeof japaneseInput>[1]>;
       resizeTextToFit: ReturnType<Parameters<typeof resizeTextToFit>[1]>;
       onMounted: ReturnType<Parameters<typeof onMounted>[1]>;
-      tooltip: ReturnType<Parameters<typeof tooltip>[1]>;
-      autoExpandTextarea: unknown;
     }
   }
 }

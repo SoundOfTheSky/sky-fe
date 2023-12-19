@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "scripts": {
     "start": "vite --host",
     "build": "vite build",
@@ -38,8 +39,6 @@
     "stylelint-config-hudochenkov": "latest",
     "stylelint-config-prettier-scss": "latest",
     "stylelint-config-standard-scss": "latest",
-    "stylelint-declaration-block-no-ignored-properties": "latest",
-    "stylelint-high-performance-animation": "latest",
     "stylelint-order": "latest",
     "stylelint-prettier": "latest",
     "stylelint-scss": "latest",
@@ -49,5 +48,7 @@
     "vite-plugin-compression2": "latest",
     "vite-plugin-pwa": "latest",
     "vite-plugin-solid": "latest"
-  }
+  },
+  "stylelint-declaration-block-no-ignored-properties": "latest",
+  "stylelint-high-performance-animation": "latest"
 }

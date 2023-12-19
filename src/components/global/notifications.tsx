@@ -4,9 +4,11 @@ import { TransitionGroup } from 'solid-transition-group';
 import BasicStore, { Notification } from '@/services/basic.store';
 import { onMounted } from '@/services/reactive';
 import { slideInTransition } from '@/services/transition';
+import Button from '../form/button';
 
 import s from './notifications.module.scss';
 onMounted;
+
 const Notifications: Component = () => {
   const { notifications, removeNotification } = BasicStore;
   function clickNotification(notification: Notification) {
@@ -18,7 +20,7 @@ const Notifications: Component = () => {
       <TransitionGroup {...slideInTransition}>
         <For each={notifications()}>
           {(notification) => (
-            <button
+            <Button
               class={`${s.notification} ${[s.info, s.success, s.warning, s.error][notification.type]}`}
               onClick={() => clickNotification(notification)}
             >
@@ -29,7 +31,7 @@ const Notifications: Component = () => {
                   use:onMounted={(el) => el.animate({ transform: ['scaleX(0)', 'scaleX(1)'] }, notification.timeout)}
                 />
               </Show>
-            </button>
+            </Button>
           )}
         </For>
       </TransitionGroup>

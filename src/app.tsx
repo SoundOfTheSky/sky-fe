@@ -1,22 +1,21 @@
-import { Component, Show, createRenderEffect } from 'solid-js';
+import { ParentComponent, Show, createRenderEffect } from 'solid-js';
 import { Transition } from 'solid-transition-group';
 import { MetaProvider } from '@solidjs/meta';
-import { Router } from '@solidjs/router';
+import { mdiServerNetworkOff } from '@mdi/js';
 
-import Routes from '@/pages/routes';
 import Notifications from '@/components/global/notifications';
 import PageLoading from '@/components/global/page-loading';
 import { persistentAtom } from '@/services/reactive';
 import { opacityTransition } from '@/services/transition';
 
+import basicStore from './services/basic.store';
+import FatalError from './main/pages/fatal-error';
+import Icon from './components/icon';
+
 import './global.scss';
 import './fonts.scss';
-import basicStore from './services/basic.store';
-import FatalError from './pages/fatal-error';
-import Icon from './components/icon';
-import { mdiServerNetworkOff } from '@mdi/js';
 
-const App: Component = () => {
+const App: ParentComponent = (properties) => {
   const fontPixelization = persistentAtom('fontPixelization', true);
   const JPFontPixelization = persistentAtom('JPFontPixelization', true);
   createRenderEffect(() => {
@@ -30,25 +29,23 @@ const App: Component = () => {
 
   return (
     <MetaProvider>
-      <Router>
-        <Transition {...opacityTransition} mode='outin'>
-          <Show
-            when={basicStore.online()}
-            fallback={
-              <FatalError>
-                <Icon path={mdiServerNetworkOff} size='48' />
-                <h1>We're offline</h1>
-                <p>Unable to connect to server.</p>
-                <p>Please come back later!</p>
-              </FatalError>
-            }
-          >
-            <Routes />
-          </Show>
-        </Transition>
-        <Notifications />
-        <PageLoading />
-      </Router>
+      <Transition {...opacityTransition} mode='outin'>
+        <Show
+          when={basicStore.online()}
+          fallback={
+            <FatalError>
+              <Icon path={mdiServerNetworkOff} size='48' />
+              <h1>We're offline</h1>
+              <p>Unable to connect to server.</p>
+              <p>Please come back later!</p>
+            </FatalError>
+          }
+        >
+          {properties.children}
+        </Show>
+      </Transition>
+      <Notifications />
+      <PageLoading />
     </MetaProvider>
   );
 };

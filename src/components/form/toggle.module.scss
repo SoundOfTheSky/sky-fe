@@ -1,0 +1,45 @@
+@use '@/vars' as *;
+
+$size: 24px;
+$padding: 4px;
+
+.toggle {
+  display: flex;
+  height: 24px;
+  font-size: 24px;
+  cursor: pointer;
+
+  .wrapper {
+    width: $size * 2;
+    height: $size;
+    margin-right: 8px;
+    padding: $padding;
+    border-radius: calc($size / 2);
+    background-color: $color-border;
+    transition: $transition-time background-color;
+
+    .circle {
+      width: calc($size - $padding * 2);
+      height: calc($size - $padding * 2);
+      border-radius: 50%;
+      background-color: #fff;
+      transition: $transition-time transform;
+    }
+
+    &.enabled {
+      background-color: $color-main;
+
+      .circle {
+        transform: translateX($size);
+      }
+    }
+  }
+
+  &:hover .wrapper {
+    background-color: $color-text-not-intrusive;
+
+    &.enabled {
+      background-color: $color-main-light;
+    }
+  }
+}

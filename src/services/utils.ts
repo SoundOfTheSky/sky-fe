@@ -111,12 +111,23 @@ export class ProgressLoggerTransform<T extends { length: number }> extends Trans
     }, logInterval * 1000);
   }
 }
+/** Find substring between two strings */
+export function findStringBetween(str: string, a: string, b: string) {
+  const i = str.indexOf(a);
+  if (i === -1) return;
+  const i2 = a.indexOf(b, i);
+  if (i2 === -1) return;
+  return a.slice(i, i2);
+}
 
 // === Arrays ===
 /** Random number between min and max. May enable float */
 export function random(min: number, max: number, float?: boolean): number {
   const number_ = Math.random() * (max - min) + min;
   return float ? number_ : Math.round(number_);
+}
+export function randomFromArray<T>(arr: T[]) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 /** Create new shuffled array */
 export function shuffleArray<T>(arr: T[]): T[] {
@@ -157,6 +168,15 @@ export function binarySearch(size: number, compare: (index: number) => number) {
     else low = mid + 1;
   }
   return position;
+}
+/**
+ * All possible combinations of items in array
+ */
+export function allPossibleCombinations<T>(arr: T[]): T[][] {
+  const combinations = [];
+  const amount = 1 << arr.length;
+  for (let i = 1; i < amount; i++) combinations.push(arr.filter((_, j) => (1 << j) & i));
+  return combinations;
 }
 
 // === Control ===

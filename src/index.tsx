@@ -1,7 +1,16 @@
 import { render } from 'solid-js/web';
+import { Router } from '@solidjs/router';
 import App from '@/app';
+import Routes from './main/routes';
 
-render(() => <App />, document.querySelector('#root')!);
+render(
+  () => (
+    <Router root={App}>
+      <Routes />
+    </Router>
+  ),
+  document.querySelector('#root')!,
+);
 
 // TODO: Offline mode
 // TODO: Make all vocab/kanji as <subject>

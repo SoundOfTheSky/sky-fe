@@ -3,9 +3,10 @@ import { mdiClose, mdiPause, mdiPlay, mdiSkipNext, mdiSkipPrevious } from '@mdi/
 import { Transition } from 'solid-transition-group';
 
 import AudioStore from '@/services/audio.store';
-import Icon from './icon';
 import { atom, useInterval } from '@/services/reactive';
 import { slideDownTransition } from '@/services/transition';
+import Button from './form/button';
+import Icon from './icon';
 
 import s from './audio-player.module.scss';
 
@@ -91,15 +92,15 @@ const AudioPlayer: Component = () => {
             onCanPlay={onCanPlay}
             onEnded={onEnded}
           />
-          <button disabled={currentI() < 1} onClick={() => changeTrack(-1)}>
+          <Button disabled={currentI() < 1} onClick={() => changeTrack(-1)}>
             <Icon path={mdiSkipPrevious} size='32' />
-          </button>
-          <button onClick={() => playing((x) => !x)}>
+          </Button>
+          <Button onClick={() => playing((x) => !x)}>
             <Icon path={playing() ? mdiPause : mdiPlay} size='32' />
-          </button>
-          <button disabled={currentI() >= queue().length - 1} onClick={() => changeTrack(1)}>
+          </Button>
+          <Button disabled={currentI() >= queue().length - 1} onClick={() => changeTrack(1)}>
             <Icon path={mdiSkipNext} size='32' />
-          </button>
+          </Button>
           {
             // eslint-disable-next-line prettier/prettier, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
           }<div class={s.progress} onClick={onProgressClick}>
@@ -114,9 +115,9 @@ const AudioPlayer: Component = () => {
               }}
             />
           </div>
-          <button onClick={() => queue([])}>
+          <Button onClick={() => queue([])}>
             <Icon path={mdiClose} size='32' />
-          </button>
+          </Button>
         </div>
       </Show>
     </Transition>
