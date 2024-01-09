@@ -36,6 +36,8 @@
     "prettier": "latest",
     "sass": "latest",
     "stylelint": "latest",
+    "stylelint-declaration-block-no-ignored-properties": "latest",
+    "stylelint-high-performance-animation": "latest",
     "stylelint-config-hudochenkov": "latest",
     "stylelint-config-prettier-scss": "latest",
     "stylelint-config-standard-scss": "latest",
@@ -48,7 +50,5 @@
     "vite-plugin-compression2": "latest",
     "vite-plugin-pwa": "latest",
     "vite-plugin-solid": "latest"
-  },
-  "stylelint-declaration-block-no-ignored-properties": "latest",
-  "stylelint-high-performance-animation": "latest"
+  }
 }

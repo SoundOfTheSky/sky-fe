@@ -15,7 +15,7 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
   // === State ===
   const isOpen = atom(false);
   const c = children(() => properties.children);
-  const pos = atom([0, 0]);
+  const pos = atom({ x: 0, y: 0, top: true });
 
   // === Effects ===
   createEffect<HTMLElement>((old) => {
@@ -25,7 +25,8 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
     c$.addEventListener('mouseenter', open);
     c$.addEventListener('mouseleave', close);
     const box = c$.getBoundingClientRect();
-    pos([box.x + box.width / 2, box.y - 8]);
+    const top = (box.y + box.height) * 2 > window.innerHeight;
+    pos({ x: box.x + box.width / 2, y: top ? box.y - 8 : box.y + box.height + 8, top });
     return c$;
   });
   // === Functions ===
@@ -51,8 +52,9 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
           <div
             class={s.tooltip}
             style={{
-              left: pos()[0] + 'px',
-              top: pos()[1] + 'px',
+              left: pos().x + 'px',
+              top: pos().y + 'px',
+              transform: pos().top ? `translate(-50%, -100%)` : undefined,
             }}
             use:onOutside={['click', close]}
           >
