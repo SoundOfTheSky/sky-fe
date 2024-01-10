@@ -1,8 +1,7 @@
-import { Show, For, createMemo } from 'solid-js';
+import { Show, createMemo, Index } from 'solid-js';
 
 import { resizeTextToFit } from '@/services/reactive';
 import Skeleton from '@/components/loading/skeleton';
-import Button from '@/components/form/button';
 
 import { StatusCode, useReview } from '../session/services/review.context';
 import parseHTML from '../services/parseHTML';
@@ -27,7 +26,6 @@ export default function ReviewQuestion() {
     currentSubjectQuestionsStatuses,
     questionI,
     srs,
-    isThemesLoading,
   } = useReview()!;
 
   /** Current subject stage. Automatically changes based on status. */
@@ -128,20 +126,20 @@ export default function ReviewQuestion() {
         </div>
       </Skeleton>
       <div class={s.story}>
-        <For each={currentSubjectQuestionsStatuses()}>
+        <Index each={currentSubjectQuestionsStatuses()}>
           {(element, index) => (
-            <Button
+            <button
               classList={{
-                [s.current]: subject()?.questionIds[index()] === question()?.id,
-                [s.correct]: element === StatusCode.Correct,
-                [s.error]: element === StatusCode.Wrong,
-                [s.correctAfterWrong]: element === StatusCode.CorrectAfterWrong,
-                [s.unlearned]: element === StatusCode.Unlearned,
+                [s.current]: subject()?.questionIds[index] === question()?.id,
+                [s.correct]: element() === StatusCode.Correct,
+                [s.error]: element() === StatusCode.Wrong,
+                [s.correctAfterWrong]: element() === StatusCode.CorrectAfterWrong,
+                [s.unlearned]: element() === StatusCode.Unlearned,
               }}
-              onClick={() => questionI(index())}
+              onClick={() => questionI(index)}
             />
           )}
-        </For>
+        </Index>
       </div>
     </div>
   );

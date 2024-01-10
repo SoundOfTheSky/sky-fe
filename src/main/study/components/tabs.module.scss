@@ -10,9 +10,12 @@
     border-bottom: border();
 
     button {
+      @include hover;
+
       flex-grow: 1;
       height: 32px;
       padding: 0 16px;
+      cursor: pointer;
 
       &.active {
         border-bottom: border(1px, $color-main);

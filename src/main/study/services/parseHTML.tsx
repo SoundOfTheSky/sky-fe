@@ -26,7 +26,7 @@ export default function parseHTML(text: string, autoplayAudio: number): JSX.Elem
     },
     subject(element) {
       return (
-        <a class='subject' href={/*@once*/ `/study/subjects/${element.getAttribute('uid')!}`} target='__blank'>
+        <a class='subject' href={/*@once*/ `/study/subjects/${element.getAttribute('uid')!}`} target='_blank'>
           {/*@once*/ [...element.childNodes]}
         </a>
       );
