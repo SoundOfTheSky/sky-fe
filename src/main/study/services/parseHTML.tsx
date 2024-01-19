@@ -3,8 +3,9 @@ import Img from '@/components/img';
 import IK from '@/main/study/components/ik';
 import JPPitchAccent from '@/main/study/components/jp-pitch-accent';
 import { JSX } from 'solid-js';
+import SubjectRef from '../components/subject-ref';
 
-export default function parseHTML(text: string, autoplayAudio: number): JSX.Element[] {
+export default function parseHTML(text: string, autoplayAudio = 0): JSX.Element[] {
   //const owner = getOwner();
   const body = document.createElement('body');
   body.innerHTML = text.replaceAll('\n', '<br>');
@@ -26,9 +27,9 @@ export default function parseHTML(text: string, autoplayAudio: number): JSX.Elem
     },
     subject(element) {
       return (
-        <a class='subject' href={/*@once*/ `/study/subjects/${element.getAttribute('uid')!}`} target='_blank'>
+        <SubjectRef id={/*@once*/ Number.parseInt(element.getAttribute('uid')!)}>
           {/*@once*/ [...element.childNodes]}
-        </a>
+        </SubjectRef>
       );
     },
     accent(element) {
@@ -53,7 +54,12 @@ export default function parseHTML(text: string, autoplayAudio: number): JSX.Elem
       );
     },
     'jp-pitch-accent': (element) => {
-      return <JPPitchAccent h={/*@once*/ element.getAttribute('h')!} p={/*@once*/ 2} />;
+      return (
+        <JPPitchAccent
+          h={/*@once*/ element.getAttribute('h')!}
+          p={/*@once*/ Number.parseInt(element.getAttribute('p')!)}
+        />
+      );
     },
   };
   function parse(tag: HTMLElement) {

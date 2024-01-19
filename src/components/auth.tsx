@@ -12,7 +12,6 @@ import Button from './form/button';
 
 import s from './auth.module.scss';
 
-
 export default ((properties) => {
   const sendingCredentials = atom(false);
   const username = persistentAtom('last_user', '');

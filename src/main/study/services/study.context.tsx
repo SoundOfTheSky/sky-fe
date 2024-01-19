@@ -24,7 +24,12 @@ export type Subject = {
 export type SearchSubject = {
   id: number;
   title: string;
-  answers: string[];
+  answers: string;
+  alternate_answers: string;
+  stage?: number;
+  next_review?: number;
+  note?: string;
+  synonyms?: string;
 };
 export type Question = {
   id: number;
@@ -149,11 +154,13 @@ function getProvided() {
     );
   const getSRS = async (id: number, options?: SimpleRequestOptions) => request<SRS>(`${srsEndpoint}/${id}`, options);
   const getAllSRS = async (options?: SimpleRequestOptions) => request<SRS[]>(`${srsEndpoint}`, options);
-  const searchSubjects = async (themeIds: number[], query: string, options?: SimpleRequestOptions) =>
-    request<SearchSubject[]>(`${subjectsEndpoint}/${query}?themeIds=${themeIds.join(',')}`, options);
-  const getAllSubjects = async (themeIds: number[], page = 1, options?: SimpleRequestOptions) =>
-    request<SearchSubject[]>(`${subjectsEndpoint}?themeIds=${themeIds.join(',')}&page=${page}`, options);
-
+  async function searchSubjects(themes: number[], query?: string, page?: number, options?: SimpleRequestOptions) {
+    let url = subjectsEndpoint;
+    if (query) url += '/' + query;
+    url += '?themes=' + themes.join(',');
+    if (page) url += '&page=' + page;
+    return request<SearchSubject[]>(url, options);
+  }
   // === API Recources ===
   const [allThemes, { refetch: refetchAllThemes }] = createLazyResource(() => request<Theme[]>(themesEndpoint));
   const [themesData, { refetch: refetchThemesData }] = createLazyResource(() =>
@@ -209,7 +216,6 @@ function getProvided() {
     getSRS,
     getAllSRS,
     searchSubjects,
-    getAllSubjects,
     getStats,
     settings,
     now,

@@ -10,6 +10,7 @@ import parseHTML from '../services/parseHTML';
 import { StatusCode, useReview } from '../session/services/review.context';
 
 import s from './review-stats.module.scss';
+import SubjectRef from './subject-ref';
 
 export default function ReviewStats() {
   // === Hooks ===
@@ -57,9 +58,7 @@ export default function ReviewStats() {
             {([id, stats]) => (
               <tr>
                 <td>
-                  <A href={`../subjects/${id}`} target='_blank'>
-                    {parseHTML(stats.title, 0)}
-                  </A>
+                  <SubjectRef id={id}>{parseHTML(stats.title)}</SubjectRef>
                 </td>
                 <td>{formatTime(stats.time * 1000)}</td>
                 <td>

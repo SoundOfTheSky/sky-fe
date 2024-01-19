@@ -6,7 +6,12 @@ import s from './tabs.module.scss';
 const Tabs: ParentComponent = (properties) => {
   let component: HTMLDivElement | undefined;
   const children = createChildren(() => properties.children);
-  const tabs = createMemo(() => children.toArray().map((child) => (child as HTMLElement).dataset.tab!));
+  const tabs = createMemo(() =>
+    children
+      .toArray()
+      .filter(Boolean)
+      .map((child) => (child as HTMLElement).dataset.tab!),
+  );
   const activeTabI = atom(0);
   const activeTabContent = createMemo(() => children.toArray()[activeTabI()]);
   createEffect(() => {

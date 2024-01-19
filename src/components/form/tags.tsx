@@ -1,9 +1,10 @@
 import { Component, For, JSX, splitProps } from 'solid-js';
 import { mdiCloseCircle } from '@mdi/js';
 
-import { Atom } from '@/services/reactive';
+import { Atom, atom } from '@/services/reactive';
 import Icon from '../icon';
 import Button from './button';
+import Input from './input';
 
 import s from './tags.module.scss';
 
@@ -14,7 +15,11 @@ const Tags: Component<
     onChange?: (data: string[]) => unknown;
   }
 > = (properties) => {
+  // === State ===
   const [props, attributes] = splitProps(properties, ['value', 'placeholder', 'onChange']);
+  const inputValue = atom('');
+
+  // === Functions ===
   function onInputChange(e: Event) {
     const target = e.target as HTMLInputElement;
     const val = target.value;
@@ -40,7 +45,7 @@ const Tags: Component<
           </Button>
         )}
       </For>
-      <input onChange={onInputChange} placeholder={props.placeholder} type='text' />
+      <Input value={inputValue} onChange={onInputChange} placeholder={props.placeholder} type='text' />
     </div>
   );
 };

@@ -1,30 +1,45 @@
 @use '@/vars' as *;
 
 .subjects-component {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+
   .search {
     display: flex;
-    width: 100%;
-    height: fit-content;
+    min-height: 64px;
+    max-height: 64px;
   }
 
-  .result {
-    @include hover;
+  .results {
+    overflow: auto;
 
-    min-width: 128px;
-    max-height: 128px;
-    text-decoration: none;
-  }
+    table {
+      width: 100%;
+      margin-bottom: 24px;
+      border-collapse: collapse;
 
-  .title {
-    height: 50%;
+      tr {
+        &:nth-of-type(even) {
+          background-color: $color-background;
+        }
 
-    img {
-      height: 1em;
+        td {
+          text-align: center;
+
+          a {
+            text-decoration: none;
+          }
+        }
+      }
     }
   }
 
-  .error {
-    width: 100%;
-    text-align: center;
+  .pager {
+    display: flex;
+    justify-content: center;
+    font-size: 32px;
   }
 }

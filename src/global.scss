@@ -8,6 +8,11 @@
   font-family: inherit;
 }
 
+html {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   height: 100vh;
   height: 100dvh;
@@ -15,7 +20,6 @@ body {
   background: $color-background;
   color: $color-text;
   font-family: 'Segoe UI', tahoma, geneva, verdana, sans-serif;
-  overscroll-behavior-y: contain;
 }
 
 /* stylelint-disable-next-line selector-max-id */

@@ -1,0 +1,49 @@
+@use '@/vars' as *;
+
+.themes {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  min-width: calc(100% - 96px);
+  min-height: 64px;
+  max-height: 64px;
+
+  .theme {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    overflow: hidden;
+    height: 100%;
+    margin: 0 4px;
+    border: border();
+    border-radius: 8px;
+    transition: opacity $transition-time;
+
+    button {
+      display: flex;
+      align-items: center;
+      width: fit-content;
+      height: 100%;
+      padding: 0 4px;
+      background-color: transparent;
+      font-weight: bold;
+      white-space: nowrap;
+
+      &:nth-child(2) {
+        border-left: border();
+      }
+
+      &:hover {
+        background-color: rgb(255 255 255 / 20%);
+      }
+    }
+
+    &.added {
+      background-color: $color-main;
+    }
+
+    &.loading {
+      opacity: 0.5;
+    }
+  }
+}

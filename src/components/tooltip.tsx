@@ -1,9 +1,10 @@
-import { atom, onOutside } from '@/services/reactive';
 import { JSX, ParentComponent, Show, children, createEffect, onCleanup } from 'solid-js';
+import { Transition } from 'solid-transition-group';
+
+import { opacityTransitionImmediate } from '@/services/transition';
+import { atom, onOutside } from '@/services/reactive';
 
 import s from './tooltip.module.scss';
-import { Transition } from 'solid-transition-group';
-import { opacityTransitionImmediate } from '@/services/transition';
 
 onOutside;
 

@@ -1,45 +1,51 @@
-import { A } from '@solidjs/router';
-import { mdiTranslate } from '@mdi/js';
-import { createEffect, createMemo, For, Show } from 'solid-js';
+import { mdiChevronLeft, mdiChevronRight, mdiTranslate } from '@mdi/js';
+import { createEffect, createMemo, createResource, For, Show } from 'solid-js';
+import { createScheduled, debounce } from '@solid-primitives/scheduled';
 
-import { atom, useTimeout } from '@/services/reactive';
+import { atom, debugReactive } from '@/services/reactive';
 import Icon from '@/components/icon';
-import Loading from '@/components/loading/loading';
 import Input from '@/components/form/input';
 import Button from '@/components/form/button';
 
 import { SearchSubject, useStudy } from '../services/study.context';
+import Themes from '../components/themes';
 import parseHTML from '../services/parseHTML';
 
 import s from './subjects.module.scss';
+import SubjectRef from '../components/subject-ref';
 
 export default function Subjects() {
   document.title = 'Sky | Subjects';
   // === Stores ===
-  const { turnedOnThemes, searchSubjects, getAllSubjects } = useStudy()!;
+  const { turnedOnThemes, searchSubjects } = useStudy()!;
 
   // === State ===
   const query = atom('');
   const isJapanese = atom(false);
-  const results = atom<SearchSubject[]>();
-  let timeout: number;
+  const page = atom(1);
   // === Memos ===
   const themeIds = createMemo(() => turnedOnThemes().map((t) => t.id));
+  const queryScheduler = createScheduled((fn) => debounce(fn, 400));
+  const scheduledQuery = createMemo<string>((last) => (!queryScheduler() ? last : query()), '');
+  const [results] = createResource<SearchSubject[], [string, number[], number]>(
+    () => [scheduledQuery(), themeIds(), page()] as const,
+    ([query, themeIds, page], info) => (themeIds.length ? searchSubjects(themeIds, query, page) : info.value ?? []),
+  );
   // === Effects ===
   createEffect(() => {
-    const $themeIds = themeIds();
-    const $search = query();
-    clearTimeout(timeout);
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    timeout = useTimeout(1000, async () => {
-      results(undefined);
-      if ($themeIds.length === 0) return;
-      if ($search) results(await searchSubjects(themeIds(), query()));
-      else results(await getAllSubjects(themeIds()));
-    });
+    scheduledQuery();
+    themeIds();
+    page(1);
+  });
+
+  debugReactive({
+    query,
+    queryScheduler,
+    scheduledQuery,
   });
   return (
-    <div class={`${s.subjectsComponent} card-container`}>
+    <div class={s.subjectsComponent}>
+      <Themes />
       <div class={`card ${s.search}`}>
         <Show when={isJapanese()} fallback={<Input value={query} placeholder='Search...' />}>
           <Input japanese value={query} placeholder='検索' />
@@ -53,18 +59,46 @@ export default function Subjects() {
           <Icon path={mdiTranslate} size='32' />
         </Button>
       </div>
-      <Loading when={results()}>
-        <Show when={results()?.length} fallback={<div class={s.error}>Nothing found</div>}>
-          <For each={results()}>
-            {(subject) => (
-              <A href={`./${subject.id}`} class={`card ${s.result}`}>
-                <div class={s.title}>{parseHTML(subject.title, 0)}</div>
-                <div>{subject.answers.join(', ')}</div>
-              </A>
-            )}
-          </For>
-        </Show>
-      </Loading>
+      <div class={`card ${s.results}`}>
+        <table>
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Answers</th>
+              <th>Stage</th>
+              <th>Synonyms</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <For each={results()}>
+              {(subject) => (
+                <tr>
+                  <td>
+                    <SubjectRef id={subject.id}>{parseHTML(subject.title)}</SubjectRef>
+                  </td>
+                  <td>{subject.answers.replaceAll(',', ', ').replaceAll('|', ', ')}</td>
+                  <td>{subject.stage}</td>
+                  <td>{subject.synonyms}</td>
+                  <td>{subject.note}</td>
+                </tr>
+              )}
+            </For>
+          </tbody>
+        </table>
+        <div class={s.pager}>
+          <Button disabled={results.loading || !results() || page() === 1} onClick={() => page((x) => x - 1)}>
+            <Icon path={mdiChevronLeft} size='32' />
+          </Button>
+          {page()}
+          <Button
+            disabled={results.loading || !results() || results()!.length < 100}
+            onClick={() => page((x) => x + 1)}
+          >
+            <Icon path={mdiChevronRight} size='32' />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

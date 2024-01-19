@@ -136,7 +136,6 @@ export function resizeTextToFit(element: HTMLElement, accessor: () => [number, .
   onMounted(element, () => () => mounted(true));
   createRenderEffect(() => {
     let [fontSize] = accessor();
-    console.log(mounted(), element.clientHeight, element.scrollHeight);
     if (!mounted()) return;
     setTimeout(() => {
       do {

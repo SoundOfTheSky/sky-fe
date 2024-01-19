@@ -1,22 +1,22 @@
 import { useParams } from '@solidjs/router';
-import { batch, createEffect, createMemo, createResource, For, Show } from 'solid-js';
+import { batch, Component, createEffect, createMemo, createResource, For, Show } from 'solid-js';
 
 import basicStore from '@/services/basic.store';
 import { atom, resizeTextToFit } from '@/services/reactive';
 import Skeleton from '@/components/loading/skeleton';
-
-import parseHTML from '../services/parseHTML';
-import { useStudy } from '../services/study.context';
-
-import s from './subject.module.scss';
 import Loading from '@/components/loading/loading';
-import Tabs from '../components/tabs';
 import Tags from '@/components/form/tags';
 import Input from '@/components/form/input';
 
+import parseHTML from '../services/parseHTML';
+import { useStudy } from '../services/study.context';
+import Tabs from '../components/tabs';
+
+import s from './subject.module.scss';
+
 resizeTextToFit;
 
-export default function Subjects() {
+const Subject: Component<{ id?: number }> = (properties) => {
   // === Stores ===
   const { getQuestion, updateQuestion, getSubject, getSRS } = useStudy()!;
   const { getWord } = basicStore;
@@ -28,10 +28,8 @@ export default function Subjects() {
   const note = atom('');
 
   // === Memos ===
-  const [subject] = createResource(
-    () => +params.id,
-    (id) => getSubject(id),
-  );
+  const subjectId = createMemo(() => properties.id ?? +params.id);
+  const [subject] = createResource(subjectId, (id) => getSubject(id));
   const [question] = createResource(
     () => subject()?.questionIds[questionI()],
     (id) => getQuestion(id),
@@ -125,10 +123,12 @@ export default function Subjects() {
             <Show
               when={!question()!.question.includes(subject()!.title) && !question()!.answers.includes(subject()!.title)}
             >
-              <b>{subject()!.title}</b>
-              <br />
+              <div>
+                <b>{subject()!.title}</b>
+              </div>
             </Show>
-            <div>{parseHTML(question()!.question, 0)}</div>
+            <div>{parseHTML(question()!.question)}</div>
+            <div>{question()!.answers.join(', ')}</div>
           </div>
         </Skeleton>
         <div class={s.story}>
@@ -147,28 +147,32 @@ export default function Subjects() {
       <div class={`card ${s.description}`}>
         <Loading when={questionDescription()}>
           <Tabs>
-            {parseHTML(questionDescription()!, 0)}
-            <div data-tab='Notes & Synonyms'>
-              Synonyms:
-              <br />
-              <Tags
-                value={synonyms}
-                placeholder='Your synonyms will count as correct answers'
-                onChange={sendQuestionDataToServer}
-              />
-              <br />
-              Note:
-              <br />
-              <Input
-                value={note}
-                multiline
-                placeholder='Add your note to this question'
-                onChange={sendQuestionDataToServer}
-              />
-            </div>
+            {parseHTML(questionDescription()!)}
+            <Show when={subject()!.stage !== null}>
+              <div data-tab='Notes & Synonyms'>
+                Synonyms:
+                <br />
+                <Tags
+                  value={synonyms}
+                  placeholder='Your synonyms will count as correct answers'
+                  onChange={sendQuestionDataToServer}
+                />
+                <br />
+                Note:
+                <br />
+                <Input
+                  value={note}
+                  multiline
+                  placeholder='Add your note to this question'
+                  onChange={sendQuestionDataToServer}
+                />
+              </div>
+            </Show>
           </Tabs>
         </Loading>
       </div>
     </div>
   );
-}
+};
+
+export default Subject;

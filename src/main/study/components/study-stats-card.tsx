@@ -101,9 +101,7 @@ const StudyStatsCard: Component = () => {
               <div
                 class={s.days}
                 style={{
-                  'min-width': `${
-                    Math.ceil((((month.days[0]!.date.getDay() + 6) % 7) + month.days.length) / 7) * 22
-                  }px`,
+                  'min-width': `${Math.ceil((((month.days[0].date.getDay() + 6) % 7) + month.days.length) / 7) * 22}px`,
                 }}
               >
                 <For each={month.days}>

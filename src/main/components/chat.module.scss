@@ -29,7 +29,7 @@
   .messages {
     display: flex;
     flex-direction: column-reverse;
-    overflow-y: scroll;
+    overflow-y: auto;
     height: 100%;
 
     .message {
