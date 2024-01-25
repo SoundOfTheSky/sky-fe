@@ -1,6 +1,10 @@
 @use '@/vars' as *;
 
-.review-stats-card-component {
+$size: 32px;
+$margin: 2px;
+$offset: $size + $margin;
+
+.study-stats-card {
   position: relative;
   display: flex;
   overflow: auto;
@@ -13,12 +17,12 @@
     top: 0;
     left: 0;
     z-index: 1;
-    padding: 20px 0 20px 16px;
+    padding: $size 0 $size 16px;
     background: $color-content-background;
 
     div {
-      width: 20px;
-      height: 20px;
+      width: $size;
+      height: $size;
       margin: 0 2px 2px 0;
     }
   }
@@ -34,13 +38,21 @@
     .days {
       display: flex;
       flex-flow: column wrap;
-      height: 156px;
+      min-width: $offset * 5;
+      height: $offset * 7;
+
+      .day-info {
+        padding: 8px;
+        border-radius: 8px;
+        background-color: $color-background;
+      }
 
       .day {
         position: relative;
-        width: 20px;
-        height: 20px;
-        margin: 0 2px 2px 0;
+        width: $size;
+        height: $size;
+        margin: 0 $margin $margin 0;
+        margin-top: calc(var(--day) * $offset);
         padding: 0;
         background-color: $color-border;
 
@@ -60,14 +72,6 @@
 
         &.future .brightness {
           background-color: $color-main;
-        }
-
-        .day-info {
-          position: absolute;
-          z-index: 2;
-          padding: 8px;
-          border-radius: 8px;
-          background-color: $color-background;
         }
       }
     }

@@ -63,10 +63,9 @@ export type SRS = {
   updated: string;
 };
 export type Stat = {
-  id: number;
   date: Date;
-  correct: boolean;
   themeId: number;
+  count: number;
 };
 
 function getProvided() {
@@ -108,18 +107,20 @@ function getProvided() {
   });
 
   // === API ===
-  const getStats = async (start: Date, end: Date, options?: SimpleRequestOptions): Promise<Stat[]> => {
-    const res = await request<string>(`${statsEndpoint}?start=${start.getTime()}&end=${end.getTime()}`, options);
-    return res.split('\n').map((line) => {
-      const [date, id, correct, themeId] = line.split(',') as [string, string, string, string];
-      return {
-        id: +id,
-        date: new Date(+date),
-        correct: correct === '1',
-        themeId: +themeId,
-      };
-    });
-  };
+  async function getStats(start: Date, end: Date, options?: SimpleRequestOptions) {
+    const res = await request<string>(
+      `${statsEndpoint}?start=${start.getTime()}&end=${end.getTime()}&timezone=${new Date().getTimezoneOffset() * 60}`,
+      options,
+    );
+    const stats = new Map<number, [number, number][]>();
+    for (const line of res.split('\n')) {
+      const [date, themeId, count] = line.split(',').map((x) => Number.parseInt(x)) as [number, number, number];
+      const x = stats.get(date);
+      if (x) x.push([themeId, count]);
+      else stats.set(date, [[themeId, count]]);
+    }
+    return stats;
+  }
   const addTheme = async (id: number) =>
     request(`${themesEndpoint}/${id}`, {
       method: 'POST',

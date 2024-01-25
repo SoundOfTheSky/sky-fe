@@ -38,8 +38,8 @@ export default (() => {
     async () => `${A}I CAN USE EMOJIS!?${B}@🐋___💨${A}@Nice 🗿${C}`,
     async () => `${A}c===3 BENIS XD${C}`,
     async () => `${A}Mining bitcoin.___.___.___${B}@JK${C}`,
-    async () => `${A}Have you tried${B}@konami code?${C}`,
-    async () => `${A}Plase be nice${B}@or not${B}@I'm not your pops${C}`,
+    // async () => `${A}Have you tried${B}@konami code?${C}`,
+    async () => `${A}Plase be nice${B}@or not${B}@I'm not your dad${C}`,
     async () => `${A}ඞ___ඞ___ඞ___ඞ___ඞ___ඞ___ඞ___ඞ___ඞ___ඞ___ඞ___ඞ${C}`,
     async () => `${A}Do you accept 🍪?${B}@YAS PLEASE!${B}@GIMME COOKIES!${C}`,
   ];

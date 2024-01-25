@@ -1,5 +1,5 @@
 import { Route } from '@solidjs/router';
-import { lazy } from 'solid-js';
+import { Component, lazy } from 'solid-js';
 
 import SessionRoutes from './session/routes';
 
@@ -13,7 +13,7 @@ export default () => {
     <Route path='/study' component={Layout}>
       <Route path='/' component={Main} />
       <Route path='/subjects' component={Subjects} />
-      <Route path='/subjects/:id' component={Subject} />
+      <Route path='/subjects/:id' component={Subject as Component} />
       <SessionRoutes />
     </Route>
   );

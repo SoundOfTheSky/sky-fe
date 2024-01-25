@@ -11,10 +11,12 @@ import Auth from '@/components/auth';
 import Input from '@/components/form/input';
 import Toggle from '@/components/form/toggle';
 import Button from '@/components/form/button';
+import Tooltip from '@/components/tooltip';
 
 import s from './profile.module.scss';
 
 export default (() => {
+  // === State ===
   let avatarElement: HTMLImageElement;
   const avatar = atomize(createWritableMemo(() => AuthStore.user()?.avatar ?? ''));
   const imageURL = atomize(createWritableMemo(() => avatar()));
@@ -22,6 +24,7 @@ export default (() => {
   const fontPixelization = persistentAtom('fontPixelization', true);
   const JPFontPixelization = persistentAtom('JPFontPixelization', true);
 
+  // === Functions ===
   async function userDataChange() {
     if (!avatarElement.complete || avatarElement.naturalHeight === 0) {
       BasicStore.notify({
@@ -39,6 +42,15 @@ export default (() => {
     } catch (error) {
       handleError(error);
     }
+  }
+  async function genRegTokenAndCopy() {
+    const token = await AuthStore.getRegLink();
+    await navigator.clipboard.writeText(document.location.origin + '/reg/' + token);
+    BasicStore.notify({
+      title: 'Link copied to clipboard!',
+      type: NotificationType.Success,
+      timeout: 5000,
+    });
   }
 
   return (
@@ -58,14 +70,19 @@ export default (() => {
             <div>Avatar URL:</div>
             <Input value={avatar} placeholder='URL' onChange={userDataChange} />
           </div>
+          <div class={s.field}>
+            <Tooltip content='Generate link to add new authentication method. For example on another device.'>
+              <Button onClick={genRegTokenAndCopy}>Generate authentication link</Button>
+            </Tooltip>
+          </div>
         </div>
         <div class={`card ${s.settings}`}>
           <div class='card-title'>Settings</div>
           <div class={s.field}>
-            <Toggle value={fontPixelization} label='Font pixelization' />
+            <Toggle value={fontPixelization} label='Pixel font' />
           </div>
           <div class={s.field}>
-            <Toggle value={JPFontPixelization} label='日本語 font pixelization' />
+            <Toggle value={JPFontPixelization} label='ピクセルフォント' />
           </div>
         </div>
         <Button class={`card ${s.logout}`} onClick={() => AuthStore.logout()}>

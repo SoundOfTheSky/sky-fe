@@ -2,7 +2,7 @@ import { JSX, ParentComponent, Show, children, createEffect, onCleanup } from 's
 import { Transition } from 'solid-transition-group';
 
 import { opacityTransitionImmediate } from '@/services/transition';
-import { atom, onOutside } from '@/services/reactive';
+import { atom, onOutside, useTimeout } from '@/services/reactive';
 
 import s from './tooltip.module.scss';
 
@@ -13,10 +13,12 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
   onCleanup(() => {
     clean(c() as HTMLElement);
   });
+
   // === State ===
   const isOpen = atom(false);
   const c = children(() => properties.children);
   const pos = atom({ x: 0, y: 0, top: true });
+  let timeout: number;
 
   // === Effects ===
   createEffect<HTMLElement>((old) => {
@@ -25,18 +27,22 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
     c$.addEventListener('click', open);
     c$.addEventListener('mouseenter', open);
     c$.addEventListener('mouseleave', close);
-    const box = c$.getBoundingClientRect();
-    const top = (box.y + box.height) * 2 > window.innerHeight;
-    pos({ x: box.x + box.width / 2, y: top ? box.y - 8 : box.y + box.height + 8, top });
     return c$;
   });
+
   // === Functions ===
   function open() {
-    setTimeout(() => {
+    timeout = useTimeout(500, () => {
+      const c$ = c() as HTMLElement;
+      if (!c$) return;
+      const box = c$.getBoundingClientRect();
+      const top = (box.y + box.height) * 2 > window.innerHeight;
+      pos({ x: box.x + box.width / 2, y: top ? box.y - 8 : box.y + box.height + 8, top });
       isOpen(true);
     });
   }
   function close() {
+    clearTimeout(timeout);
     isOpen(false);
   }
   function clean(item: HTMLElement) {

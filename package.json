@@ -4,25 +4,25 @@
     "start": "vite --host",
     "build": "vite build",
     "serve": "vite preview --port 5173",
-    "lint": "stylelint \"src/**/*.{css,scss,sass}\" --fix && eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix"
+    "lint": "stylelint \"src/**/*.{css,scss,sass}\" --fix && eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix && tsc"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
-    "@simplewebauthn/browser": "^8.3.4",
+    "@simplewebauthn/browser": "^9.0.0",
     "@solid-primitives/map": "^0.4.9",
     "@solid-primitives/memo": "^1.3.6",
     "@solid-primitives/scheduled": "^1.4.2",
     "@solidjs/meta": "^0.29.3",
-    "@solidjs/router": "^0.10.9",
-    "solid-js": "^1.8.11",
+    "@solidjs/router": "^0.10.10",
+    "solid-js": "^1.8.12",
     "solid-transition-group": "^0.2.3",
     "wanakana": "^5.3.1"
   },
   "devDependencies": {
-    "@simplewebauthn/typescript-types": "^8.3.4",
+    "@simplewebauthn/types": "^9.0.0",
     "@types/wanakana": "^4.0.6",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
@@ -43,12 +43,12 @@
     "stylelint-high-performance-animation": "^1.10.0",
     "stylelint-order": "^6.0.4",
     "stylelint-prettier": "^5.0.0",
-    "stylelint-scss": "^6.0.0",
+    "stylelint-scss": "^6.1.0",
     "ts-css-modules-vite-plugin": "^1.0.20",
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
     "vite-plugin-compression2": "^0.11.0",
     "vite-plugin-pwa": "^0.17.4",
-    "vite-plugin-solid": "2.8.0"
+    "vite-plugin-solid": "2.9.1"
   }
 }

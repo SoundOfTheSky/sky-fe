@@ -11,6 +11,7 @@ import Button from '@/components/form/button';
 
 import { useStudy } from '../services/study.context';
 import Themes from '../components/themes';
+import StudyStatsCard from '../components/study-stats-card';
 
 import s from './study.module.scss';
 
@@ -205,6 +206,7 @@ export default function StudyTab() {
         </Button>
       </A>
       <IncomingReviewsCard />
+      <StudyStatsCard />
     </div>
   );
 }

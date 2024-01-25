@@ -1,5 +1,7 @@
 import { For, Component } from 'solid-js';
 
+import Tooltip from '@/components/tooltip';
+
 import s from './about.module.scss';
 
 export default (() => {
@@ -55,7 +57,11 @@ export default (() => {
               <td>
                 <div class={s.icons}>
                   <For each={TECH_ICONS}>
-                    {([name, path]) => <img alt={name} title={name} src={`/tech-icons/${path}.webp`} />}
+                    {([name, path]) => (
+                      <Tooltip content={name}>
+                        <img alt={name} title={name} src={`/tech-icons/${path}.webp`} />
+                      </Tooltip>
+                    )}
                   </For>
                 </div>
               </td>
@@ -66,21 +72,29 @@ export default (() => {
               </td>
               <td>
                 <div class={s.icons}>
-                  <a href='https://www.linkedin.com/in/SoundOfTheSky/' target='_blank'>
-                    <img alt='LinkedIn' title='LinkedIn' src='/tech-icons/linkedin.webp' />
-                  </a>
-                  <a href='https://t.me/RocketPharah' target='_blank'>
-                    <img alt='Telegram' title='Telegram' src='/tech-icons/telegram.webp' />
-                  </a>
-                  <a
-                    href="mailto:tkachiov.2000@gmail.com?subject=Website&body=Hi! I've seen your website and..."
-                    target='_blank'
-                  >
-                    <img alt='Email' title='Email' src='/tech-icons/email.webp' />
-                  </a>
-                  <a href='tel:89887083181' target='_blank'>
-                    <img alt='Telehone number' title='Telehone number' src='/tech-icons/telephone.webp' />
-                  </a>
+                  <Tooltip content='LinkedIn'>
+                    <a href='https://www.linkedin.com/in/SoundOfTheSky/' target='_blank'>
+                      <img alt='LinkedIn' title='LinkedIn' src='/tech-icons/linkedin.webp' />
+                    </a>
+                  </Tooltip>
+                  <Tooltip content='Telegram'>
+                    <a href='https://t.me/RocketPharah' target='_blank'>
+                      <img alt='Telegram' title='Telegram' src='/tech-icons/telegram.webp' />
+                    </a>
+                  </Tooltip>
+                  <Tooltip content='Email'>
+                    <a
+                      href="mailto:tkachiov.2000@gmail.com?subject=Website&body=Hi! I've seen your website and..."
+                      target='_blank'
+                    >
+                      <img alt='Email' title='Email' src='/tech-icons/email.webp' />
+                    </a>
+                  </Tooltip>
+                  <Tooltip content='Phone'>
+                    <a href='tel:89887083181' target='_blank'>
+                      <img alt='Telehone number' title='Telehone number' src='/tech-icons/telephone.webp' />
+                    </a>
+                  </Tooltip>
                 </div>
               </td>
             </tr>

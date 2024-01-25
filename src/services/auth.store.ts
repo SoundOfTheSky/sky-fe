@@ -2,7 +2,7 @@ import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
-} from '@simplewebauthn/typescript-types';
+} from '@simplewebauthn/types';
 import { createRoot } from 'solid-js';
 
 import { atom, useInterval } from './reactive';
@@ -31,7 +31,7 @@ export default createRoot(() => {
       basicStore.online(true);
     });
   });
-  useInterval(3600000, () => updateCurrentUser());
+  useInterval(3600000, updateCurrentUser);
   // === Functions ===
   async function updateCurrentUser() {
     loading(true);
@@ -95,6 +95,9 @@ export default createRoot(() => {
       }),
     );
   }
+  async function getRegLink() {
+    return request<string>('/api/auth/reg-link');
+  }
 
   void updateCurrentUser();
   return {
@@ -106,5 +109,6 @@ export default createRoot(() => {
     logout,
     loading,
     updateData,
+    getRegLink,
   };
 });
