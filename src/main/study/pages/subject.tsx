@@ -128,7 +128,9 @@ const Subject: Component<{ id?: number }> = (properties) => {
               </div>
             </Show>
             <div>{parseHTML(question()!.question)}</div>
-            <div>{question()!.answers.join(', ')}</div>
+            <Show when={!question()!.choose}>
+              <div>{question()!.answers.join(', ')}</div>
+            </Show>
           </div>
         </Skeleton>
         <div class={s.story}>

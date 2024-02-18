@@ -146,6 +146,16 @@ function getProvided() {
       useCache: cache,
     }),
   );
+  /** Answers for current question */
+  const answers = createMemo(() => {
+    const $question = question();
+    if (!$question) return [];
+    if ($question.choose) {
+      if ($question.answers[0] === 'Correct') return [];
+      return [$question.answers[0], ...($question.synonyms ?? [])];
+    }
+    return [...$question.answers, ...($question.synonyms ?? [])];
+  });
   /** Is answers to question in japanese */
   const isJapanese = createMemo(() => (question() ? wkIsJapanese(question()!.answers[0]) : false));
   /** Current question description */
@@ -250,15 +260,16 @@ function getProvided() {
   function onQuestionChange() {
     const $question = question();
     if (!$question) return;
-    const $subjectStats = untrack(subjectStats);
-    batch(() => {
-      previousState(undefined);
-      answer('');
-      note($question.note ?? '');
-      synonyms($question.synonyms ?? []);
-      hint($subjectStats?.status === StatusCode.Unlearned ? $question.answers.join(', ') : '');
-      clearTimeout(untrack(cooldownUndo));
-      cooldownUndo(undefined);
+    untrack(() => {
+      batch(() => {
+        previousState(undefined);
+        answer('');
+        note($question.note ?? '');
+        synonyms($question.synonyms ?? []);
+        hint(subjectStats()?.status === StatusCode.Unlearned ? answers().join(', ') : '');
+        clearTimeout(cooldownUndo());
+        cooldownUndo(undefined);
+      });
     });
   }
   /** Shuffle subjects. Only shuffles lessons and reviews after current batch */
@@ -348,17 +359,18 @@ function getProvided() {
   function commitAnswer(q: Question, a: string) {
     untrack(() => {
       batch(() => {
-        if ([...q.answers, ...(q.synonyms ?? [])].some((qa) => qa.toLowerCase() === a)) {
+        const $answers = answers();
+        if ($answers.length === 0 ? a === 'correct' : answers().some((qa) => qa.toLowerCase() === a)) {
           updateQuestionStatus(
             lessonsMode() || questionStatus() === StatusCode.Unanswered
               ? StatusCode.Correct
               : StatusCode.CorrectAfterWrong,
           );
-          hint(q.answers.join(', '));
+          hint($answers.join(', '));
         } else if (q.alternateAnswers && a in q.alternateAnswers) hint(q.alternateAnswers[answer()]);
         else {
           updateQuestionStatus(StatusCode.Wrong);
-          hint(q.answers.join(', '));
+          hint($answers.join(', '));
           cooldownUndo(useTimeout(20_000, () => cooldownUndo(undefined)));
           cooldownNext(useTimeout(2000, () => cooldownNext(undefined)));
         }
@@ -545,6 +557,7 @@ function getProvided() {
     cache,
     startTime,
     subjectsStats,
+    answers,
   };
 }
 

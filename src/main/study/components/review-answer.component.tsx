@@ -1,4 +1,4 @@
-import { Show, createEffect } from 'solid-js';
+import { For, Match, Switch, createEffect, createMemo } from 'solid-js';
 import {
   mdiArrowRightBold,
   mdiCheckBold,
@@ -40,8 +40,13 @@ export default function ReviewAnswer() {
     autoplayAudio,
     cooldownUndo,
     undo,
+    question,
+    answers,
   } = useReview()!;
-
+  // === Memos ===
+  const inputDisabled = createMemo(
+    () => isLoading() || !!previousState() || subjectStats()?.status === StatusCode.Unlearned,
+  );
   // === Functions ===
   function onKeyPress(event: KeyboardEvent) {
     if (
@@ -67,14 +72,13 @@ export default function ReviewAnswer() {
 
   return (
     <div class={`card ${s.answer}`}>
-      <Show
-        when={isJapanese()}
+      <Switch
         fallback={
           <Input
             placeholder='Answer'
             value={answer}
             type='text'
-            disabled={isLoading() || !!previousState() || subjectStats()?.status === StatusCode.Unlearned}
+            disabled={inputDisabled()}
             success={
               previousState() &&
               (questionStatus() === StatusCode.Correct || questionStatus() === StatusCode.CorrectAfterWrong)
@@ -84,20 +88,40 @@ export default function ReviewAnswer() {
           />
         }
       >
-        <Input
-          japanese
-          placeholder='答え'
-          value={answer}
-          type='text'
-          disabled={isLoading() || !!previousState() || subjectStats()?.status === StatusCode.Unlearned}
-          success={
-            previousState() &&
-            (questionStatus() === StatusCode.Correct || questionStatus() === StatusCode.CorrectAfterWrong)
-          }
-          error={previousState() && questionStatus() === StatusCode.Wrong}
-          ref={(element) => answerInputElement(element)}
-        />
-      </Show>
+        <Match when={question()?.choose}>
+          <div class={s.answerButtons}>
+            <For each={answers().length === 0 ? ['Correct', 'Wrong'] : answers()}>
+              {(x) => (
+                <Button
+                  disabled={inputDisabled()}
+                  onClick={() => {
+                    answer(x);
+                    submit();
+                  }}
+                >
+                  {x}
+                </Button>
+              )}
+            </For>
+          </div>
+        </Match>
+        <Match when={isJapanese()}>
+          <Input
+            japanese
+            placeholder='答え'
+            value={answer}
+            type='text'
+            disabled={inputDisabled()}
+            success={
+              previousState() &&
+              (questionStatus() === StatusCode.Correct || questionStatus() === StatusCode.CorrectAfterWrong)
+            }
+            error={previousState() && questionStatus() === StatusCode.Wrong}
+            ref={(element) => answerInputElement(element)}
+          />
+        </Match>
+      </Switch>
+
       <div class={s.buttons}>
         <Tooltip
           content={`${
@@ -120,7 +144,7 @@ export default function ReviewAnswer() {
         <Tooltip content={questionAnswered() ? 'Next question' : 'Submit answer'}>
           <Button
             onClick={submit}
-            disabled={isLoading() || cooldownNext() !== undefined}
+            disabled={isLoading() || cooldownNext() !== undefined || (question()?.choose && !questionAnswered())}
             classList={{ [s.cooldownNext]: cooldownNext() !== undefined }}
           >
             <Icon path={questionAnswered() ? mdiArrowRightBold : mdiCheckBold} size='32' inline />

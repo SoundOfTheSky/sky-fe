@@ -38,7 +38,7 @@ export type Question = {
   descriptionWordId: number;
   subjectId: number;
   alternateAnswers?: Record<string, string>;
-  choose?: number;
+  choose?: boolean;
   note?: string;
   synonyms?: string[];
 };
