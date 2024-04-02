@@ -1,14 +1,14 @@
-import { ParentComponent, Show } from 'solid-js';
 import { mdiFingerprint } from '@mdi/js';
 import { A } from '@solidjs/router';
+import { ParentComponent, Show } from 'solid-js';
 
-import AuthStore from '@/services/auth.store';
 import Icon from '@/components/icon';
-import Loading from '@/components/loading/loading';
-import { atom, persistentAtom, useGlobalEvent } from '@/services/reactive';
+import AuthStore from '@/services/auth.store';
 import { RequestError, handleError } from '@/services/fetch';
-import Input from './form/input';
+import { atom, persistentAtom, useGlobalEvent } from '@/services/reactive';
+
 import Button from './form/button';
+import Input from './form/input';
 
 import s from './auth.module.scss';
 
@@ -34,35 +34,33 @@ export default ((properties) => {
   }
 
   useGlobalEvent('keypress', (event) => {
-    if (AuthStore.user()) return;
+    if (AuthStore.me() || AuthStore.loading()) return;
     if (event.code === 'Enter') void login(username());
   });
 
   return (
-    <Loading when={!AuthStore.loading()}>
-      <Show
-        when={AuthStore.user()}
-        fallback={
-          <div class={s.authComponent}>
-            <div class={s.card}>
-              <div class={s.webauthn}>
-                <div class={s.welcome}>What is your name?</div>
-                <div class={s.userLine}>
-                  <Input value={username} name='username' placeholder='Username' autocomplete='on' autofocus />
-                  <Button onClick={() => void login(username())} disabled={sendingCredentials()}>
-                    <Icon path={mdiFingerprint} size='48' inline />
-                  </Button>
-                </div>
+    <Show
+      when={AuthStore.me()}
+      fallback={
+        <div class={s.authComponent}>
+          <div class={s.card}>
+            <div class={s.webauthn}>
+              <div class={s.welcome}>Login to acess this page</div>
+              <div class={s.userLine}>
+                <Input value={username} name='username' placeholder='Username' autocomplete='on' autofocus />
+                <Button onClick={() => void login(username())} disabled={sendingCredentials()}>
+                  <Icon path={mdiFingerprint} size='48' inline />
+                </Button>
               </div>
-              <A class={s.navigate} href='/'>
-                Home
-              </A>
             </div>
+            <A class={s.navigate} href='/'>
+              Home
+            </A>
           </div>
-        }
-      >
-        {properties.children}
-      </Show>
-    </Loading>
+        </div>
+      }
+    >
+      {properties.children}
+    </Show>
   );
 }) as ParentComponent;

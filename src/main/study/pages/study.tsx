@@ -1,17 +1,18 @@
-import { Show } from 'solid-js';
-import { A } from '@solidjs/router';
 import { mdiBookOpenPageVariant, mdiCog, mdiCogOff } from '@mdi/js';
-import { createWritableMemo } from '@solid-primitives/memo';
+import { A } from '@solidjs/router';
+import { Show, createEffect } from 'solid-js';
 
-import Icon from '@/components/icon';
-import IncomingReviewsCard from '@/main/study/components/incoming-reviews-card';
-import { atom, atomize, useInterval } from '@/services/reactive';
-import Skeleton from '@/components/loading/skeleton';
 import Button from '@/components/form/button';
+import Icon from '@/components/icon';
+import Skeleton from '@/components/loading/skeleton';
+import basicStore from '@/services/basic.store';
+import { atom } from '@/services/reactive';
 
-import { useStudy } from '../services/study.context';
+import StudyActivity from '../components/study-activity';
+import StudyIncomingReviews from '../components/study-incoming-reviews';
+import StudyStats from '../components/study-stats';
 import Themes from '../components/themes';
-import StudyStatsCard from '../components/study-stats-card';
+import { useStudy } from '../services/study.context';
 
 import s from './study.module.scss';
 
@@ -19,24 +20,26 @@ export default function StudyTab() {
   // === Hooks ===
   document.title = 'Sky | Study';
 
-  const { updateAllIfOutdated, availableLessons, availableReviews, themesData, settings } = useStudy()!;
-  useInterval(60_000, updateAllIfOutdated);
-  updateAllIfOutdated();
+  const { availableLessons, availableReviews, settings, offlineUnavailable, ready, update, outdated } = useStudy()!;
 
   // === State ===
   const showReviewsSettings = atom(false);
   const showLessonsSettings = atom(false);
 
-  // === Memos ===
-  const loadingThemes = atomize(createWritableMemo(() => !themesData()));
+  // === Effect ===
+  createEffect(() => {
+    if (outdated()) void update();
+  });
 
   return (
     <div class='card-container'>
       <div class={s.top}>
         <Themes />
-        <A href='./subjects' class={`card ${s.subjects}`} title='Subjects'>
-          <Icon path={mdiBookOpenPageVariant} size='32' />
-        </A>
+        <Show when={basicStore.online()}>
+          <A href='./subjects' class={`card ${s.subjects}`} title='Subjects'>
+            <Icon path={mdiBookOpenPageVariant} size='32' />
+          </A>
+        </Show>
       </div>
       <A class={`card ${s.special}`} href={showLessonsSettings() ? '' : './session/lessons'} draggable={false}>
         <Show
@@ -44,7 +47,7 @@ export default function StudyTab() {
           fallback={
             <>
               <h1>Lessons</h1>
-              <Skeleton loading={loadingThemes()} class={s.reviewsAmount}>
+              <Skeleton loading={!ready()} class={s.reviewsAmount} offline={offlineUnavailable()}>
                 <h2>{availableLessons().length}</h2>
               </Skeleton>
             </>
@@ -60,33 +63,10 @@ export default function StudyTab() {
               onInput={(e) =>
                 settings((x) => ({
                   reviews: x.reviews,
+                  disabledThemeIds: x.disabledThemeIds,
                   lessons: {
                     ...x.lessons,
                     amount: Number.parseInt((e.target as HTMLInputElement).value),
-                  },
-                }))
-              }
-            />
-          </div>
-          <div title='Preload N next lessons. Helps on slow connection.'>
-            <div>
-              Preload:{' '}
-              {settings().lessons.preload === 0
-                ? 'disabled'
-                : settings().lessons.preload === 50
-                  ? 'everything'
-                  : settings().lessons.preload}
-            </div>
-            <input
-              type='range'
-              max='50'
-              value={settings().lessons.preload}
-              onInput={(e) =>
-                settings((x) => ({
-                  reviews: x.reviews,
-                  lessons: {
-                    ...x.lessons,
-                    preload: Number.parseInt((e.target as HTMLInputElement).value),
                   },
                 }))
               }
@@ -102,6 +82,7 @@ export default function StudyTab() {
               onInput={(e) =>
                 settings((x) => ({
                   reviews: x.reviews,
+                  disabledThemeIds: x.disabledThemeIds,
                   lessons: {
                     ...x.lessons,
                     batch: Number.parseInt((e.target as HTMLInputElement).value),
@@ -128,7 +109,7 @@ export default function StudyTab() {
           fallback={
             <>
               <h1>Reviews</h1>
-              <Skeleton loading={loadingThemes()} class={s.reviewsAmount}>
+              <Skeleton loading={!ready()} class={s.reviewsAmount} offline={offlineUnavailable()}>
                 <h2>{availableReviews().length}</h2>
               </Skeleton>
             </>
@@ -144,33 +125,10 @@ export default function StudyTab() {
               onInput={(e) =>
                 settings((x) => ({
                   lessons: x.lessons,
+                  disabledThemeIds: x.disabledThemeIds,
                   reviews: {
                     ...x.reviews,
                     amount: Number.parseInt((e.target as HTMLInputElement).value),
-                  },
-                }))
-              }
-            />
-          </div>
-          <div title='Preload N next reviews. Helps on slow connection.'>
-            <div>
-              Preload:{' '}
-              {settings().reviews.preload === 0
-                ? 'disabled'
-                : settings().reviews.preload === 200
-                  ? 'everything'
-                  : settings().reviews.preload}
-            </div>
-            <input
-              type='range'
-              max='200'
-              value={settings().reviews.preload}
-              onInput={(e) =>
-                settings((x) => ({
-                  lessons: x.lessons,
-                  reviews: {
-                    ...x.reviews,
-                    preload: Number.parseInt((e.target as HTMLInputElement).value),
                   },
                 }))
               }
@@ -186,6 +144,7 @@ export default function StudyTab() {
               onInput={(e) =>
                 settings((x) => ({
                   lessons: x.lessons,
+                  disabledThemeIds: x.disabledThemeIds,
                   reviews: {
                     ...x.reviews,
                     batch: Number.parseInt((e.target as HTMLInputElement).value),
@@ -205,8 +164,9 @@ export default function StudyTab() {
           <Icon path={showReviewsSettings() ? mdiCogOff : mdiCog} size='24' />
         </Button>
       </A>
-      <IncomingReviewsCard />
-      <StudyStatsCard />
+      <StudyActivity />
+      <StudyIncomingReviews />
+      <StudyStats />
     </div>
   );
 }

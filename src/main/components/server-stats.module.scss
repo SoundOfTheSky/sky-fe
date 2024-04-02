@@ -1,28 +1,39 @@
 @use '@/vars' as *;
 
 .server-stats {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  .fields {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 160px;
 
-  .counter {
-    position: relative;
-    width: fit-content;
-    color: $color-border;
-    font-weight: bold;
-    font-size: 48px;
-    font-family: 'Digital-7', 'Segoe UI', tahoma, geneva, verdana, sans-serif;
+    .field {
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-    div:first-of-type {
-      position: absolute;
-      top: 0;
-      right: 0;
-      color: $color-main;
-      text-shadow: 0 0 16px $color-main;
-    }
+      .counter {
+        position: relative;
+        width: fit-content;
+        margin-left: 8px;
+        color: $color-border;
+        font-weight: bold;
+        font-size: 40px;
+        font-family: 'Digital-7', 'Segoe UI', tahoma, geneva, verdana, sans-serif;
+        line-height: 38px;
 
-    div:last-of-type {
-      user-select: none;
+        span:first-of-type {
+          position: absolute;
+          top: 0;
+          right: 0;
+          color: $color-main;
+          text-shadow: 0 0 16px $color-main;
+        }
+
+        span:last-of-type {
+          user-select: none;
+        }
+      }
     }
   }
 }

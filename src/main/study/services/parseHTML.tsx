@@ -1,8 +1,10 @@
+import { JSX } from 'solid-js';
+
 import Audio from '@/components/audio';
 import Img from '@/components/img';
 import IK from '@/main/study/components/ik';
 import JPPitchAccent from '@/main/study/components/jp-pitch-accent';
-import { JSX } from 'solid-js';
+
 import SubjectRef from '../components/subject-ref';
 
 export default function parseHTML(text: string, autoplayAudio = 0): JSX.Element[] {

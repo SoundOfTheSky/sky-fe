@@ -1,11 +1,13 @@
-import Loading from '@/components/loading/loading';
+import Input from '@/components/form/input';
 import Tags from '@/components/form/tags';
-import Tabs from './tabs';
+import Loading from '@/components/loading/loading';
+
 import parseHTML from '../services/parseHTML';
-import { useReview } from '../session/services/review.context';
+import { useReview } from '../session/review.context';
+
+import Tabs from './tabs';
 
 import s from './review-description.module.scss';
-import Input from '@/components/form/input';
 
 export default function ReviewDescription() {
   const { questionDescription, autoplayAudio, synonyms, sendQuestionDataToServer, note } = useReview()!;
@@ -14,7 +16,7 @@ export default function ReviewDescription() {
     <div class={`card ${s.description}`}>
       <Loading when={questionDescription()}>
         <Tabs>
-          {parseHTML(questionDescription()!, autoplayAudio())}
+          {parseHTML(questionDescription()!.word, autoplayAudio())}
           <div data-tab='Notes & Synonyms'>
             Synonyms:
             <br />

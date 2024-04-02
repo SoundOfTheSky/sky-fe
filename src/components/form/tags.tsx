@@ -1,8 +1,10 @@
-import { Component, For, JSX, splitProps } from 'solid-js';
 import { mdiCloseCircle } from '@mdi/js';
+import { Component, For, JSX, splitProps } from 'solid-js';
 
 import { Atom, atom } from '@/services/reactive';
+
 import Icon from '../icon';
+
 import Button from './button';
 import Input from './input';
 

@@ -4,12 +4,12 @@ import Skeleton from '@/components/loading/skeleton';
 import { useStudy } from '@/main/study/services/study.context';
 import { onOutside } from '@/services/reactive';
 
-import s from './incoming-reviews-card.module.scss';
+import s from './study-incoming-reviews.module.scss';
 
 onOutside;
 
-const IncomingReviewsCard: Component = () => {
-  const { turnedOnThemes, now, availableReviews, themesData } = useStudy()!;
+const StudyIncomingReviews: Component = () => {
+  const { turnedOnThemes, now, availableReviews, ready, offlineUnavailable } = useStudy()!;
 
   const data = createMemo(() => {
     const d = new Map<string, [number, number]>();
@@ -39,9 +39,9 @@ const IncomingReviewsCard: Component = () => {
   });
 
   return (
-    <div class={`card ${s.incomingReviewsCardComponent}`}>
+    <div class={`card ${s.incomingReviews}`}>
       <div class='card-title'>Review forecast</div>
-      <Skeleton loading={!themesData()} schema={<div class={`skeleton ${s.skeleton}`} />}>
+      <Skeleton loading={!ready()} offline={offlineUnavailable()} schema={<div class={`skeleton ${s.skeleton}`} />}>
         <table>
           <tbody>
             <For each={data()}>
@@ -66,4 +66,4 @@ const IncomingReviewsCard: Component = () => {
     </div>
   );
 };
-export default IncomingReviewsCard;
+export default StudyIncomingReviews;

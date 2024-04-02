@@ -1,5 +1,6 @@
 import { JSX, Show, createEffect, onCleanup, splitProps } from 'solid-js';
 import { bind as wkBind, unbind as wkUnbind } from 'wanakana';
+
 import { Atom, atom } from '@/services/reactive';
 
 import s from './input.module.scss';

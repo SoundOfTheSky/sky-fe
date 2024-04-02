@@ -2,7 +2,7 @@ import { Route } from '@solidjs/router';
 import { lazy } from 'solid-js';
 
 const Layout = lazy(() => import('./layout'));
-const Reviews = lazy(() => import('./pages/reviews'));
+const Reviews = lazy(() => import('./reviews'));
 
 export default () => {
   return (

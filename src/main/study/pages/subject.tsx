@@ -1,16 +1,16 @@
 import { useParams } from '@solidjs/router';
 import { batch, Component, createEffect, createMemo, createResource, For, Show } from 'solid-js';
 
+import Input from '@/components/form/input';
+import Tags from '@/components/form/tags';
+import Loading from '@/components/loading/loading';
+import Skeleton from '@/components/loading/skeleton';
 import basicStore from '@/services/basic.store';
 import { atom, resizeTextToFit } from '@/services/reactive';
-import Skeleton from '@/components/loading/skeleton';
-import Loading from '@/components/loading/loading';
-import Tags from '@/components/form/tags';
-import Input from '@/components/form/input';
 
+import Tabs from '../components/tabs';
 import parseHTML from '../services/parseHTML';
 import { useStudy } from '../services/study.context';
-import Tabs from '../components/tabs';
 
 import s from './subject.module.scss';
 
@@ -149,7 +149,7 @@ const Subject: Component<{ id?: number }> = (properties) => {
       <div class={`card ${s.description}`}>
         <Loading when={questionDescription()}>
           <Tabs>
-            {parseHTML(questionDescription()!)}
+            {parseHTML(questionDescription()!.word)}
             <Show when={subject()!.stage !== null}>
               <div data-tab='Notes & Synonyms'>
                 Synonyms:

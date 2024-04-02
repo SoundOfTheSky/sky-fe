@@ -1,4 +1,5 @@
 import { createMemo, Index, ParentComponent, children as createChildren, createEffect } from 'solid-js';
+
 import { atom } from '@/services/reactive';
 
 import s from './tabs.module.scss';

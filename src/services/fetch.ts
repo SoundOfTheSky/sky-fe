@@ -2,6 +2,8 @@ import { createContext, useContext } from 'solid-js';
 
 import BasicStore, { NotificationType } from '@/services/basic.store';
 
+import db from './db';
+
 export class RequestError<T = unknown> extends Error {
   code;
   body;
@@ -14,13 +16,14 @@ export class RequestError<T = unknown> extends Error {
 }
 export const MAIN_URL = location.origin;
 
-type RequestOptions = Omit<RequestInit, 'body'> & {
+export type RequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown;
   raw?: boolean;
   query?: Record<string, string>;
   useCache?: Map<string, unknown>;
+  offlineQueue?: boolean;
 };
-export type SimpleRequestOptions = Omit<RequestOptions, 'raw'>;
+export type CommonRequestOptions = Omit<RequestOptions, 'raw' | 'offlineQueue'>;
 
 /**
  *
@@ -32,15 +35,36 @@ export async function request(
   url: string,
   options: RequestOptions & {
     raw: true;
+    offlineQueue: true;
+  },
+): Promise<Response | undefined>;
+export async function request<T>(
+  url: string,
+  options: RequestOptions & {
+    raw?: false;
+    offlineQueue: true;
+  },
+): Promise<T | undefined>;
+export async function request(
+  url: string,
+  options: RequestOptions & {
+    raw: true;
+    offlineQueue?: false;
   },
 ): Promise<Response>;
 export async function request<T>(
   url: string,
   options?: RequestOptions & {
     raw?: false;
+    offlineQueue?: false;
   },
 ): Promise<T>;
-export async function request<T>(url: string, options: RequestOptions = {}): Promise<T | Response> {
+export async function request<T>(url: string, options: RequestOptions = {}): Promise<T | Response | undefined> {
+  if (!BasicStore.online() && options.offlineQueue) {
+    delete options.offlineQueue;
+    await db.put('offlineRequestQueue', { url, options });
+    return;
+  }
   BasicStore.activeRequests((x) => x + 1);
   try {
     options.useCache ??= useContext(CacheContext);

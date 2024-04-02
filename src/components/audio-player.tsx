@@ -1,10 +1,11 @@
-import { Component, Show, batch, createEffect } from 'solid-js';
 import { mdiClose, mdiPause, mdiPlay, mdiSkipNext, mdiSkipPrevious } from '@mdi/js';
+import { Component, Show, batch, createEffect } from 'solid-js';
 import { Transition } from 'solid-transition-group';
 
 import AudioStore from '@/services/audio.store';
 import { atom, useInterval } from '@/services/reactive';
 import { slideDownTransition } from '@/services/transition';
+
 import Button from './form/button';
 import Icon from './icon';
 
@@ -29,7 +30,7 @@ const AudioPlayer: Component = () => {
     const $audio = audioElement();
     if (!$audio) return;
     if ($playing) {
-      if (!updateProgressInterval) updateProgressInterval = useInterval(50, () => time($audio.currentTime));
+      if (!updateProgressInterval) updateProgressInterval = useInterval(() => time($audio.currentTime), 50);
       if ($audio.paused) void $audio.play();
     } else {
       if (updateProgressInterval) {

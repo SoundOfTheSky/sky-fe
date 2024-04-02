@@ -1,16 +1,17 @@
-import { For, Show } from 'solid-js';
 import { mdiCheckBold, mdiClose, mdiCloseThick, mdiUndoVariant } from '@mdi/js';
-
 import { A } from '@solidjs/router';
-import { formatTime } from '@/services/utils';
-import Icon from '@/components/icon';
+import { For, Show } from 'solid-js';
+
 import Button from '@/components/form/button';
+import Icon from '@/components/icon';
+import { formatTime } from '@/services/utils';
 
 import parseHTML from '../services/parseHTML';
-import { StatusCode, useReview } from '../session/services/review.context';
+import { SubjectStatus, useReview } from '../session/review.context';
+
+import SubjectRef from './subject-ref';
 
 import s from './review-stats.module.scss';
-import SubjectRef from './subject-ref';
 
 export default function ReviewStats() {
   // === Hooks ===
@@ -67,7 +68,7 @@ export default function ReviewStats() {
                   </Show>
                 </td>
                 <td>
-                  <Icon inline path={stats.status === StatusCode.Correct ? mdiCheckBold : mdiCloseThick} size='24' />
+                  <Icon inline path={stats.status === SubjectStatus.Correct ? mdiCheckBold : mdiCloseThick} size='24' />
                 </td>
               </tr>
             )}

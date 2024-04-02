@@ -1,4 +1,5 @@
 import { Component, Index, createMemo } from 'solid-js';
+
 import s from './jp-pitch-accent.module.scss';
 
 const notConsideredComponent = 'ゃゅょぁぃぅぇぉ ャュョァィゥェォ';

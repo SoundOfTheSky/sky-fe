@@ -1,4 +1,3 @@
-import { For, Match, Switch, createEffect, createMemo } from 'solid-js';
 import {
   mdiArrowRightBold,
   mdiCheckBold,
@@ -11,14 +10,15 @@ import {
   mdiShuffleDisabled,
   mdiUndoVariant,
 } from '@mdi/js';
+import { For, Match, Switch, createEffect, createMemo } from 'solid-js';
 
-import { atom, useGlobalEvent } from '@/services/reactive';
+import Button from '@/components/form/button';
+import Input from '@/components/form/input';
 import Icon from '@/components/icon';
 import Tooltip from '@/components/tooltip';
-import Input from '@/components/form/input';
-import Button from '@/components/form/button';
+import { atom, useGlobalEvent } from '@/services/reactive';
 
-import { StatusCode, useReview } from '../session/services/review.context';
+import { SubjectStatus, useReview } from '../session/review.context';
 
 import s from './review-answer.module.scss';
 
@@ -45,7 +45,7 @@ export default function ReviewAnswer() {
   } = useReview()!;
   // === Memos ===
   const inputDisabled = createMemo(
-    () => isLoading() || !!previousState() || subjectStats()?.status === StatusCode.Unlearned,
+    () => isLoading() || !!previousState() || subjectStats()?.status === SubjectStatus.Unlearned,
   );
   // === Functions ===
   function onKeyPress(event: KeyboardEvent) {
@@ -81,9 +81,9 @@ export default function ReviewAnswer() {
             disabled={inputDisabled()}
             success={
               previousState() &&
-              (questionStatus() === StatusCode.Correct || questionStatus() === StatusCode.CorrectAfterWrong)
+              (questionStatus() === SubjectStatus.Correct || questionStatus() === SubjectStatus.CorrectAfterWrong)
             }
-            error={previousState() && questionStatus() === StatusCode.Wrong}
+            error={previousState() && questionStatus() === SubjectStatus.Wrong}
             ref={(element) => answerInputElement(element)}
           />
         }
@@ -114,9 +114,9 @@ export default function ReviewAnswer() {
             disabled={inputDisabled()}
             success={
               previousState() &&
-              (questionStatus() === StatusCode.Correct || questionStatus() === StatusCode.CorrectAfterWrong)
+              (questionStatus() === SubjectStatus.Correct || questionStatus() === SubjectStatus.CorrectAfterWrong)
             }
-            error={previousState() && questionStatus() === StatusCode.Wrong}
+            error={previousState() && questionStatus() === SubjectStatus.Wrong}
             ref={(element) => answerInputElement(element)}
           />
         </Match>

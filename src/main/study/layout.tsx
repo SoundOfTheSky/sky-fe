@@ -1,5 +1,7 @@
 import { ParentComponent } from 'solid-js';
+
 import Auth from '@/components/auth';
+
 import { StudyProvider } from './services/study.context';
 
 const Layout: ParentComponent = (properties) => {

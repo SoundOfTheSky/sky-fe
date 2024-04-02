@@ -51,6 +51,6 @@ This project uses modules. Every module must incapsulate it's own features, incl
 2. Components
 3. Outlets
 4. Styles
-5. Context (Don not use `createRoot()` in modules)
+5. Context (Do not use `createRoot()` in modules)
 
 Directory structure may be anything you want, but be reasonable. Also it will be really cool to include a README to every module.

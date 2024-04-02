@@ -1,11 +1,12 @@
-import { Component, batch, createEffect, createMemo, onCleanup, untrack } from 'solid-js';
 import { mdiPause, mdiPlay } from '@mdi/js';
+import { Component, batch, createEffect, createMemo, onCleanup, untrack } from 'solid-js';
 
 import AudioStore from '@/services/audio.store';
-import { atom, onMounted } from '@/services/reactive';
 import { request } from '@/services/fetch';
-import Icon from './icon';
+import { atom, onMounted } from '@/services/reactive';
+
 import Button from './form/button';
+import Icon from './icon';
 
 onMounted;
 

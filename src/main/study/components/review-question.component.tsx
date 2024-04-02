@@ -1,10 +1,11 @@
 import { Show, createMemo, Index } from 'solid-js';
 
-import { resizeTextToFit } from '@/services/reactive';
 import Skeleton from '@/components/loading/skeleton';
+import { resizeTextToFit } from '@/services/reactive';
 
-import { StatusCode, useReview } from '../session/services/review.context';
 import parseHTML from '../services/parseHTML';
+import { useStudy } from '../services/study.context';
+import { SubjectStatus, useReview } from '../session/review.context';
 
 import s from './review-question.module.scss';
 
@@ -27,6 +28,7 @@ export default function ReviewQuestion() {
     questionI,
     srs,
   } = useReview()!;
+  const { offlineUnavailable } = useStudy()!;
 
   /** Current subject stage. Automatically changes based on status. */
   const subjectStage = createMemo(() => {
@@ -36,12 +38,12 @@ export default function ReviewQuestion() {
     if (!$subject || !$srs || !$subjectStats) return 0;
     let delta = 0;
     switch ($subjectStats.status) {
-      case StatusCode.Correct: {
+      case SubjectStatus.Correct: {
         delta = 1;
         break;
       }
-      case StatusCode.Wrong:
-      case StatusCode.CorrectAfterWrong: {
+      case SubjectStatus.Wrong:
+      case SubjectStatus.CorrectAfterWrong: {
         delta = -2;
       }
     }
@@ -109,11 +111,11 @@ export default function ReviewQuestion() {
       <div class={s.stats}>
         {stats().passed}/{subjectIds().length} {Math.floor(stats().correctPercent * 100)}% {timePassed()} {eta()}m
       </div>
-      <Skeleton class={s.titleSkeleton} loading={isLoading()}>
+      <Skeleton class={s.titleSkeleton} loading={isLoading()} offline={offlineUnavailable()}>
         <div class={s.title} use:resizeTextToFit={[48, question(), hint(), isLoading()]}>
           <Show
             when={
-              (previousState() || subjectStats()?.status === StatusCode.Unlearned) &&
+              (previousState() || subjectStats()?.status === SubjectStatus.Unlearned) &&
               !question()!.question.includes(subject()!.title) &&
               !hint().includes(subject()!.title)
             }
@@ -131,10 +133,10 @@ export default function ReviewQuestion() {
             <button
               classList={{
                 [s.current]: subject()?.questionIds[index] === question()?.id,
-                [s.correct]: element() === StatusCode.Correct,
-                [s.error]: element() === StatusCode.Wrong,
-                [s.correctAfterWrong]: element() === StatusCode.CorrectAfterWrong,
-                [s.unlearned]: element() === StatusCode.Unlearned,
+                [s.correct]: element() === SubjectStatus.Correct,
+                [s.error]: element() === SubjectStatus.Wrong,
+                [s.correctAfterWrong]: element() === SubjectStatus.CorrectAfterWrong,
+                [s.unlearned]: element() === SubjectStatus.Unlearned,
               }}
               onClick={() => questionI(index)}
             />

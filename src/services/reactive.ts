@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { InitializedResourceOptions, InitializedResourceReturn, NoInfer, ResourceOptions } from 'solid-js';
-
-import * as broadcastChannel from '@/services/broadcast-channel';
-
 import {
+  InitializedResourceOptions,
+  InitializedResourceReturn,
+  NoInfer,
+  ResourceOptions,
   createEffect,
   createRenderEffect,
   createSignal,
@@ -18,6 +18,10 @@ import {
   ResourceSource,
   ResourceFetcher,
 } from 'solid-js';
+
+import * as broadcastChannel from '@/services/broadcast-channel';
+
+import { log } from './utils';
 
 // === Reactive ===
 
@@ -101,12 +105,12 @@ export function createLazyResource<T, S, R = unknown>(
 }
 
 // === Auto disposable ===
-export function useInterval(time: number, handler: () => unknown) {
+export function useInterval(handler: () => unknown, time: number) {
   const interval = setInterval(handler, time);
   onCleanup(() => clearInterval(interval));
   return interval;
 }
-export function useTimeout(time: number, handler: () => unknown) {
+export function useTimeout(handler: () => unknown, time: number) {
   const timeout = setTimeout(handler, time);
   onCleanup(() => clearTimeout(timeout));
   return timeout;
@@ -124,7 +128,7 @@ export function debugReactive(data: Record<string, () => unknown>) {
     let lastVal: unknown;
     createEffect(() => {
       const newVal = accessor();
-      console.log(`[DEBUG] ${title}`, lastVal, '>>>', newVal);
+      log(`[DEBUG] ${title}`, lastVal, '>>>', newVal);
       lastVal = newVal;
     });
   }

@@ -1,13 +1,15 @@
-import { For } from 'solid-js';
-import type { Component } from 'solid-js';
-import { A } from '@solidjs/router';
 import { mdiHome, mdiBookOpenPageVariant, mdiIdeogramCjk } from '@mdi/js';
+import { A } from '@solidjs/router';
+import { For } from 'solid-js';
 
 import Skeleton from '@/components/loading/skeleton';
 import AuthStore from '@/services/auth.store';
+
 import Icon from '../icon';
 
 import s from './sidebar.module.scss';
+
+import type { Component } from 'solid-js';
 
 const items = [
   {
@@ -49,8 +51,8 @@ const Sidebar: Component = () => {
               </div>
             }
           >
-            <img class={s.avatar} src={AuthStore.user()?.avatar ?? '/avatar.webp'} alt='My avatar' />
-            <span class={s.title}>{AuthStore.user()?.username ?? 'Anonymous'}</span>
+            <img class={s.avatar} src={AuthStore.me()?.avatar ?? '/avatar.webp'} alt='My avatar' />
+            <span class={s.title}>{AuthStore.me()?.username ?? 'Anonymous'}</span>
           </Skeleton>
         </A>
       </div>

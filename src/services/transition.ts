@@ -1,7 +1,11 @@
 type KeyframesTransitionOption = Record<string, string[] | number[]>;
+/**
+ * Simpler transition options generator.
+ * Delay is the delay before animation.
+ * Can be set to true to automatically generate delay to hide one object and only then show another.
+ */
 export function createTransitionOptions(keyframes: KeyframesTransitionOption, duration: number, delay?: number | true) {
   const keyframeEntries = Object.entries(keyframes);
-  const initialStyles = delay ? keyframeEntries.map(([k, v]) => `${kebabize(k)}: ${v[0]}`).join('; ') : '';
   const transition: {
     onBeforeEnter?: (element?: Element) => unknown;
     onEnter: (element: Element, done: () => void) => unknown;
@@ -26,13 +30,15 @@ export function createTransitionOptions(keyframes: KeyframesTransitionOption, du
         .finished.then(done),
   };
   if (delay) {
+    let origStyles = '';
     transition.onBeforeEnter = (element) => {
-      element?.setAttribute('style', initialStyles);
+      origStyles = element?.getAttribute('style') ?? '';
+      element?.setAttribute(
+        'style',
+        origStyles + '; ' + keyframeEntries.map(([k, v]) => `${kebabize(k)}: ${v[0]}`).join('; '),
+      );
     };
-
-    transition.onAfterEnter = (element) => {
-      element.removeAttribute('style');
-    };
+    transition.onAfterEnter = (element) => element.setAttribute('style', origStyles);
   }
 
   return transition;
@@ -61,22 +67,22 @@ export const slideInTransition = createTransitionOptions(
 );
 export const slideDownTransition = createTransitionOptions(
   {
-    transform: ['translateY(200%)', 'translateX(0)'],
+    transform: ['translateY(200%)', 'translateY(0)'],
   },
   500,
 );
 
 export function changeNumberSmooth(start: number, end: number, time: number, callback: (number: number) => void) {
-  const startTime = Date.now();
+  const startTime = performance.now();
   const delta = end - start;
   let frame = requestAnimationFrame(tick);
   function tick() {
-    const timePassed = Date.now() - startTime;
+    const timePassed = performance.now() - startTime;
     if (timePassed >= time) {
       callback(end);
-      frame = requestAnimationFrame(tick);
     } else {
       callback((timePassed / time) * delta + start);
+      frame = requestAnimationFrame(tick);
     }
   }
 

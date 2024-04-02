@@ -1,5 +1,7 @@
 import { ParentComponent, Show, createEffect } from 'solid-js';
+
 import { atom, onMounted, useInterval, useTimeout } from '@/services/reactive';
+
 import kaomojiRaw from './kaomoji?raw';
 
 import s from './loading.module.scss';
@@ -23,8 +25,8 @@ const Loading: ParentComponent<{ when: unknown }> = (properties) => {
       clearInterval(kaomojiInterval);
       takingLong(false);
     } else {
-      takingLongTimeout = useTimeout(10_000, () => takingLong(true));
-      kaomojiInterval = useInterval(300, setRandomKaomoji);
+      takingLongTimeout = useTimeout(() => takingLong(true), 10_000);
+      kaomojiInterval = useInterval(setRandomKaomoji, 300);
     }
   });
   return (

@@ -1,18 +1,18 @@
 import { mdiChevronLeft, mdiChevronRight, mdiTranslate } from '@mdi/js';
-import { createEffect, createMemo, createResource, For, Show } from 'solid-js';
 import { createScheduled, debounce } from '@solid-primitives/scheduled';
+import { createEffect, createMemo, createResource, For, Show } from 'solid-js';
 
-import { atom, debugReactive } from '@/services/reactive';
-import Icon from '@/components/icon';
-import Input from '@/components/form/input';
 import Button from '@/components/form/button';
+import Input from '@/components/form/input';
+import Icon from '@/components/icon';
+import { atom } from '@/services/reactive';
 
-import { SearchSubject, useStudy } from '../services/study.context';
+import SubjectRef from '../components/subject-ref';
 import Themes from '../components/themes';
 import parseHTML from '../services/parseHTML';
+import { SearchSubject, useStudy } from '../services/study.context';
 
 import s from './subjects.module.scss';
-import SubjectRef from '../components/subject-ref';
 
 export default function Subjects() {
   document.title = 'Sky | Subjects';
@@ -36,12 +36,6 @@ export default function Subjects() {
     scheduledQuery();
     themeIds();
     page(1);
-  });
-
-  debugReactive({
-    query,
-    queryScheduler,
-    scheduledQuery,
   });
   return (
     <div class={s.subjectsComponent}>

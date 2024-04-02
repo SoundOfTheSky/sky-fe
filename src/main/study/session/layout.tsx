@@ -1,5 +1,6 @@
 import { ParentComponent } from 'solid-js';
-import { ReviewProvider } from './services/review.context';
+
+import { ReviewProvider } from './review.context';
 
 const Layout: ParentComponent = (properties) => {
   return <ReviewProvider>{properties.children}</ReviewProvider>;

@@ -1,11 +1,12 @@
 import { mdiVolumeHigh } from '@mdi/js';
 import { For, ParentComponent, createResource } from 'solid-js';
 
-import Loading from '@/components/loading/loading';
-import Icon from '@/components/icon';
-import { atom, onMounted } from '@/services/reactive';
-import { useStudy } from '../services/study.context';
 import Button from '@/components/form/button';
+import Icon from '@/components/icon';
+import Loading from '@/components/loading/loading';
+import { atom, onMounted } from '@/services/reactive';
+
+import { useStudy } from '../services/study.context';
 
 import s from './ik.module.scss';
 

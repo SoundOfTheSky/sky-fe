@@ -1,13 +1,16 @@
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
+import { createEffect, createRoot, untrack } from 'solid-js';
+
+import basicStore from './basic.store';
+import db from './db';
+import { CommonRequestOptions, RequestError, request } from './fetch';
+import { atom, persistentAtom, useInterval } from './reactive';
+import { noop } from './utils';
+
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/types';
-import { createRoot } from 'solid-js';
-
-import { atom, useInterval } from './reactive';
-import { RequestError, request } from './fetch';
-import basicStore from './basic.store';
 
 export type User = {
   id: number;
@@ -20,30 +23,52 @@ export type User = {
 
 export default createRoot(() => {
   // === State ===
-  const user = atom<User>();
-  const authToken = atom<string | undefined>();
+  const me = persistentAtom<User | undefined>('me', undefined);
+  const ready = atom(false);
   const loading = atom(true);
+
   // === Effects ===
   // Then offline retry connection
-  useInterval(10000, () => {
+  useInterval(() => {
     if (basicStore.online()) return;
-    void updateCurrentUser().then(() => {
-      basicStore.online(true);
-    });
+    void updateCurrentUser()
+      .then(() => basicStore.online(true))
+      .catch(noop);
+  }, 10000);
+  useInterval(updateCurrentUser, 3600000);
+  // Send requests that were queued offline
+  createEffect(() => {
+    if (basicStore.online() && ready() && untrack(me))
+      setTimeout(async () => {
+        try {
+          const keys = await db.getAllKeys('offlineRequestQueue');
+          for (const key of keys) {
+            if (!basicStore.online()) throw new Error('Offline');
+            const req = (await db.get('offlineRequestQueue', key))!;
+            await request(req.url, req.options as CommonRequestOptions);
+            await db.delete('offlineRequestQueue', key);
+          }
+          if (keys.length)
+            basicStore.notify({
+              title: 'Offline sync complete! Your data is safe.',
+              timeout: 10000,
+            });
+        } catch {}
+      }, 1000);
   });
-  useInterval(3600000, updateCurrentUser);
+
   // === Functions ===
   async function updateCurrentUser() {
     loading(true);
     try {
       const userData = await request<User>('/api/auth/me');
-      user(userData);
+      me(userData);
       loading(false);
       return userData;
     } catch (error) {
       loading(false);
       if (error instanceof RequestError) {
-        if (error.code === 401) user(undefined);
+        if (error.code === 401) me(undefined);
         else {
           basicStore.online(false);
           throw error;
@@ -88,7 +113,7 @@ export default createRoot(() => {
     await updateCurrentUser();
   }
   async function updateData(data: { avatar?: string; username?: string }) {
-    user(
+    me(
       await request<User>('/api/auth/me', {
         method: 'POST',
         body: data,
@@ -98,16 +123,18 @@ export default createRoot(() => {
   async function getRegLink() {
     return request<string>('/api/auth/reg-link');
   }
+  void updateCurrentUser()
+    .catch(noop)
+    .finally(() => ready(true));
 
-  void updateCurrentUser();
   return {
-    user,
-    authToken,
+    me,
     register,
     login,
     updateCurrentUser,
     logout,
     loading,
+    ready,
     updateData,
     getRegLink,
   };

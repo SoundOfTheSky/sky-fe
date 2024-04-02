@@ -1,8 +1,5 @@
 /* eslint-disable solid/reactivity */
 /* eslint-disable solid/no-innerhtml */
-import { atom, useGlobalEvent, useInterval } from '@/services/reactive';
-import { Component, Show, batch, createEffect, untrack } from 'solid-js';
-import { createMutable, modifyMutable, reconcile } from 'solid-js/store';
 import {
   mdiAccountArrowUp,
   mdiArrowRightBold,
@@ -18,17 +15,20 @@ import {
   mdiTranslate,
   mdiTranslateOff,
 } from '@mdi/js';
+import { Component, Show, batch, createEffect, untrack } from 'solid-js';
+import { createMutable, modifyMutable, reconcile } from 'solid-js/store';
 
-import { formatTime, randomFromArray } from '@/services/utils';
+import Button from '@/components/form/button';
+import Input from '@/components/form/input';
+import Toggle from '@/components/form/toggle';
 import Icon from '@/components/icon';
 import Tooltip from '@/components/tooltip';
-import Input from '@/components/form/input';
-import Button from '@/components/form/button';
-import Toggle from '@/components/form/toggle';
 import basicStore, { NotificationType } from '@/services/basic.store';
+import { atom, useGlobalEvent, useInterval } from '@/services/reactive';
+import { formatTime, randomFromArray } from '@/services/utils';
 
-import { removeFurigana, toHiragana, words } from '../services/data';
 import { ConjugateOptions, conjugate } from '../services/conjugator';
+import { removeFurigana, toHiragana, words } from '../services/data';
 
 import s from './conjugation.module.scss';
 
@@ -51,9 +51,9 @@ const Conjugation: Component = () => {
   useGlobalEvent('keypress', (e) => {
     if (e.key === 'Enter') commit();
   });
-  useInterval(1000, () => {
+  useInterval(() => {
     time((x) => x + 1);
-  });
+  }, 1000);
 
   // === State ===
   const stats = {
@@ -192,7 +192,7 @@ const Conjugation: Component = () => {
       const word = settings.lockWord ?? randomFromArray(words.filter((x) => x.type === options.type));
       const result = conjugate(toHiragana(word.kanji), word.type, options.options);
       if (!result) throw new Error('Cannot conjugate');
-      console.log(result);
+
       return {
         ...word,
         options: options.options,

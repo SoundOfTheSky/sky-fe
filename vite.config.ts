@@ -1,8 +1,9 @@
 import { fileURLToPath, URL } from 'node:url';
+
 import { defineConfig } from 'vite';
-import Solid from 'vite-plugin-solid';
-import { VitePWA } from 'vite-plugin-pwa';
 import { compression } from 'vite-plugin-compression2';
+import { VitePWA } from 'vite-plugin-pwa';
+import Solid from 'vite-plugin-solid';
 
 export default defineConfig({
   plugins: [

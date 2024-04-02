@@ -4,9 +4,11 @@ import { TransitionGroup } from 'solid-transition-group';
 import BasicStore, { Notification } from '@/services/basic.store';
 import { onMounted } from '@/services/reactive';
 import { slideInTransition } from '@/services/transition';
+
 import Button from '../form/button';
 
 import s from './notifications.module.scss';
+
 onMounted;
 
 const Notifications: Component = () => {

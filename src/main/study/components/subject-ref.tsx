@@ -1,8 +1,8 @@
 import { Component, JSX, Show } from 'solid-js';
 
-import { atom } from '@/services/reactive';
 import Dialog from '@/components/dialog';
 import Button from '@/components/form/button';
+import { atom } from '@/services/reactive';
 
 import Subject from '../pages/subject';
 

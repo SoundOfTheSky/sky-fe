@@ -1,26 +1,26 @@
-import { Component } from 'solid-js';
 import { mdiExitRun } from '@mdi/js';
 import { createWritableMemo } from '@solid-primitives/memo';
+import { Component } from 'solid-js';
 
-import AuthStore from '@/services/auth.store';
-import Icon from '@/components/icon';
-import BasicStore, { NotificationType } from '@/services/basic.store';
-import { atomize, persistentAtom } from '@/services/reactive';
-import { handleError } from '@/services/fetch';
 import Auth from '@/components/auth';
+import Button from '@/components/form/button';
 import Input from '@/components/form/input';
 import Toggle from '@/components/form/toggle';
-import Button from '@/components/form/button';
+import Icon from '@/components/icon';
 import Tooltip from '@/components/tooltip';
+import AuthStore from '@/services/auth.store';
+import BasicStore, { NotificationType } from '@/services/basic.store';
+import { handleError } from '@/services/fetch';
+import { atomize, persistentAtom } from '@/services/reactive';
 
 import s from './profile.module.scss';
 
 export default (() => {
   // === State ===
   let avatarElement: HTMLImageElement;
-  const avatar = atomize(createWritableMemo(() => AuthStore.user()?.avatar ?? ''));
+  const avatar = atomize(createWritableMemo(() => AuthStore.me()?.avatar ?? ''));
   const imageURL = atomize(createWritableMemo(() => avatar()));
-  const username = atomize(createWritableMemo(() => AuthStore.user()?.username ?? ''));
+  const username = atomize(createWritableMemo(() => AuthStore.me()?.username ?? ''));
   const fontPixelization = persistentAtom('fontPixelization', true);
   const JPFontPixelization = persistentAtom('JPFontPixelization', true);
 

@@ -1,13 +1,13 @@
-import { createRoot, JSX, createUniqueId, createEffect, createMemo } from 'solid-js';
-import { createScheduled, debounce } from '@solid-primitives/scheduled';
-import { useRegisterSW } from 'virtual:pwa-register/solid';
 import { mdiReload } from '@mdi/js';
+import { createRoot, JSX, createUniqueId, createEffect } from 'solid-js';
+import { useRegisterSW } from 'virtual:pwa-register/solid';
 
-import Icon from '@/components/icon';
 import Button from '@/components/form/button';
+import Icon from '@/components/icon';
 
-import { SimpleRequestOptions, request } from './fetch';
-import { atom, useTimeout } from './reactive';
+import db from './db';
+import { CommonRequestOptions, request } from './fetch';
+import { atom } from './reactive';
 
 export enum NotificationType {
   Info,
@@ -22,10 +22,15 @@ export type Notification = {
   onClick?: () => unknown;
   timeout?: number;
 };
+export type Word = {
+  created: string;
+  updated: string;
+  id: number;
+  word: string;
+};
 
 export default createRoot(() => {
   // === Hooks ===
-  window.addEventListener('load', () => windowLoad(false));
   window.addEventListener('online', () => online(true));
   window.addEventListener('offline', () => online(false));
   const { updateServiceWorker } = useRegisterSW({
@@ -70,27 +75,34 @@ export default createRoot(() => {
   });
 
   // === API ===
-  const getWord = async (id: number, options?: SimpleRequestOptions) => request<string>(`/api/words/${id}`, options);
+  async function getWord(id: number, options?: CommonRequestOptions & { ignoreDB?: boolean }) {
+    const dbSubject = options?.ignoreDB ? undefined : await db.get('words', id);
+    if (dbSubject) return dbSubject;
+    const word = await request<Word>(`/api/words/${id}`, options);
+    void db.put('words', word);
+    return word;
+  }
 
   // === State ===
   const online = atom(true);
-  const windowLoad = atom(true);
   const notifications = atom<Notification[]>([]);
   const activeRequests = atom(0);
+  const loading = atom(false);
+  let loadingTimeout: number;
 
-  // === Memos ===
-  const loadingScheduler = createScheduled((fn) => debounce(fn, 200));
-  const loading = createMemo<boolean>(
-    (last) => (!loadingScheduler() ? last : windowLoad() || activeRequests() > 0),
-    true,
-  );
+  // === Effects ===
+  createEffect(() => {
+    const $activeRequests = activeRequests();
+    clearTimeout(loadingTimeout);
+    loadingTimeout = setTimeout(() => loading(!!$activeRequests), 500);
+  });
 
   // === Functions ===
   function notify(notification: Omit<Notification, 'id' | 'type'> & { id?: string; type?: NotificationType }) {
     if (notification.id === undefined) notification.id = createUniqueId();
     if (notification.type === undefined) notification.type = NotificationType.Info;
     if (notification.timeout)
-      useTimeout(notification.timeout, () => notifications((n) => n.filter((x) => x !== notification)));
+      setTimeout(() => notifications((n) => n.filter((x) => x !== notification)), notification.timeout);
     notifications((n) => [...n, notification as Notification]);
     return notification.id;
   }
@@ -98,26 +110,6 @@ export default createRoot(() => {
   function removeNotification(id: string) {
     notifications((n) => n.filter((x) => x.id !== id));
   }
-  // === Effects ===
-  // On online/offline
-  createEffect((last) => {
-    const $online = online();
-    if (last !== undefined) {
-      if (online())
-        notify({
-          title: 'You are back online',
-          timeout: 5000,
-          type: NotificationType.Success,
-        });
-      else
-        notify({
-          title: 'You are now offline',
-          timeout: 5000,
-          type: NotificationType.Error,
-        });
-    }
-    return $online;
-  });
 
   return {
     getWord,
@@ -127,6 +119,5 @@ export default createRoot(() => {
     activeRequests,
     loading,
     online,
-    windowLoad,
   };
 });

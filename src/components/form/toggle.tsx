@@ -1,5 +1,6 @@
-import { Atom } from '@/services/reactive';
 import { Component, JSX, Show, splitProps } from 'solid-js';
+
+import { Atom } from '@/services/reactive';
 
 import s from './toggle.module.scss';
 

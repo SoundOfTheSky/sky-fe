@@ -1,8 +1,8 @@
 import { Route } from '@solidjs/router';
 import { lazy } from 'solid-js';
 
-import StudyRoutes from './study/routes';
 import JPConjugationRoutes from './jp-conjugation/routes';
+import StudyRoutes from './study/routes';
 
 export default () => {
   return (

@@ -1,7 +1,7 @@
 import { ParentComponent } from 'solid-js';
 
-import Sidebar from '@/components/global/sidebar';
 import AudioPlayer from '@/components/audio-player';
+import Sidebar from '@/components/global/sidebar';
 
 import s from './layout.module.scss';
 

@@ -1,12 +1,12 @@
-import { Component, For, Show, batch, onCleanup } from 'solid-js';
+import { Component, For, Show, batch, createEffect, onCleanup, untrack } from 'solid-js';
 import { Transition } from 'solid-transition-group';
 
-import * as webSocket from '@/services/web-socket';
-import Loading from '@/components/loading/loading';
+import Button from '@/components/form/button';
+import Input from '@/components/form/input';
+import Skeleton from '@/components/loading/skeleton';
 import { atom, useGlobalEvent } from '@/services/reactive';
 import { opacityTransitionImmediate } from '@/services/transition';
-import Input from '@/components/form/input';
-import Button from '@/components/form/button';
+import { WebSocketStatus, useWebSocket } from '@/services/web-socket.context';
 
 import s from './chat.module.scss';
 
@@ -22,6 +22,17 @@ type Credentials = {
 };
 
 const Chat: Component = () => {
+  // === Hooks ===
+  const ws = useWebSocket()!;
+
+  useGlobalEvent('keypress', (event) => {
+    if (event.code === 'Enter') sendMessage();
+  });
+
+  onCleanup(() => {
+    if (ws.status() === WebSocketStatus.connected) ws.send('unsubscribePublicChat');
+  });
+
   // === State ===
   const viewAvatar = atom<string>();
   const sendingMessage = atom(false);
@@ -29,98 +40,84 @@ const Chat: Component = () => {
   const messages = atom<ChatMessage[]>([]);
   const credentials = atom<Credentials>();
 
+  // === Effects ===
+  // WebSocket status handler
+  createEffect(() => {
+    switch (ws.status()) {
+      case WebSocketStatus.connecting:
+        credentials(undefined);
+        break;
+      case WebSocketStatus.connected:
+        messages([]);
+        ws.send('publicChatSubscribe');
+        break;
+    }
+  });
+  // WebSocket event handler
+  createEffect(() => {
+    const [event, data] = ws.lastEvent();
+    if (!data) return;
+    untrack(() =>
+      batch(() => {
+        switch (event) {
+          case 'publicChatSubscribe':
+            credentials(JSON.parse(data) as Credentials);
+            break;
+          case 'error':
+            if (data?.startsWith('[PublicChat] ')) sendingMessage(false);
+            break;
+          case 'publicChat':
+            const msgs = JSON.parse(data) as ChatMessage[];
+            const $credentials = credentials();
+            if (msgs.some((msg) => msg.username === $credentials?.username)) {
+              sendingMessage(false);
+              message('');
+            }
+            messages((x) => [...x, ...msgs]);
+            break;
+        }
+      }),
+    );
+  });
+
   // === Functions ===
-  function lostConnection() {
-    credentials(undefined);
-  }
-  function addMessages(data?: string) {
-    if (!data) return;
-    batch(() => {
-      const msgs = JSON.parse(data) as ChatMessage[];
-      const $credentials = credentials();
-      if (msgs.some((msg) => msg.username === $credentials?.username)) {
-        sendingMessage(false);
-        message('');
-      }
-      messages((x) => [...x, ...msgs]);
-    });
-  }
-  function subscribe() {
-    // Timeout so we can be sure that credentials are synchronized with other tabs
-    setTimeout(() => {
-      if (credentials()) return;
-      messages([]);
-      webSocket.send('publicChatSubscribe');
-    }, 200);
-  }
-  function subscribed(data?: string) {
-    if (!data) return;
-    credentials(JSON.parse(data) as Credentials);
-  }
   function sendMessage() {
-    if (sendingMessage() || !message() || webSocket.status !== webSocket.WebSocketStatus.connected) return;
-    webSocket.send('publicChat', message());
+    if (sendingMessage() || !message() || ws.status() !== WebSocketStatus.connected) return;
+    ws.send('publicChat', message());
     sendingMessage(true);
   }
-  function onWSError(error?: string) {
-    if (error?.startsWith('[PublicChat] ')) sendingMessage(false);
-  }
-
-  // === Hooks ===
-  useGlobalEvent('keypress', (event) => {
-    if (event.code === 'Enter') sendMessage();
-  });
-
-  if (webSocket.status === webSocket.WebSocketStatus.connected) subscribe();
-  webSocket.on('connected', subscribe);
-  webSocket.on('close', lostConnection);
-  webSocket.on('connecting', lostConnection);
-  webSocket.on('publicChatSubscribe', subscribed);
-  webSocket.on('publicChat', addMessages);
-  webSocket.on('error', onWSError);
-  onCleanup(() => {
-    if (webSocket.status === webSocket.WebSocketStatus.connected) webSocket.send(`unsubscribePublicChat`);
-    webSocket.off('connected', subscribe);
-    webSocket.off('close', lostConnection);
-    webSocket.off('connecting', lostConnection);
-    webSocket.off('subscribePublicChat', subscribed);
-    webSocket.off('publicChatMessage', addMessages);
-    webSocket.off('error', onWSError);
-  });
 
   return (
-    <Loading when={credentials()}>
-      <div class={`card ${s.chat}`}>
-        <div class='card-title'>CHAT</div>
-        <Transition {...opacityTransitionImmediate}>
-          <Show when={viewAvatar()}>
-            <Button class={s.avatarView} onClick={() => viewAvatar(undefined)}>
-              <img alt='Avatar' src={viewAvatar()} />
-            </Button>
-          </Show>
-        </Transition>
-        <div class={s.messages}>
-          <div>
-            <For each={messages()}>
-              {(message) => (
-                <div class={s.message}>
-                  <Button onClick={() => viewAvatar(message.avatar ?? '/avatar.webp')} class={s.avatar}>
-                    <img alt={message.username} src={message.avatar ?? '/avatar.webp'} />
-                  </Button>
-                  <div class={s.line}>
-                    <span class={s.username}>{`<${message.username}>`}</span>
-                    <span>: </span>
-                    <span class={s.text}>{message.text}</span>
-                  </div>
-                  <span class={s.time}>{new Date(message.time).toLocaleTimeString()}</span>
+    <Skeleton loading={!credentials()} offline={ws.status() === WebSocketStatus.closed} class={`card ${s.chat}`}>
+      <div class='card-title'>CHAT</div>
+      <Transition {...opacityTransitionImmediate}>
+        <Show when={viewAvatar()}>
+          <Button class={s.avatarView} onClick={() => viewAvatar(undefined)}>
+            <img alt='Avatar' src={viewAvatar()} />
+          </Button>
+        </Show>
+      </Transition>
+      <div class={s.messages}>
+        <div>
+          <For each={messages()}>
+            {(message) => (
+              <div class={s.message}>
+                <Button onClick={() => viewAvatar(message.avatar ?? '/avatar.webp')} class={s.avatar}>
+                  <img alt={message.username} src={message.avatar ?? '/avatar.webp'} />
+                </Button>
+                <div class={s.line}>
+                  <span class={s.username}>{`<${message.username}>`}</span>
+                  <span>: </span>
+                  <span class={s.text}>{message.text}</span>
                 </div>
-              )}
-            </For>
-          </div>
+                <span class={s.time}>{new Date(message.time).toLocaleTimeString()}</span>
+              </div>
+            )}
+          </For>
         </div>
-        <Input value={message} placeholder='Enter your message' disabled={sendingMessage()} />
       </div>
-    </Loading>
+      <Input value={message} placeholder='Enter your message' disabled={sendingMessage()} />
+    </Skeleton>
   );
 };
 
