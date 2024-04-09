@@ -17,6 +17,8 @@
   }
 
   .stat {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     margin-left: 8px;
@@ -35,6 +37,7 @@
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 1;
     width: 100%;
     height: 100%;
     background-color: $color-main;
@@ -47,20 +50,6 @@
     &.bad {
       background-color: $color-error;
     }
-  }
-
-  .score {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    display: none;
-  }
-
-  .streak {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    display: none;
   }
 
   .icon {

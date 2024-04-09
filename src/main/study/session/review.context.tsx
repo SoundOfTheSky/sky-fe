@@ -16,7 +16,7 @@ import {
 import { isJapanese as wkIsJapanese, toKana } from 'wanakana';
 
 import basicStore, { NotificationType } from '@/services/basic.store';
-import { CacheContext, handleError } from '@/services/fetch';
+import { handleError } from '@/services/fetch';
 import { atom, atomize, persistentAtom, useInterval, useTimeout } from '@/services/reactive';
 import { shuffleArray } from '@/services/utils';
 
@@ -33,7 +33,6 @@ export enum SubjectStatus {
 function getProvided() {
   // === Hooks ===
   const {
-    outdated,
     availableReviews,
     getSubject,
     getQuestion,
@@ -42,10 +41,10 @@ function getProvided() {
     settings,
     submitAnswer,
     ready,
-    srs: allSrs,
+    srsMap,
   } = useStudy()!;
   const location = useLocation();
-  const { getWord, notify } = basicStore;
+  const { notify } = basicStore;
   const timeInterval = useInterval(updateTime, 1000);
   const owner = getOwner();
 
@@ -113,11 +112,7 @@ function getProvided() {
   /** Current subject stats */
   const subjectStats = createMemo(() => subjectsStats.get(subjectId() ?? 0));
   /** Current subject */
-  const [subject] = createResource(subjectId, (id) =>
-    getSubject(id, {
-      useCache: cache,
-    }),
-  );
+  const [subject] = createResource(subjectId, (id) => getSubject(id));
   /** Subject question statuses array. Also this memo populates questionsStatuses as new question appear */
   const currentSubjectQuestionsStatuses = createMemo<SubjectStatus[]>(
     () =>
@@ -135,11 +130,7 @@ function getProvided() {
   /** Current question id */
   const questionId = createMemo<number | undefined>(() => subject()?.questionIds[questionI()]);
   /** Current question */
-  const [question] = createResource(questionId, (id) =>
-    getQuestion(id, {
-      useCache: cache,
-    }),
-  );
+  const [question] = createResource(questionId, (id) => getQuestion(id));
   /** Answers for current question */
   const answers = createMemo(() => {
     const $question = question();
@@ -152,19 +143,8 @@ function getProvided() {
   });
   /** Is answers to question in japanese */
   const isJapanese = createMemo(() => (question() ? wkIsJapanese(question()!.answers[0]) : false));
-  /** Current question description */
-  const [questionDescription] = createResource(
-    () => question()?.descriptionWordId,
-    (id) =>
-      getWord(id, {
-        useCache: cache,
-      }),
-  );
   /** Current subject SRS */
-  const srs = createMemo(() => {
-    const id = subject()?.srsId;
-    return allSrs()?.find((x) => x.id === id);
-  });
+  const srs = createMemo(() => (subject() ? srsMap[subject()!.srsId - 1] : undefined));
   /** Some stats of session */
   const stats = createMemo(() => {
     const amount = subjectIds().length;
@@ -462,8 +442,6 @@ function getProvided() {
               // Correct after wrong is also fine in lessons mode
               ($subjectStats.status === SubjectStatus.CorrectAfterWrong && $lessonsMode),
           );
-          // Invalidate study context
-          outdated(true);
         } catch (error) {
           handleError(error);
           notify({
@@ -479,8 +457,10 @@ function getProvided() {
   async function sendQuestionDataToServer() {
     const $question = question();
     if (!$question) return;
-    const $synonyms = synonyms();
-    const $note = note();
+    const $synonyms = synonyms()
+      .map((x) => x.trim())
+      .filter(Boolean);
+    const $note = note().trim();
     $question.synonyms = $synonyms;
     $question.note = $note;
     await updateQuestion($question.id, {
@@ -516,7 +496,6 @@ function getProvided() {
     questionAnswered,
     undo,
     cooldownUndo,
-    questionDescription,
     synonyms,
     sendQuestionDataToServer,
     note,
@@ -531,10 +510,6 @@ function getProvided() {
 const Context = createContext<ReturnType<typeof getProvided>>();
 export const ReviewProvider: ParentComponent = (props) => {
   const provided = getProvided();
-  return (
-    <CacheContext.Provider value={provided.cache}>
-      <Context.Provider value={provided}>{props.children}</Context.Provider>
-    </CacheContext.Provider>
-  );
+  return <Context.Provider value={provided}>{props.children}</Context.Provider>;
 };
 export const useReview = () => useContext(Context);

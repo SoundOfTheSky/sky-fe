@@ -5,7 +5,6 @@ import Input from '@/components/form/input';
 import Tags from '@/components/form/tags';
 import Loading from '@/components/loading/loading';
 import Skeleton from '@/components/loading/skeleton';
-import basicStore from '@/services/basic.store';
 import { atom, resizeTextToFit } from '@/services/reactive';
 
 import Tabs from '../components/tabs';
@@ -18,8 +17,7 @@ resizeTextToFit;
 
 const Subject: Component<{ id?: number }> = (properties) => {
   // === Stores ===
-  const { getQuestion, updateQuestion, getSubject, getSRS } = useStudy()!;
-  const { getWord } = basicStore;
+  const { getQuestion, updateQuestion, getSubject, srsMap } = useStudy()!;
   const params = useParams<{ id: string }>();
 
   // === State ===
@@ -34,15 +32,8 @@ const Subject: Component<{ id?: number }> = (properties) => {
     () => subject()?.questionIds[questionI()],
     (id) => getQuestion(id),
   );
-  const [questionDescription] = createResource(
-    () => question()?.descriptionWordId,
-    (id) => getWord(id),
-  );
-  const [srs] = createResource(
-    () => subject()?.srsId,
-    (id) => getSRS(id),
-  );
-  const isLoading = createMemo(() => !subject() || !question() || !srs() || !questionDescription());
+  const srs = createMemo(() => (subject() ? srsMap[subject()!.srsId - 1] : undefined));
+  const isLoading = createMemo(() => !subject() || !question() || !srs());
   /** Current subject progress percent. From 0 to 1 untill unlock, from 1 to 2 utill burned */
   const progressSpinnerOptions = createMemo(() => {
     const $srs = srs();
@@ -86,8 +77,8 @@ const Subject: Component<{ id?: number }> = (properties) => {
     await updateQuestion(question()!.id, {
       note: note().trim(),
       synonyms: synonyms()
-        .filter(Boolean)
-        .map((x) => x.trim()),
+        .map((x) => x.trim())
+        .filter(Boolean),
     });
   }
 
@@ -147,9 +138,9 @@ const Subject: Component<{ id?: number }> = (properties) => {
         </div>
       </div>
       <div class={`card ${s.description}`}>
-        <Loading when={questionDescription()}>
+        <Loading when={question()}>
           <Tabs>
-            {parseHTML(questionDescription()!.word)}
+            {parseHTML(question()!.description)}
             <Show when={subject()!.stage !== null}>
               <div data-tab='Notes & Synonyms'>
                 Synonyms:

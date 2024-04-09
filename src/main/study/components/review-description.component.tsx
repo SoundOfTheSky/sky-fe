@@ -10,13 +10,13 @@ import Tabs from './tabs';
 import s from './review-description.module.scss';
 
 export default function ReviewDescription() {
-  const { questionDescription, autoplayAudio, synonyms, sendQuestionDataToServer, note } = useReview()!;
+  const { question, autoplayAudio, synonyms, sendQuestionDataToServer, note } = useReview()!;
 
   return (
     <div class={`card ${s.description}`}>
-      <Loading when={questionDescription()}>
+      <Loading when={question()}>
         <Tabs>
-          {parseHTML(questionDescription()!.word, autoplayAudio())}
+          {parseHTML(question()!.description, autoplayAudio())}
           <div data-tab='Notes & Synonyms'>
             Synonyms:
             <br />

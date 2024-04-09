@@ -43,7 +43,7 @@ export type Question = {
   id: number;
   answers: string[];
   question: string;
-  descriptionWordId: number;
+  description: string;
   subjectId: number;
   alternateAnswers?: Record<string, string>;
   choose?: boolean;
@@ -86,7 +86,6 @@ function getProvided() {
   const themesEndpoint = `${studyEndpoint}/themes`;
   const subjectsEndpoint = `${studyEndpoint}/subjects`;
   const questionsEndpoint = `${studyEndpoint}/questions`;
-  const srsEndpoint = `${studyEndpoint}/srs`;
   const statsEndpoint = `${studyEndpoint}/stats`;
 
   // === STATE ===
@@ -105,7 +104,20 @@ function getProvided() {
   const outdated = atom(false);
   const offlineProgress = atom(0);
   const themes = atom<Theme[]>();
-  const srs = atom<SRS[]>();
+  const srsMap = [
+    {
+      id: 1,
+      ok: 5,
+      timings: [4, 8, 23, 47, 167, 335, 719, 2879],
+      title: 'Default',
+    },
+    {
+      id: 2,
+      ok: 5,
+      timings: [2, 4, 8, 23, 167, 335, 719, 2879],
+      title: 'Fast unlock',
+    },
+  ];
   const statsGraph = atom<number[]>([]);
 
   // === Memos ===
@@ -134,13 +146,6 @@ function getProvided() {
     if (dbSubject) return dbSubject;
     const item = await request<Theme[]>(themesEndpoint, options);
     void db.put('keyval', item, 'themes');
-    return item;
-  }
-  async function getAllSRS(options?: CommonRequestOptions & { ignoreDB?: boolean }) {
-    const dbSubject = options?.ignoreDB ? undefined : ((await db.get('keyval', 'srs')) as Promise<SRS[]>);
-    if (dbSubject) return dbSubject;
-    const item = await request<SRS[]>(srsEndpoint, options);
-    void db.put('keyval', item, 'srs');
     return item;
   }
   async function getSubject(id: number, options?: CommonRequestOptions & { ignoreDB?: boolean }) {
@@ -203,8 +208,9 @@ function getProvided() {
       synonyms?: string[];
     },
   ) {
+    outdated(true);
     return request(`${questionsEndpoint}/${id}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body,
       offlineQueue: true,
     });
@@ -213,37 +219,35 @@ function getProvided() {
   async function submitAnswer(id: number, answers: string[], took: number, correct: boolean) {
     // Don't update last_updated in this function!!!
     const subject = await db.get('studySubjects', id);
-    const allsrs = (await db.get('keyval', 'srs')) as SRS[];
     const now = Date.now();
-    if (subject && allsrs) {
-      const SRS = allsrs.find((x) => x.id === subject.srsId);
-      if (SRS) {
-        subject.stage = Math.min(1, Math.max(SRS.timings.length + 1, (subject.stage ?? 0) + (correct ? 1 : -2)));
-        subject.nextReview =
-          subject.stage >= SRS.timings.length ? null : ~~(now / 3_600_000) + SRS.timings[subject.stage - 1];
-        await db.put('studySubjects', subject);
-        const themes = (await db.get('keyval', 'themes')) as Theme[];
-        const theme = themes.find((t) => t.id === subject.themeId)!;
-        theme.lessons = theme.lessons!.filter((x) => x !== subject.id);
-        for (const hour in theme.reviews) {
-          theme.reviews[hour] = theme.reviews[hour].filter((x) => x !== subject.id);
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          if (theme.reviews[hour].length === 0) delete theme.reviews[hour];
-        }
-        if (!theme.reviews![subject.nextReview!]) theme.reviews![subject.nextReview!] = [];
-        theme.reviews![subject.nextReview!].push(subject.id);
-        await db.put('keyval', themes, 'themes');
-        await db.put('studyStats', {
-          created: Math.floor(now / 1000),
-          answers,
-          took,
-          correct,
-          subjectId: id,
-          themeId: subject?.themeId,
-        });
+    if (subject) {
+      const SRS = srsMap[subject.srsId - 1];
+      subject.stage = Math.min(1, Math.max(SRS.timings.length + 1, (subject.stage ?? 0) + (correct ? 1 : -2)));
+      subject.nextReview =
+        subject.stage >= SRS.timings.length ? null : ~~(now / 3_600_000) + SRS.timings[subject.stage - 1];
+      await db.put('studySubjects', subject);
+      const themes = (await db.get('keyval', 'themes')) as Theme[];
+      const theme = themes.find((t) => t.id === subject.themeId)!;
+      theme.lessons = theme.lessons!.filter((x) => x !== subject.id);
+      for (const hour in theme.reviews) {
+        theme.reviews[hour] = theme.reviews[hour].filter((x) => x !== subject.id);
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        if (theme.reviews[hour].length === 0) delete theme.reviews[hour];
       }
+      if (!theme.reviews![subject.nextReview!]) theme.reviews![subject.nextReview!] = [];
+      theme.reviews![subject.nextReview!].push(subject.id);
+      await db.put('keyval', themes, 'themes');
+      await db.put('studyStats', {
+        created: Math.floor(now / 1000),
+        answers,
+        took,
+        correct,
+        subjectId: id,
+        themeId: subject?.themeId,
+      });
     }
-
+    // Invalidate study context
+    outdated(true);
     return request(`${subjectsEndpoint}/${id}/answer`, {
       method: 'POST',
       offlineQueue: true,
@@ -294,7 +298,7 @@ function getProvided() {
    *
    * required must be passed ALL needed ids.
    */
-  async function* updateEntity<T extends 'studySubjects' | 'studyQuestions' | 'words'>(
+  async function* updateEntity<T extends 'studySubjects' | 'studyQuestions'>(
     url: string,
     type: T,
     required: Set<number>,
@@ -333,15 +337,12 @@ function getProvided() {
     offlineProgress(0.01);
     const $online = untrack(basicStore.online);
     try {
-      // If online always update SRS and Themes cause they are small
-      const $srs = await getAllSRS({
-        ignoreDB: $online,
-      });
-      srs($srs);
+      // If online always update Themes cause they are small
       const $themes = await getThemes({
         ignoreDB: $online,
       });
       themes($themes);
+      // Outdated is used in means of need to update
       outdated(false);
       // Building required subjects
       const requiredSubjects = new Set<number>();
@@ -353,23 +354,23 @@ function getProvided() {
       offlineProgress(0.1);
       // Building required questions
       const requiredQuestions = new Set<number>();
-      for await (const subject of updateEntity('/api/study/subjects', 'studySubjects', requiredSubjects))
+      let i = 0;
+      for await (const subject of updateEntity('/api/study/subjects', 'studySubjects', requiredSubjects)) {
         for (const id of subject.questionIds) requiredQuestions.add(id);
+        i++;
+        offlineProgress((i / requiredSubjects.size) * 0.2 + 0.1);
+      }
       requiredSubjects.clear();
-      offlineProgress(0.3);
-      // Building required words
-      const requiredWords = new Set<number>();
-      for await (const question of updateEntity('/api/study/questions', 'studyQuestions', requiredQuestions))
-        requiredWords.add(question.descriptionWordId);
-      requiredQuestions.clear();
-      offlineProgress(0.6);
+      i = 0;
       const extractStaticRegEx = /"\/static\/(.+?)"/gs;
-      // Fetching static in words. It will be cached by browser automatically.
-      for await (const word of updateEntity('/api/words', 'words', requiredWords))
-        for (const [_, path] of word.word.matchAll(extractStaticRegEx))
+      for await (const question of updateEntity('/api/study/questions', 'studyQuestions', requiredQuestions)) {
+        for (const [_, path] of question.description.matchAll(extractStaticRegEx))
           await (await fetch('/static/' + path, { cache: 'force-cache' })).arrayBuffer();
-      offlineProgress(1);
-      await updateStats();
+        i++;
+        offlineProgress((i / requiredQuestions.size) * 0.7 + 0.3);
+      }
+      requiredQuestions.clear();
+      void updateStats();
     } catch (e) {
       offlineProgress(0);
       console.error(e);
@@ -393,7 +394,6 @@ function getProvided() {
     updateQuestion,
     submitAnswer,
     getImmersionKitExamples,
-    getAllSRS,
     searchSubjects,
     settings,
     now,
@@ -403,7 +403,7 @@ function getProvided() {
     offlineProgress,
     offlineUnavailable,
     ready,
-    srs,
+    srsMap,
     activity,
   };
 }

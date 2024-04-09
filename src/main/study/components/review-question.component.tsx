@@ -26,16 +26,14 @@ export default function ReviewQuestion() {
     autoplayAudio,
     currentSubjectQuestionsStatuses,
     questionI,
-    srs,
   } = useReview()!;
-  const { offlineUnavailable } = useStudy()!;
+  const { offlineUnavailable, srsMap } = useStudy()!;
 
   /** Current subject stage. Automatically changes based on status. */
   const subjectStage = createMemo(() => {
     const $subject = subject();
-    const $srs = srs();
     const $subjectStats = subjectStats();
-    if (!$subject || !$srs || !$subjectStats) return 0;
+    if (!$subject || !$subjectStats) return 0;
     let delta = 0;
     switch ($subjectStats.status) {
       case SubjectStatus.Correct: {
@@ -49,18 +47,19 @@ export default function ReviewQuestion() {
     }
     return $subject.stage === 0 && delta < 0
       ? 0
-      : Math.max(1, Math.min($srs.timings.length + 1, $subject.stage! + delta));
+      : Math.max(1, Math.min(srsMap[$subject.srsId - 1].timings.length + 1, $subject.stage! + delta));
   });
   /** Current subject progress percent. From 0 to 1 untill unlock, from 1 to 2 utill burned */
   const progressSpinnerOptions = createMemo(() => {
-    const $srs = srs();
+    const $subject = subject();
     const $subjectStage = subjectStage();
-    if (!$srs)
+    if (!$subject)
       return {
         color: '#6785fd',
         bgColor: '#192039',
         progress: 0,
       };
+    const $srs = srsMap[$subject.srsId - 1];
     if ($subjectStage > $srs.ok)
       return {
         color: '#3d63ff',

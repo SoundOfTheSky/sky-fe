@@ -15,11 +15,16 @@ const StudyStats: Component = () => {
   // === Effects ===
   // Scroll in view today if possible
   createEffect(() => {
-    if (statsGraph()?.length && element) {
-      const today = document.querySelector(`.${s.today}`) as HTMLElement | undefined;
-      if (today) element.scrollLeft = today.offsetLeft - element.clientWidth / 2;
-    }
+    if (statsGraph()?.length && element)
+      setTimeout(() => {
+        const today = element.querySelector(`.${s.today}`) as HTMLElement | undefined;
+        today?.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'center',
+        });
+      }, 100);
   });
+
   return (
     <div class={`card ${s.studyStats}`}>
       <div class='card-title'>Study activity graph</div>

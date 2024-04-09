@@ -22,13 +22,13 @@ const StudyActivity: Component = () => {
         class={s.skeleton}
       >
         <div
-          class={s.progress}
+          class={`${s.progress} ${activity()[0] < 25 ? s.bad : ''}`}
           style={{
             transform: `scaleX(${(activity()[0] / MAX_SCORE) * 100}%)`,
           }}
         />
         <div
-          class={`${s.progress} ${s.tomorrow} ${activity()[0] / 2 < 25 ? s.bad : ''}`}
+          class={`${s.progress} ${s.tomorrow} ${activity()[0] / 4 < 25 ? s.bad : ''}`}
           style={{
             transform: `scaleX(${(activity()[0] / 4 / MAX_SCORE) * 100}%)`,
           }}

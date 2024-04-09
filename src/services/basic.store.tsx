@@ -5,8 +5,6 @@ import { useRegisterSW } from 'virtual:pwa-register/solid';
 import Button from '@/components/form/button';
 import Icon from '@/components/icon';
 
-import db from './db';
-import { CommonRequestOptions, request } from './fetch';
 import { atom } from './reactive';
 
 export enum NotificationType {
@@ -74,15 +72,6 @@ export default createRoot(() => {
     },
   });
 
-  // === API ===
-  async function getWord(id: number, options?: CommonRequestOptions & { ignoreDB?: boolean }) {
-    const dbSubject = options?.ignoreDB ? undefined : await db.get('words', id);
-    if (dbSubject) return dbSubject;
-    const word = await request<Word>(`/api/words/${id}`, options);
-    void db.put('words', word);
-    return word;
-  }
-
   // === State ===
   const online = atom(true);
   const notifications = atom<Notification[]>([]);
@@ -112,7 +101,6 @@ export default createRoot(() => {
   }
 
   return {
-    getWord,
     notify,
     notifications,
     removeNotification,

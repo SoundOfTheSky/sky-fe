@@ -2,7 +2,6 @@ import { openDB } from 'idb';
 
 import { Question, Stat, Subject } from '@/main/study/services/study.context';
 
-import { Word } from './basic.store';
 import { RequestOptions } from './fetch';
 
 export type DBOptions = {
@@ -29,10 +28,6 @@ export type DBOptions = {
     key: Date;
     value: Stat;
   };
-  words: {
-    key: number;
-    value: Word;
-  };
 };
 const db = await openDB<DBOptions>('skydb', 1, {
   upgrade(database) {
@@ -48,9 +43,6 @@ const db = await openDB<DBOptions>('skydb', 1, {
     });
     database.createObjectStore('studyStats', {
       keyPath: 'created',
-    });
-    database.createObjectStore('words', {
-      keyPath: 'id',
     });
   },
 });

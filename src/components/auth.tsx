@@ -35,7 +35,7 @@ export default ((properties) => {
 
   useGlobalEvent('keypress', (event) => {
     if (AuthStore.me() || AuthStore.loading()) return;
-    if (event.code === 'Enter') void login(username());
+    if (event.code === 'Enter') void login(username().trim());
   });
 
   return (
