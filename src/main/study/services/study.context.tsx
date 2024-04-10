@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox';
+import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { ParentComponent, createContext, createEffect, createMemo, untrack, useContext } from 'solid-js';
 
 import authStore from '@/services/auth.store';
@@ -80,6 +82,52 @@ export type Stat = {
   answers: string[];
   took: number;
 };
+
+const QuestionUpdateT = TypeCompiler.Compile(
+  Type.Object({
+    note: Type.Optional(
+      Type.String({
+        minLength: 0,
+        maxLength: 4096,
+      }),
+    ),
+    synonyms: Type.Optional(
+      Type.Array(
+        Type.String({
+          minLength: 1,
+          maxLength: 64,
+        }),
+        {
+          minItems: 0,
+          maxItems: 9,
+        },
+      ),
+    ),
+  }),
+);
+const AnswerT = TypeCompiler.Compile(
+  Type.Object({
+    created: Type.Number({
+      minimum: 0,
+      maximum: Number.MAX_SAFE_INTEGER,
+    }),
+    answers: Type.Array(
+      Type.String({
+        minLength: 1,
+        maxLength: 64,
+      }),
+      {
+        minItems: 1,
+        maxItems: 9,
+      },
+    ),
+    took: Type.Number({
+      minimum: 0,
+      maximum: Number.MAX_SAFE_INTEGER,
+    }),
+    correct: Type.Boolean(),
+  }),
+);
 
 function getProvided() {
   const studyEndpoint = '/api/study';
@@ -208,18 +256,40 @@ function getProvided() {
       synonyms?: string[];
     },
   ) {
+    if (!QuestionUpdateT.Check(body)) throw [...QuestionUpdateT.Errors(body)];
+    const question = await db.get('studyQuestions', id);
+    const questionCopy = structuredClone(question);
+    if (question) {
+      question.note = body.note;
+      question.synonyms = body.synonyms;
+      await db.put('studyQuestions', question);
+    }
     outdated(true);
-    return request(`${questionsEndpoint}/${id}`, {
-      method: 'PUT',
-      body,
-      offlineQueue: true,
-    });
+    try {
+      return await request(`${questionsEndpoint}/${id}`, {
+        method: 'PUT',
+        body,
+        offlineQueue: true,
+      });
+    } catch (e) {
+      // Rollback if error
+      if (questionCopy) await db.put('studyQuestions', questionCopy);
+      throw e;
+    }
   }
   // eslint-disable-next-line sonarjs/cognitive-complexity
   async function submitAnswer(id: number, answers: string[], took: number, correct: boolean) {
+    const now = Date.now();
+    const body = {
+      created: now,
+      answers,
+      took,
+      correct,
+    };
+    if (!AnswerT.Check(body)) throw [...AnswerT.Errors(body)];
     // Don't update last_updated in this function!!!
     const subject = await db.get('studySubjects', id);
-    const now = Date.now();
+    const subjectCopy = structuredClone(subject);
     if (subject) {
       const SRS = srsMap[subject.srsId - 1];
       subject.stage = Math.min(1, Math.max(SRS.timings.length + 1, (subject.stage ?? 0) + (correct ? 1 : -2)));
@@ -248,16 +318,17 @@ function getProvided() {
     }
     // Invalidate study context
     outdated(true);
-    return request(`${subjectsEndpoint}/${id}/answer`, {
-      method: 'POST',
-      offlineQueue: true,
-      body: {
-        created: now,
-        answers,
-        took,
-        correct,
-      },
-    });
+    try {
+      return await request(`${subjectsEndpoint}/${id}/answer`, {
+        method: 'POST',
+        offlineQueue: true,
+        body,
+      });
+    } catch (e) {
+      // Rollback if error
+      if (subjectCopy) await db.put('studySubjects', subjectCopy);
+      throw e;
+    }
   }
   async function getImmersionKitExamples(word: string, options?: CommonRequestOptions) {
     return request<ImmersionKitResponse>(

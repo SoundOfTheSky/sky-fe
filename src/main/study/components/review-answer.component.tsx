@@ -17,6 +17,7 @@ import Input from '@/components/form/input';
 import Icon from '@/components/icon';
 import Tooltip from '@/components/tooltip';
 import { atom, useGlobalEvent } from '@/services/reactive';
+import { shuffleArray } from '@/services/utils';
 
 import { SubjectStatus, useReview } from '../session/review.context';
 
@@ -41,12 +42,18 @@ export default function ReviewAnswer() {
     cooldownUndo,
     undo,
     question,
-    answers,
   } = useReview()!;
   // === Memos ===
   const inputDisabled = createMemo(
     () => isLoading() || !!previousState() || subjectStats()?.status === SubjectStatus.Unlearned,
   );
+  const answerButtons = createMemo(() => {
+    const $question = question();
+    if (!$question?.choose) return;
+    const answers = [...$question.answers, ...($question.synonyms ?? [])];
+    if (answers[0] !== 'Correct') return shuffleArray(answers);
+    return answers;
+  });
   // === Functions ===
   function onKeyPress(event: KeyboardEvent) {
     if (
@@ -88,9 +95,9 @@ export default function ReviewAnswer() {
           />
         }
       >
-        <Match when={question()?.choose}>
+        <Match when={answerButtons()}>
           <div class={s.answerButtons}>
-            <For each={answers().length === 0 ? ['Correct', 'Wrong'] : answers()}>
+            <For each={answerButtons()}>
               {(x) => (
                 <Button
                   disabled={inputDisabled()}

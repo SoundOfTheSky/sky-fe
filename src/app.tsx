@@ -14,7 +14,7 @@ import './fonts.scss';
 
 const App: ParentComponent = (properties) => {
   const fontPixelization = persistentAtom('fontPixelization', true);
-  const JPFontPixelization = persistentAtom('JPFontPixelization', true);
+  const JPFontPixelization = persistentAtom('JPFontPixelization', false);
   createRenderEffect(() => {
     document.body.classList.remove('pixelated-font');
     document.body.classList.remove('jp-pixelated-font');

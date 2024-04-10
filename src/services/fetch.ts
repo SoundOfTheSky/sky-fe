@@ -3,6 +3,7 @@ import { createContext, useContext } from 'solid-js';
 import BasicStore, { NotificationType } from '@/services/basic.store';
 
 import db from './db';
+import { findErrorText } from './utils';
 
 export class RequestError<T = unknown> extends Error {
   code;
@@ -22,6 +23,7 @@ export type RequestOptions = Omit<RequestInit, 'body'> & {
   query?: Record<string, string>;
   useCache?: Map<string, unknown>;
   offlineQueue?: boolean;
+  timeout?: number;
 };
 export type CommonRequestOptions = Omit<RequestOptions, 'raw' | 'offlineQueue'>;
 
@@ -76,7 +78,11 @@ export async function request<T>(url: string, options: RequestOptions = {}): Pro
       const val = options.useCache.get(key) as T | undefined;
       if (val) return val;
     }
+    const controller = new AbortController();
+    options.signal = controller.signal;
+    const timeout = setTimeout(() => controller.abort('Request timeout'), options.timeout ?? 10000);
     const response = await fetch(url, options as RequestInit);
+    clearTimeout(timeout);
     if (options.raw) {
       if (options.useCache) options.useCache.set(key!, response);
       return response;
@@ -106,14 +112,13 @@ export function handleError(error: unknown) {
   let title = 'Unknown error';
   if (error instanceof RequestError) {
     if (error.code === 0 || error.code >= 500) BasicStore.online(false);
-    title = typeof error.body === 'string' ? error.body : error.message;
-  } else if (error instanceof Error) title = error.message;
-  else if (typeof error === 'string') title = error;
-  else if (typeof error === 'object' && error !== null) return handleError(Object.values(error)[0]);
+    if (error.body) title = findErrorText(error.body) ?? title;
+    else title = error.message;
+  } else title = findErrorText(error) ?? title;
   BasicStore.notify({
     title,
     type: NotificationType.Error,
-    timeout: 5000,
+    timeout: 10000,
   });
   console.error(error);
 }

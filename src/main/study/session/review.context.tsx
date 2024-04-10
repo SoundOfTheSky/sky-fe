@@ -131,16 +131,6 @@ function getProvided() {
   const questionId = createMemo<number | undefined>(() => subject()?.questionIds[questionI()]);
   /** Current question */
   const [question] = createResource(questionId, (id) => getQuestion(id));
-  /** Answers for current question */
-  const answers = createMemo(() => {
-    const $question = question();
-    if (!$question) return [];
-    if ($question.choose) {
-      if ($question.answers[0] === 'Correct') return [];
-      return [$question.answers[0], ...($question.synonyms ?? [])];
-    }
-    return [...$question.answers, ...($question.synonyms ?? [])];
-  });
   /** Is answers to question in japanese */
   const isJapanese = createMemo(() => (question() ? wkIsJapanese(question()!.answers[0]) : false));
   /** Current subject SRS */
@@ -219,6 +209,15 @@ function getProvided() {
   });
 
   // === Functions ===
+  /** Get all answers for current question */
+  function getAnswers() {
+    return untrack(() => {
+      const $question = question();
+      if (!$question) return [];
+      if ($question.choose) return [$question.answers[0], ...($question.synonyms ?? [])];
+      return [...$question.answers, ...($question.synonyms ?? [])];
+    }).map((x) => x.toLowerCase());
+  }
   /** Clear some state on question change. Also used as effect */
   function onQuestionChange() {
     const $question = question();
@@ -229,7 +228,7 @@ function getProvided() {
         answer('');
         note($question.note ?? '');
         synonyms($question.synonyms ?? []);
-        hint(subjectStats()?.status === SubjectStatus.Unlearned ? answers().join(', ') : '');
+        hint(subjectStats()?.status === SubjectStatus.Unlearned ? getAnswers().join(', ') : '');
         clearTimeout(cooldownUndo());
         cooldownUndo(undefined);
       });
@@ -289,20 +288,20 @@ function getProvided() {
   function commitAnswer(q: Question, a: string) {
     untrack(() => {
       batch(() => {
-        const $answers = answers();
-        if ($answers.length === 0 ? a === 'correct' : $answers.some((qa) => qa.toLowerCase() === a)) {
+        const answers = getAnswers();
+        if (answers.some((qa) => qa === a)) {
           updateQuestionStatus(
             lessonsMode() || questionStatus() === SubjectStatus.Unanswered
               ? SubjectStatus.Correct
               : SubjectStatus.CorrectAfterWrong,
           );
-          hint($answers.join(', '));
+          hint(answers.join(', '));
           subjectStats()!.answers.push(a);
         } else if (q.alternateAnswers && a in q.alternateAnswers) hint(q.alternateAnswers[answer()]);
         else {
           if (!lessonsMode()) subjectStats()!.answers.push(a);
           updateQuestionStatus(SubjectStatus.Wrong);
-          hint($answers.join(', '));
+          hint(answers.join(', '));
           runWithOwner(owner, () => {
             cooldownUndo(useTimeout(() => cooldownUndo(undefined), 20_000));
             cooldownNext(useTimeout(() => cooldownNext(undefined), 2000));
@@ -443,30 +442,39 @@ function getProvided() {
               ($subjectStats.status === SubjectStatus.CorrectAfterWrong && $lessonsMode),
           );
         } catch (error) {
-          handleError(error);
           notify({
-            title: 'Error while trying to commit your answer!',
+            title: 'Answer is not saved!',
             timeout: 10_000,
             type: NotificationType.Error,
           });
+          handleError(error);
         }
       }
     });
   }
   /** Update synonyms and note */
   async function sendQuestionDataToServer() {
-    const $question = question();
-    if (!$question) return;
-    const $synonyms = synonyms()
-      .map((x) => x.trim())
-      .filter(Boolean);
-    const $note = note().trim();
-    $question.synonyms = $synonyms;
-    $question.note = $note;
-    await updateQuestion($question.id, {
-      note: $note,
-      synonyms: $synonyms,
-    });
+    try {
+      const $question = question();
+      if (!$question) return;
+      const $synonyms = synonyms()
+        .map((x) => x.trim())
+        .filter(Boolean);
+      const $note = note().trim();
+      $question.synonyms = $synonyms;
+      $question.note = $note;
+      await updateQuestion($question.id, {
+        note: $note,
+        synonyms: $synonyms,
+      });
+    } catch (error) {
+      notify({
+        title: 'Changes are not saved!',
+        timeout: 10_000,
+        type: NotificationType.Error,
+      });
+      handleError(error);
+    }
   }
 
   return {
@@ -503,7 +511,7 @@ function getProvided() {
     cache,
     startTime,
     subjectsStats,
-    answers,
+    getAnswers,
   };
 }
 

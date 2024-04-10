@@ -58,7 +58,8 @@ export function cleanupHTML(
     .join('\n')
     .replaceAll(/\s{2,}/g, '\n');
 
-  return ([...text.matchAll(/<.+?>/g)].map((el) => [el[0].slice(1, -1).split(' ')[0], el.index]) as [string, number][])
+  return [...text.matchAll(/<.+?>/g)]
+    .map((el) => [el[0].slice(1, -1).split(' ')[0], el.index] as const)
     .filter(([t]) => whitelist.every((w) => t !== w && t !== `/${w}`))
     .reverse()
     .reduce((acc, [, index]) => acc.slice(0, index) + acc.slice(acc.indexOf('>', index) + 1), text);
@@ -240,3 +241,49 @@ export async function retry<T>(fn: () => Promise<T>, retries: number, interval: 
 export const wait = (time: number) => new Promise((r) => setTimeout(r, time));
 /** Empty function that does nothing */
 export const noop = () => {};
+/** Find error in complex object */
+const isTypeboxError = (e: unknown): e is { message: string; path: string } =>
+  !!e &&
+  typeof e === 'object' &&
+  typeof e['message' as keyof typeof e] === 'string' &&
+  typeof e['path' as keyof typeof e] === 'string';
+const typeboxErrorToText = (e: { message: string; path: string }) => `${e.message} at ${e.path}`;
+export function findErrorText(
+  error: unknown,
+  priorityErrorKeys = [
+    'message',
+    'messages',
+    'msg',
+    'msgs',
+    'text',
+    'txt',
+    'error',
+    'errors',
+    'err',
+    'body',
+    'payload',
+    'e',
+  ],
+): string | undefined {
+  if (!error) return;
+  if (typeof error === 'string') {
+    try {
+      return findErrorText(JSON.parse(error), priorityErrorKeys);
+    } catch {
+      return error;
+    }
+  }
+  if (isTypeboxError(error)) return typeboxErrorToText(error);
+  if (Array.isArray(error) && error.every(isTypeboxError)) return error.map(typeboxErrorToText).join('.\n');
+  if (typeof error === 'object') {
+    const keys = Object.keys(error)
+      .map((k) => [k, priorityErrorKeys.indexOf(k)] as const)
+      .map(([k, v]) => [k, v === -1 ? Infinity : v] as const)
+      .toSorted(([_, v], [_k, v2]) => v - v2)
+      .map(([k]) => k);
+    for (const key of keys) {
+      const found = findErrorText(error[key as keyof typeof error], priorityErrorKeys);
+      if (found) return found;
+    }
+  }
+}
