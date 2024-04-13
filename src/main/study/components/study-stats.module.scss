@@ -6,6 +6,11 @@ $offset: $size + $margin;
 
 .study-stats {
   width: 50%;
+  height: 250px;
+
+  .skeleton {
+    height: $offset * 7;
+  }
 
   .days {
     display: flex;

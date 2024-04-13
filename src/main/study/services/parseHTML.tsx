@@ -1,7 +1,6 @@
 import { JSX } from 'solid-js';
 
 import Audio from '@/components/audio';
-import Img from '@/components/img';
 import IK from '@/main/study/components/ik';
 import JPPitchAccent from '@/main/study/components/jp-pitch-accent';
 
@@ -45,15 +44,6 @@ export default function parseHTML(text: string, autoplayAudio = 0): JSX.Element[
     },
     ik(element) {
       return <IK>{/*@once*/ element.textContent}</IK>;
-    },
-    img(element) {
-      return (
-        <Img
-          url={/*@once*/ element.getAttribute('src')!}
-          alt={/*@once*/ element.getAttribute('alt') ?? undefined}
-          class={/*@once*/ element.getAttribute('class') ?? undefined}
-        />
-      );
     },
     'jp-pitch-accent': (element) => {
       return (

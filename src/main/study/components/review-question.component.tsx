@@ -110,22 +110,24 @@ export default function ReviewQuestion() {
       <div class={s.stats}>
         {stats().passed}/{subjectIds().length} {Math.floor(stats().correctPercent * 100)}% {timePassed()} {eta()}m
       </div>
-      <Skeleton class={s.titleSkeleton} loading={isLoading()} offline={offlineUnavailable()}>
-        <div class={s.title} use:resizeTextToFit={[48, question(), hint(), isLoading()]}>
-          <Show
-            when={
-              (previousState() || subjectStats()?.status === SubjectStatus.Unlearned) &&
-              !question()!.question.includes(subject()!.title) &&
-              !hint().includes(subject()!.title)
-            }
-          >
-            <b>{subject()!.title}</b>
-            <br />
-          </Show>
-          <div>{parseHTML(question()!.question, autoplayAudio())}</div>
-          {hint()}
-        </div>
-      </Skeleton>
+      <div class={s.titleWrapper}>
+        <Skeleton loading={isLoading()} offline={offlineUnavailable()}>
+          <div class={s.title} use:resizeTextToFit={[48, question(), hint(), isLoading()]}>
+            <Show
+              when={
+                (previousState() || subjectStats()?.status === SubjectStatus.Unlearned) &&
+                !question()!.question.includes(subject()!.title) &&
+                !hint().includes(subject()!.title)
+              }
+            >
+              <b>{subject()!.title}</b>
+              <br />
+            </Show>
+            <div>{parseHTML(question()!.question, autoplayAudio())}</div>
+            {hint()}
+          </div>
+        </Skeleton>
+      </div>
       <div class={s.story}>
         <Index each={currentSubjectQuestionsStatuses()}>
           {(element, index) => (

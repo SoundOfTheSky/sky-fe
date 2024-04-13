@@ -7,6 +7,7 @@ import PageLoading from '@/components/global/page-loading';
 import { persistentAtom } from '@/services/reactive';
 import { opacityTransition } from '@/services/transition';
 
+import AudioPlayer from './components/audio-player';
 import { WebSocketProvider } from './services/web-socket.context';
 
 import './global.scss';
@@ -32,6 +33,7 @@ const App: ParentComponent = (properties) => {
         <Transition {...opacityTransition} mode='outin'>
           {properties.children}
         </Transition>
+        <AudioPlayer />
       </WebSocketProvider>
     </MetaProvider>
   );

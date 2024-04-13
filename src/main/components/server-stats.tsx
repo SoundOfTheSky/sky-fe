@@ -53,23 +53,25 @@ export default (() => {
   });
 
   return (
-    <Skeleton loading={loading()} offline={ws.status() === WebSocketStatus.closed} class={`card ${s.serverStats}`}>
-      <div class='card-title'>Online stats</div>
-      <div class={s.fields}>
-        <For each={fields()}>
-          {([title, icon, val]) => (
-            <Tooltip content={title}>
-              <div class={s.field}>
-                <Icon path={icon} inline size='24' />
-                <span class={s.counter}>
-                  <span>{val}</span>
-                  <span>888888888</span>
-                </span>
-              </div>
-            </Tooltip>
-          )}
-        </For>
-      </div>
-    </Skeleton>
+    <div class={`card ${s.serverStats}`}>
+      <Skeleton loading={loading()} offline={ws.status() === WebSocketStatus.closed}>
+        <div class='card-title'>Online stats</div>
+        <div class={s.fields}>
+          <For each={fields()}>
+            {([title, icon, val]) => (
+              <Tooltip content={title}>
+                <div class={s.field}>
+                  <Icon path={icon} inline size='24' />
+                  <span class={s.counter}>
+                    <span>{val}</span>
+                    <span>888888888</span>
+                  </span>
+                </div>
+              </Tooltip>
+            )}
+          </For>
+        </div>
+      </Skeleton>
+    </div>
   );
 }) as Component;

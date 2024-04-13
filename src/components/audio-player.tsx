@@ -1,10 +1,8 @@
 import { mdiClose, mdiPause, mdiPlay, mdiSkipNext, mdiSkipPrevious } from '@mdi/js';
-import { Component, Show, batch, createEffect } from 'solid-js';
-import { Transition } from 'solid-transition-group';
+import { Component, batch, createEffect } from 'solid-js';
 
 import AudioStore from '@/services/audio.store';
 import { atom, useInterval } from '@/services/reactive';
-import { slideDownTransition } from '@/services/transition';
 
 import Button from './form/button';
 import Icon from './icon';
@@ -58,7 +56,7 @@ const AudioPlayer: Component = () => {
   }
   function onEnded() {
     batch(() => {
-      time(0);
+      time(maxTime());
       const $currentI = currentI();
       if ($currentI < queue().length - 1) changeTrack(1);
     });
@@ -82,46 +80,42 @@ const AudioPlayer: Component = () => {
   }
 
   return (
-    <Transition {...slideDownTransition}>
-      <Show when={queue().length > 0}>
-        <div class={s.audioPlayer}>
-          <audio
-            ref={(el) => audioElement(el)}
-            class={s.audio}
-            onPlay={() => playing(true)}
-            onPause={() => playing(false)}
-            onCanPlay={onCanPlay}
-            onEnded={onEnded}
-          />
-          <Button disabled={currentI() < 1} onClick={() => changeTrack(-1)}>
-            <Icon path={mdiSkipPrevious} size='32' />
-          </Button>
-          <Button onClick={() => playing((x) => !x)}>
-            <Icon path={playing() ? mdiPause : mdiPlay} size='32' />
-          </Button>
-          <Button disabled={currentI() >= queue().length - 1} onClick={() => changeTrack(1)}>
-            <Icon path={mdiSkipNext} size='32' />
-          </Button>
-          {
-            // eslint-disable-next-line prettier/prettier, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div class={s.audioPlayer}>
+      <audio
+        ref={(el) => audioElement(el)}
+        class={s.audio}
+        onPlay={() => playing(true)}
+        onPause={() => playing(false)}
+        onCanPlay={onCanPlay}
+        onEnded={onEnded}
+      />
+      <Button disabled={currentI() < 1} onClick={() => changeTrack(-1)}>
+        <Icon path={mdiSkipPrevious} size='32' />
+      </Button>
+      <Button onClick={() => playing((x) => !x)}>
+        <Icon path={playing() ? mdiPause : mdiPlay} size='32' />
+      </Button>
+      <Button disabled={currentI() >= queue().length - 1} onClick={() => changeTrack(1)}>
+        <Icon path={mdiSkipNext} size='32' />
+      </Button>
+      {
+        // eslint-disable-next-line prettier/prettier, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
           }<div class={s.progress} onClick={onProgressClick}>
-            <div>
-              {formatTime(time())} {queue().length === 1 ? '' : `${currentI() + 1} of ${queue().length}`}
-            </div>
-            <div>{formatTime(maxTime())}</div>
-            <div
-              class={s.line}
-              style={{
-                transform: `scaleX(${time() / maxTime()})`,
-              }}
-            />
-          </div>
-          <Button onClick={() => queue([])}>
-            <Icon path={mdiClose} size='32' />
-          </Button>
+        <div>
+          {formatTime(time())} {queue().length === 1 ? '' : `${currentI() + 1} of ${queue().length}`}
         </div>
-      </Show>
-    </Transition>
+        <div>{formatTime(maxTime())}</div>
+        <div
+          class={s.line}
+          style={{
+            transform: `scaleX(${time() / maxTime()})`,
+          }}
+        />
+      </div>
+      <Button onClick={() => queue([])}>
+        <Icon path={mdiClose} size='32' />
+      </Button>
+    </div>
   );
 };
 export default AudioPlayer;

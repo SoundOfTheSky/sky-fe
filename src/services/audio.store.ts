@@ -12,7 +12,12 @@ export default createRoot(() => {
   const maxTime = atom(0);
   const time = atom(0);
   const currentI = atom(0);
-  const queue = atom<Audio[]>([]);
+  const queue = atom<Audio[]>([
+    {
+      src: 'https://softsky.site/static/9157842da6f0b825d9cc4b5cdb626779.mp3',
+      title: 'Test sound',
+    },
+  ]);
   // === Memos ===
   const current = createMemo<Audio | undefined>(() => queue()[currentI()]);
   return {

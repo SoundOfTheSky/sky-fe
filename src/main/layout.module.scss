@@ -2,7 +2,8 @@
 
 .layout {
   display: flex;
-  height: 100%;
+  /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
+  transition: height $transition-time;
 
   .content {
     display: flex;
@@ -18,7 +19,7 @@
     flex-direction: column-reverse;
 
     .content {
-      height: calc(100vh - 48px);
+      height: calc(100% - 48px);
     }
   }
 }

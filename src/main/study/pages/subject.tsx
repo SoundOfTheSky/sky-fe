@@ -17,7 +17,7 @@ resizeTextToFit;
 
 const Subject: Component<{ id?: number }> = (properties) => {
   // === Stores ===
-  const { getQuestion, updateQuestion, getSubject, srsMap } = useStudy()!;
+  const { getQuestion, updateQuestion, getSubject, srsMap, offlineUnavailable } = useStudy()!;
   const params = useParams<{ id: string }>();
 
   // === State ===
@@ -109,21 +109,25 @@ const Subject: Component<{ id?: number }> = (properties) => {
           />
           <span>{subject()?.stage ?? 0}</span>
         </div>
-        <Skeleton class={s.titleSkeleton} loading={isLoading()}>
-          <div class={s.title} use:resizeTextToFit={[48, question(), isLoading()]}>
-            <Show
-              when={!question()!.question.includes(subject()!.title) && !question()!.answers.includes(subject()!.title)}
-            >
-              <div>
-                <b>{subject()!.title}</b>
-              </div>
-            </Show>
-            <div>{parseHTML(question()!.question)}</div>
-            <Show when={!question()!.choose}>
-              <div>{question()!.answers.join(', ')}</div>
-            </Show>
-          </div>
-        </Skeleton>
+        <div class={s.titleWrapper}>
+          <Skeleton loading={isLoading()} offline={offlineUnavailable()}>
+            <div class={s.title} use:resizeTextToFit={[48, question(), isLoading()]}>
+              <Show
+                when={
+                  !question()!.question.includes(subject()!.title) && !question()!.answers.includes(subject()!.title)
+                }
+              >
+                <div>
+                  <b>{subject()!.title}</b>
+                </div>
+              </Show>
+              <div>{parseHTML(question()!.question)}</div>
+              <Show when={!question()!.choose}>
+                <div>{question()!.answers.join(', ')}</div>
+              </Show>
+            </div>
+          </Skeleton>
+        </div>
         <div class={s.story}>
           <For each={subject()?.questionIds}>
             {(_, index) => (
@@ -141,26 +145,24 @@ const Subject: Component<{ id?: number }> = (properties) => {
         <Loading when={question()}>
           <Tabs>
             {parseHTML(question()!.description)}
-            <Show when={subject()!.stage !== null}>
-              <div data-tab='Notes & Synonyms'>
-                Synonyms:
-                <br />
-                <Tags
-                  value={synonyms}
-                  placeholder='Your synonyms will count as correct answers'
-                  onChange={sendQuestionDataToServer}
-                />
-                <br />
-                Note:
-                <br />
-                <Input
-                  value={note}
-                  multiline
-                  placeholder='Add your note to this question'
-                  onChange={sendQuestionDataToServer}
-                />
-              </div>
-            </Show>
+            <div data-tab='Notes & Synonyms'>
+              Synonyms:
+              <br />
+              <Tags
+                value={synonyms}
+                placeholder='Your synonyms will count as correct answers'
+                onChange={sendQuestionDataToServer}
+              />
+              <br />
+              Note:
+              <br />
+              <Input
+                value={note}
+                multiline
+                placeholder='Add your note to this question'
+                onChange={sendQuestionDataToServer}
+              />
+            </div>
           </Tabs>
         </Loading>
       </div>

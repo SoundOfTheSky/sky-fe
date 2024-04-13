@@ -1,7 +1,7 @@
-import { JSX, ParentComponent, Show, children, createEffect, getOwner, onCleanup, runWithOwner } from 'solid-js';
+import { JSX, ParentComponent, Show, children, createEffect, onCleanup } from 'solid-js';
 import { Transition } from 'solid-transition-group';
 
-import { atom, onOutside, useTimeout } from '@/services/reactive';
+import { atom, onOutside, useGlobalEvent } from '@/services/reactive';
 import { opacityTransitionImmediate } from '@/services/transition';
 
 import s from './tooltip.module.scss';
@@ -13,13 +13,17 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
   onCleanup(() => {
     clean(c() as HTMLElement);
   });
+  useGlobalEvent('click', (e) => {
+    const $c = c() as HTMLElement;
+    if (!$c || !e.target || !tooltipElement) return;
+    if (!$c.contains(e.target as HTMLElement) && !tooltipElement.contains(e.target as HTMLElement)) close();
+  });
 
   // === State ===
   const isOpen = atom(false);
   const c = children(() => properties.children);
   const pos = atom({ x: 0, y: 0, top: true });
-  let timeout: number;
-  const owner = getOwner();
+  let tooltipElement: HTMLDivElement | undefined;
 
   // === Effects ===
   createEffect<HTMLElement>((old) => {
@@ -33,19 +37,14 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
 
   // === Functions ===
   function open() {
-    runWithOwner(owner, () => {
-      timeout = useTimeout(() => {
-        const $c = c() as HTMLElement;
-        if (!$c) return;
-        const box = $c.getBoundingClientRect();
-        const top = (box.y + box.height) * 2 > window.innerHeight;
-        pos({ x: box.x + box.width / 2, y: top ? box.y - 8 : box.y + box.height + 8, top });
-        isOpen(true);
-      }, 500);
-    });
+    const $c = c() as HTMLElement;
+    if (!$c) return;
+    const box = $c.getBoundingClientRect();
+    const top = (box.y + box.height) * 2 > window.innerHeight;
+    pos({ x: box.x + box.width / 2, y: top ? box.y - 8 : box.y + box.height + 8, top });
+    isOpen(true);
   }
   function close() {
-    clearTimeout(timeout);
     isOpen(false);
   }
   function clean(item: HTMLElement) {
@@ -66,7 +65,7 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
               top: pos().y + 'px',
               transform: pos().top ? `translate(-50%, -100%)` : undefined,
             }}
-            use:onOutside={['click', close]}
+            ref={tooltipElement}
           >
             <Show when={typeof properties.content === 'string'} fallback={properties.content}>
               <div class={s.tooltipContent}>{properties.content}</div>

@@ -42,15 +42,7 @@ const Sidebar: Component = () => {
           )}
         </For>
         <A class={`${s.item} ${s.profile}`} href='/profile' activeClass={s.active}>
-          <Skeleton
-            loading={AuthStore.loading()}
-            schema={
-              <div>
-                <div class={`${s.avatar} skeleton`} />
-                <div class={`${s.title} skeleton`} />
-              </div>
-            }
-          >
+          <Skeleton loading={AuthStore.loading()} offline={false} class={s.skeleton}>
             <img class={s.avatar} src={AuthStore.me()?.avatar ?? '/avatar.webp'} alt='My avatar' />
             <span class={s.title}>{AuthStore.me()?.username ?? 'Anonymous'}</span>
           </Skeleton>

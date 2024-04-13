@@ -292,7 +292,7 @@ function getProvided() {
     const subjectCopy = structuredClone(subject);
     if (subject) {
       const SRS = srsMap[subject.srsId - 1];
-      subject.stage = Math.min(1, Math.max(SRS.timings.length + 1, (subject.stage ?? 0) + (correct ? 1 : -2)));
+      subject.stage = Math.max(1, Math.min(SRS.timings.length + 1, (subject.stage ?? 0) + (correct ? 1 : -2)));
       subject.nextReview =
         subject.stage >= SRS.timings.length ? null : ~~(now / 3_600_000) + SRS.timings[subject.stage - 1];
       await db.put('studySubjects', subject);

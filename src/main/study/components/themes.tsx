@@ -12,7 +12,7 @@ import s from './themes.module.scss';
 
 const Themes: Component = () => {
   // === Hooks ===
-  const { themes, settings, addTheme, removeTheme, offlineProgress, offlineUnavailable, ready } = useStudy()!;
+  const { themes, settings, addTheme, removeTheme, offlineProgress, offlineUnavailable } = useStudy()!;
   const { online } = basicStore;
   // === Memos ===
   const themesCards = createMemo(() => {
@@ -46,29 +46,31 @@ const Themes: Component = () => {
   }
 
   return (
-    <Skeleton class={`${s.themes} card`} loading={!themes()} offline={offlineUnavailable()}>
-      <div
-        class={s.loader}
-        style={{
-          transform: `scaleX(${offlineProgress()})`,
-          opacity: disabledUpdating() ? 1 : 0,
-        }}
-      />
-      <For each={themesCards()}>
-        {(theme) => (
-          <div class={s.theme} classList={{ [s.added]: theme.isAdded && !theme.disabled }}>
-            <Button disabled={disabledUpdating()} onClick={[onClickThemeCard, theme]}>
-              {theme.title}
-            </Button>
-            <Show when={theme.isAdded && online()}>
-              <Button disabled={disabledUpdating()} onClick={[onClickRemove, theme.id]}>
-                <Icon path={mdiTrashCan} size='14' />
+    <div class={`${s.themes} card`}>
+      <Skeleton loading={!themes()} offline={offlineUnavailable()} class={s.skeleton}>
+        <div
+          class={s.loader}
+          style={{
+            transform: `scaleX(${offlineProgress()})`,
+            opacity: disabledUpdating() ? 1 : 0,
+          }}
+        />
+        <For each={themesCards()}>
+          {(theme) => (
+            <div class={s.theme} classList={{ [s.added]: theme.isAdded && !theme.disabled }}>
+              <Button disabled={disabledUpdating()} onClick={[onClickThemeCard, theme]}>
+                {theme.title}
               </Button>
-            </Show>
-          </div>
-        )}
-      </For>
-    </Skeleton>
+              <Show when={theme.isAdded && online()}>
+                <Button disabled={disabledUpdating()} onClick={[onClickRemove, theme.id]}>
+                  <Icon path={mdiTrashCan} size='14' />
+                </Button>
+              </Show>
+            </div>
+          )}
+        </For>
+      </Skeleton>
+    </div>
   );
 };
 export default Themes;

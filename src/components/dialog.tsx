@@ -1,4 +1,5 @@
-import { ParentComponent, untrack, Show, onMount } from 'solid-js';
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+import { ParentComponent, untrack, Show, onMount, createMemo } from 'solid-js';
 
 import { atom } from '@/services/reactive';
 
@@ -10,34 +11,39 @@ const Dialog: ParentComponent<{ forceFullscreen?: boolean; dark?: boolean; onClo
   // === Hooks ===
   onMount(() => {
     setTimeout(() => {
-      hidePercent(0);
+      offsetY(0);
     }, 0);
   });
   // === State ===
-  const hidePercent = atom(100);
-  const moving = atom(false);
-
+  const offsetY = atom(window.innerHeight);
+  const touchStartY = atom<number>();
+  // === Memos ===
+  const fullscreen = createMemo(() => properties.forceFullscreen ?? window.innerHeight > window.innerWidth);
+  const maxOffset = createMemo(() => (fullscreen() ? window.innerHeight * 0.6 : window.innerHeight));
   // === Functions ===
-  function touchStart() {
-    moving(true);
+  function touchStart(e: TouchEvent | MouseEvent) {
+    touchStartY('touches' in e ? e.touches[0].clientY : e.clientY);
   }
-  function touchMove(e: TouchEvent) {
+  function touchMove(e: TouchEvent | MouseEvent) {
     untrack(() => {
-      if (!moving()) return;
-      hidePercent(Math.max(0, ((e.touches[0].clientY - 16) / window.innerHeight) * 100));
+      const $touchStartY = touchStartY();
+      if (!$touchStartY) return;
+      offsetY(Math.max(0, ('touches' in e ? e.touches[0].clientY : e.clientY) - $touchStartY));
     });
   }
   function touchEnd() {
     untrack(() => {
-      if (!moving()) return;
-      if (hidePercent() > 20) close();
-      else hidePercent(0);
-      moving(false);
+      const $touchStartY = touchStartY();
+      if (!$touchStartY) return;
+      const $offsetY = offsetY();
+      if ($offsetY < 16 || $offsetY / (window.innerHeight - $touchStartY) > 0.2) close();
+      else offsetY(0);
+      touchStartY(undefined);
     });
   }
   function close() {
     untrack(() => {
-      hidePercent(100);
+      offsetY(maxOffset());
       setTimeout(properties.onClose!, 200);
     });
   }
@@ -45,25 +51,27 @@ const Dialog: ParentComponent<{ forceFullscreen?: boolean; dark?: boolean; onClo
     <div
       class={s.dialogBackdrop}
       style={{
-        opacity: 1 - hidePercent() / 100,
-        transition: moving() ? 'none' : undefined,
+        opacity: 1 - offsetY() / maxOffset(),
+        transition: touchStartY() ? 'none' : undefined,
       }}
+      onTouchMove={touchMove}
+      onMouseMove={touchMove}
+      onTouchEnd={touchEnd}
+      onMouseUp={touchEnd}
     >
       <div
         class={s.dialog}
         classList={{
-          [s.fullscreen]: properties.forceFullscreen ?? window.innerHeight > window.innerWidth,
+          [s.fullscreen]: fullscreen(),
           [s.dark]: properties.dark,
         }}
         style={{
-          transform: `translateY(${hidePercent()}%)`,
-          transition: moving() ? 'none' : undefined,
+          transform: offsetY() ? `translateY(${offsetY()}px)` : undefined,
+          transition: touchStartY() ? 'none' : undefined,
         }}
-        onTouchMove={touchMove}
-        onTouchEnd={touchEnd}
       >
         <Show when={properties.onClose}>
-          <button class={s.close} onTouchStart={touchStart} onClick={close}>
+          <button class={s.close} onTouchStart={touchStart} onMouseDown={touchStart}>
             <span>Hide</span>
           </button>
         </Show>

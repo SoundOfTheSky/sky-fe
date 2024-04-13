@@ -9,7 +9,7 @@ import basicStore from '@/services/basic.store';
 import { atom } from '@/services/reactive';
 
 import StudyActivity from '../components/study-activity';
-import StudyIncomingReviews from '../components/study-incoming-reviews';
+import StudyReviewForecast from '../components/study-review-forecast';
 import StudyStats from '../components/study-stats';
 import Themes from '../components/themes';
 import { useStudy } from '../services/study.context';
@@ -165,7 +165,7 @@ export default function StudyTab() {
         </Button>
       </A>
       <StudyActivity />
-      <StudyIncomingReviews />
+      <StudyReviewForecast />
       <StudyStats />
     </div>
   );

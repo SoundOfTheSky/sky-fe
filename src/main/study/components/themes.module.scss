@@ -9,6 +9,12 @@
   min-height: 64px;
   max-height: 64px;
 
+  .skeleton {
+    width: calc(100% + 32px);
+    height: calc(100% + 32px);
+    margin: -16px;
+  }
+
   .theme {
     z-index: 0;
     display: flex;

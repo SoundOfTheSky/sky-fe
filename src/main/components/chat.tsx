@@ -88,36 +88,38 @@ const Chat: Component = () => {
   }
 
   return (
-    <Skeleton loading={!credentials()} offline={ws.status() === WebSocketStatus.closed} class={`card ${s.chat}`}>
-      <div class='card-title'>CHAT</div>
-      <Transition {...opacityTransitionImmediate}>
-        <Show when={viewAvatar()}>
-          <Button class={s.avatarView} onClick={() => viewAvatar(undefined)}>
-            <img alt='Avatar' src={viewAvatar()} />
-          </Button>
-        </Show>
-      </Transition>
-      <div class={s.messages}>
-        <div>
-          <For each={messages()}>
-            {(message) => (
-              <div class={s.message}>
-                <Button onClick={() => viewAvatar(message.avatar ?? '/avatar.webp')} class={s.avatar}>
-                  <img alt={message.username} src={message.avatar ?? '/avatar.webp'} />
-                </Button>
-                <div class={s.line}>
-                  <span class={s.username}>{`<${message.username}>`}</span>
-                  <span>: </span>
-                  <span class={s.text}>{message.text}</span>
+    <div class={`card ${s.chat}`}>
+      <Skeleton loading={!credentials()} offline={ws.status() === WebSocketStatus.closed}>
+        <div class='card-title'>CHAT</div>
+        <Transition {...opacityTransitionImmediate}>
+          <Show when={viewAvatar()}>
+            <Button class={s.avatarView} onClick={() => viewAvatar(undefined)}>
+              <img alt='Avatar' src={viewAvatar()} />
+            </Button>
+          </Show>
+        </Transition>
+        <div class={s.messages}>
+          <div>
+            <For each={messages()}>
+              {(message) => (
+                <div class={s.message}>
+                  <Button onClick={() => viewAvatar(message.avatar ?? '/avatar.webp')} class={s.avatar}>
+                    <img alt={message.username} src={message.avatar ?? '/avatar.webp'} />
+                  </Button>
+                  <div class={s.line}>
+                    <span class={s.username}>{`<${message.username}>`}</span>
+                    <span>: </span>
+                    <span class={s.text}>{message.text}</span>
+                  </div>
+                  <span class={s.time}>{new Date(message.time).toLocaleTimeString()}</span>
                 </div>
-                <span class={s.time}>{new Date(message.time).toLocaleTimeString()}</span>
-              </div>
-            )}
-          </For>
+              )}
+            </For>
+          </div>
         </div>
-      </div>
-      <Input value={message} placeholder='Enter your message' disabled={sendingMessage()} />
-    </Skeleton>
+        <Input value={message} placeholder='Enter your message' disabled={sendingMessage()} />
+      </Skeleton>
+    </div>
   );
 };
 
