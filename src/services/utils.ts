@@ -32,38 +32,6 @@ export function formatTime(time: number, min = 1) {
   }
   return output;
 }
-/** Format HTML to simple string */
-export function cleanupHTML(
-  text: string,
-  whitelist: string[] = [
-    'accent', // Current subject [any]
-    'subject', // Link another subject [any](uid=number)
-    'example', // example sentence? [any]
-    'audio', // Audio [any] (s="link")
-    'warning', // Warning text [any]
-    'ik', // ImmersionKit query [text]
-    'tab', // Tabs always at root [any] title="text"
-    'img',
-    'ruby',
-    'rt',
-    'rp',
-    'a',
-  ],
-) {
-  // Split <br> as \n and trim lines
-  text = text
-    .replaceAll(/<br>/gs, '\n')
-    .split('\n')
-    .map((el) => el.trim())
-    .join('\n')
-    .replaceAll(/\s{2,}/g, '\n');
-
-  return [...text.matchAll(/<.+?>/g)]
-    .map((el) => [el[0].slice(1, -1).split(' ')[0], el.index] as const)
-    .filter(([t]) => whitelist.every((w) => t !== w && t !== `/${w}`))
-    .reverse()
-    .reduce((acc, [, index]) => acc.slice(0, index) + acc.slice(acc.indexOf('>', index) + 1), text);
-}
 /** thisCase to this-case */
 export const camelToSnakeCase = (str: string) => str.replaceAll(/[A-Z]+/g, (letter) => `_${letter.toLowerCase()}`);
 /**Bytes to KB,MB,GB,TB */

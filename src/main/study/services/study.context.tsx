@@ -156,14 +156,20 @@ function getProvided() {
     {
       id: 1,
       ok: 5,
-      timings: [4, 8, 23, 47, 167, 335, 719, 2879],
+      timings: [4, 8, 23, 47, 167, 335, 719, 2879], // 9 levels
       title: 'Default',
     },
     {
       id: 2,
       ok: 5,
-      timings: [2, 4, 8, 23, 167, 335, 719, 2879],
+      timings: [2, 4, 8, 23, 47, 167, 335, 719, 2879], // 10 levels
       title: 'Fast unlock',
+    },
+    {
+      id: 3,
+      ok: 5,
+      timings: [1, 2, 4, 8, 23, 47, 167, 335, 719, 2879], // 11 levels
+      title: 'Hyper unlock',
     },
   ];
   const statsGraph = atom<number[]>([]);
@@ -415,6 +421,7 @@ function getProvided() {
       themes($themes);
       // Outdated is used in means of need to update
       outdated(false);
+      void updateStats();
       // Building required subjects
       const requiredSubjects = new Set<number>();
       for (const theme of $themes) {
@@ -440,8 +447,8 @@ function getProvided() {
         i++;
         offlineProgress((i / requiredQuestions.size) * 0.7 + 0.3);
       }
+      offlineProgress(1);
       requiredQuestions.clear();
-      void updateStats();
     } catch (e) {
       offlineProgress(0);
       console.error(e);

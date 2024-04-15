@@ -120,11 +120,11 @@ export default function ReviewQuestion() {
                 !hint().includes(subject()!.title)
               }
             >
-              <b>{subject()!.title}</b>
+              <b>{parseHTML(subject()!.title, autoplayAudio())}</b>
               <br />
             </Show>
             <div>{parseHTML(question()!.question, autoplayAudio())}</div>
-            {hint()}
+            <Show when={hint().toLowerCase() !== 'correct'}>{hint()}</Show>
           </div>
         </Skeleton>
       </div>

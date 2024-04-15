@@ -34,7 +34,7 @@ export default function parseHTML(text: string, autoplayAudio = 0): JSX.Element[
       );
     },
     accent(element) {
-      return <b>{/*@once*/ [...element.childNodes]}</b>;
+      return <span class='accent'>{/*@once*/ [...element.childNodes]}</span>;
     },
     example(element) {
       return <div class='example'>{/*@once*/ [...element.childNodes]}</div>;

@@ -1,5 +1,5 @@
 import { useParams } from '@solidjs/router';
-import { batch, Component, createEffect, createMemo, createResource, For, Show } from 'solid-js';
+import { batch, Component, createEffect, createMemo, createResource, For, Match, Show, Switch } from 'solid-js';
 
 import Input from '@/components/form/input';
 import Tags from '@/components/form/tags';
@@ -122,9 +122,14 @@ const Subject: Component<{ id?: number }> = (properties) => {
                 </div>
               </Show>
               <div>{parseHTML(question()!.question)}</div>
-              <Show when={!question()!.choose}>
-                <div>{question()!.answers.join(', ')}</div>
-              </Show>
+              <Switch>
+                <Match when={!question()!.choose}>
+                  <div>{question()!.answers.join(', ')}</div>
+                </Match>
+                <Match when={question()!.answers[0].toLowerCase() !== 'correct'}>
+                  <div>{question()!.answers[0]}</div>
+                </Match>
+              </Switch>
             </div>
           </Skeleton>
         </div>

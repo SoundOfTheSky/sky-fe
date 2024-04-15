@@ -2,6 +2,7 @@
 
 .layout {
   display: flex;
+  height: 100%;
   /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
   transition: height $transition-time;
 
