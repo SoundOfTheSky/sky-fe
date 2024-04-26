@@ -81,12 +81,18 @@ export class ProgressLoggerTransform<T extends { length: number }> extends Trans
   }
 }
 /** Find substring between two strings */
-export function findStringBetween(str: string, a: string, b: string) {
-  const i = str.indexOf(a);
-  if (i === -1) return;
-  const i2 = a.indexOf(b, i);
-  if (i2 === -1) return;
-  return a.slice(i, i2);
+export function findAllStringBetween(str: string, a: string, b: string) {
+  const results = [];
+  let startI = 0;
+  while (true) {
+    const i = str.indexOf(a, startI);
+    if (i === -1) break;
+    const i2 = str.indexOf(b, i + a.length);
+    if (i2 === -1) break;
+    results.push(str.slice(i + a.length, i2));
+    startI = i2 + b.length;
+  }
+  return results;
 }
 
 // === Arrays ===

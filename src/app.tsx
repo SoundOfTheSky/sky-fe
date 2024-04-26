@@ -1,11 +1,9 @@
 import { MetaProvider } from '@solidjs/meta';
 import { ParentComponent, createRenderEffect } from 'solid-js';
-import { Transition } from 'solid-transition-group';
 
 import Notifications from '@/components/global/notifications';
 import PageLoading from '@/components/global/page-loading';
 import { persistentAtom } from '@/services/reactive';
-import { opacityTransition } from '@/services/transition';
 
 import AudioPlayer from './components/audio-player';
 import { WebSocketProvider } from './services/web-socket.context';
@@ -30,9 +28,7 @@ const App: ParentComponent = (properties) => {
       <WebSocketProvider>
         <PageLoading />
         <Notifications />
-        <Transition {...opacityTransition} mode='outin'>
-          {properties.children}
-        </Transition>
+        {properties.children}
         <AudioPlayer />
       </WebSocketProvider>
     </MetaProvider>

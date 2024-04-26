@@ -3,10 +3,11 @@ import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { ParentComponent, createContext, createEffect, createMemo, untrack, useContext } from 'solid-js';
 
 import authStore from '@/services/auth.store';
-import basicStore from '@/services/basic.store';
+import basicStore, { NotificationType } from '@/services/basic.store';
 import db, { DBOptions } from '@/services/db';
 import { CommonRequestOptions, request } from '@/services/fetch';
 import { atom, persistentAtom } from '@/services/reactive';
+import { findAllStringBetween } from '@/services/utils';
 
 export type Theme = {
   id: number;
@@ -408,9 +409,10 @@ function getProvided() {
       keyCursor = await keyCursor.continue();
     }
   }
+  let updateCount = 0;
   // eslint-disable-next-line sonarjs/cognitive-complexity
   async function update() {
-    if (untrack(offlineProgress) > 0 && untrack(offlineProgress) < 1) return;
+    const curUpdateCount = ++updateCount;
     offlineProgress(0.01);
     const $online = untrack(basicStore.online);
     try {
@@ -433,20 +435,41 @@ function getProvided() {
       // Building required questions
       const requiredQuestions = new Set<number>();
       let i = 0;
+
       for await (const subject of updateEntity('/api/study/subjects', 'studySubjects', requiredSubjects)) {
+        if (curUpdateCount !== updateCount) return;
         for (const id of subject.questionIds) requiredQuestions.add(id);
         i++;
         offlineProgress((i / requiredSubjects.size) * 0.2 + 0.1);
       }
       requiredSubjects.clear();
       i = 0;
-      const extractStaticRegEx = /"\/static\/(.+?)"/gs;
+      const assets = new Set<string>();
       for await (const question of updateEntity('/api/study/questions', 'studyQuestions', requiredQuestions)) {
-        for (const [_, path] of question.description.matchAll(extractStaticRegEx))
-          await (await fetch('/static/' + path, { cache: 'force-cache' })).arrayBuffer();
+        if (curUpdateCount !== updateCount) return;
+        for (const path of findAllStringBetween(question.description + question.question, '"/static/', '"'))
+          assets.add(path);
         i++;
-        offlineProgress((i / requiredQuestions.size) * 0.7 + 0.3);
+        offlineProgress((i / requiredQuestions.size) * 0.4 + 0.3);
       }
+      i = 0;
+      let isStaticNotLoaded = false;
+      for (const path of assets) {
+        if (curUpdateCount !== updateCount) return;
+        await fetch('/static/' + path, { cache: 'force-cache' })
+          .then((x) => x.arrayBuffer())
+          .catch(() => {
+            isStaticNotLoaded = true;
+          });
+        i++;
+        offlineProgress((i / requiredQuestions.size) * 0.3 + 0.7);
+      }
+      if (isStaticNotLoaded)
+        basicStore.notify({
+          title: 'Some images or audio may not be available offline.',
+          timeout: 10000,
+          type: NotificationType.Info,
+        });
       offlineProgress(1);
       requiredQuestions.clear();
     } catch (e) {

@@ -21,6 +21,7 @@ export default function StudyTab() {
   document.title = 'Sky | Study';
 
   const { availableLessons, availableReviews, settings, offlineUnavailable, ready, update, outdated } = useStudy()!;
+  const { online } = basicStore;
 
   // === State ===
   const showReviewsSettings = atom(false);
@@ -28,6 +29,7 @@ export default function StudyTab() {
 
   // === Effect ===
   createEffect(() => {
+    online();
     if (outdated()) void update();
   });
 
