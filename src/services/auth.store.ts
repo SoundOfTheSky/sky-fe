@@ -2,7 +2,7 @@ import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 import { createEffect, createRoot, untrack } from 'solid-js';
 
 import basicStore from './basic.store';
-import db from './db';
+import { db } from './db';
 import { CommonRequestOptions, RequestError, request } from './fetch';
 import { atom, persistentAtom, useInterval } from './reactive';
 import { noop } from './utils';

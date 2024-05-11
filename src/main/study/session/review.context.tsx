@@ -394,7 +394,6 @@ function getProvided() {
           ...$subjectStats,
           status: pState.subject,
           undo: true,
-          answers: $subjectStats.answers.slice(0, -1),
         });
         questionsStatuses.set(questionId()!, pState.question);
       });

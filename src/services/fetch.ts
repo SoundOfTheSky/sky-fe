@@ -2,7 +2,7 @@ import { createContext, useContext } from 'solid-js';
 
 import BasicStore, { NotificationType } from '@/services/basic.store';
 
-import db from './db';
+import { db } from './db';
 import { findErrorText } from './utils';
 
 export class RequestError<T = unknown> extends Error {

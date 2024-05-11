@@ -25,7 +25,6 @@ export default function ReviewQuestion() {
     subject,
     autoplayAudio,
     currentSubjectQuestionsStatuses,
-    questionI,
   } = useReview()!;
   const { offlineUnavailable, srsMap } = useStudy()!;
 
@@ -131,15 +130,15 @@ export default function ReviewQuestion() {
       <div class={s.story}>
         <Index each={currentSubjectQuestionsStatuses()}>
           {(element, index) => (
-            <button
+            <div
               classList={{
+                [s.storyItem]: true,
                 [s.current]: subject()?.questionIds[index] === question()?.id,
                 [s.correct]: element() === SubjectStatus.Correct,
                 [s.error]: element() === SubjectStatus.Wrong,
                 [s.correctAfterWrong]: element() === SubjectStatus.CorrectAfterWrong,
                 [s.unlearned]: element() === SubjectStatus.Unlearned,
               }}
-              onClick={() => questionI(index)}
             />
           )}
         </Index>

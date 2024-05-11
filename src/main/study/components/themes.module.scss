@@ -25,6 +25,7 @@
     margin: 0 4px;
     border: border();
     border-radius: 8px;
+    background-color: $color-content-background;
     transition: opacity $transition-time;
 
     button {
@@ -53,18 +54,5 @@
     &.loading {
       opacity: 0.5;
     }
-  }
-
-  .loader {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: $color-border;
-    transition:
-      transform $transition-time,
-      opacity $transition-time $transition-time;
-    transform-origin: left;
   }
 }

@@ -8,7 +8,6 @@ import { useStudy } from '@/main/study/services/study.context';
 
 import s from './study-review-forecast.module.scss';
 
-
 const StudyReviewForecast: Component = () => {
   const { turnedOnThemes, now, availableReviews, ready, offlineUnavailable } = useStudy()!;
 

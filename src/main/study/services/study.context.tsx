@@ -4,7 +4,7 @@ import { ParentComponent, createContext, createEffect, createMemo, untrack, useC
 
 import authStore from '@/services/auth.store';
 import basicStore, { NotificationType } from '@/services/basic.store';
-import db, { DBOptions } from '@/services/db';
+import { db, updateDBEntity } from '@/services/db';
 import { CommonRequestOptions, request } from '@/services/fetch';
 import { atom, persistentAtom } from '@/services/reactive';
 import { findAllStringBetween } from '@/services/utils';
@@ -151,7 +151,7 @@ function getProvided() {
   });
   const now = atom(Math.floor(Date.now() / 3_600_000));
   const outdated = atom(false);
-  const offlineProgress = atom(0);
+  const cachingProgress = atom(0);
   const themes = atom<Theme[]>();
   const srsMap = [
     {
@@ -231,15 +231,16 @@ function getProvided() {
         await db.put('keyval', maxUpdated, 'lastUpdate_studyStats');
       }
     } catch {}
-    const $themes = untrack(themes) ?? [];
-    const themeIds = new Set($themes.filter((x) => x.lessons).map((x) => x.id));
+    const themesMap = new Map((untrack(themes) ?? []).filter((x) => x.lessons).map((x) => [x.id, x]));
+    const disabledThemeIds = new Set(untrack(settings).disabledThemeIds);
     const startTime = untrack(startDate).getTime() / 1000;
     // 52 weeks ahead
     const maxTime = startTime + 31449600;
     const data = Array(Math.ceil((maxTime - startTime) / 86400)).fill(0);
     for await (const stat of db.transaction('studyStats', 'readwrite').store) {
-      if (!themeIds.has(stat.value.themeId)) await stat.delete();
-      else if (startTime <= stat.value.created) data[Math.floor((stat.value.created - startTime) / 86400)]++;
+      if (!themesMap.has(stat.value.themeId)) await stat.delete();
+      else if (startTime <= stat.value.created && !disabledThemeIds.has(stat.value.themeId))
+        data[Math.floor((stat.value.created - startTime) / 86400)]++;
     }
     statsGraph(data);
   }
@@ -365,55 +366,16 @@ function getProvided() {
         .flatMap(([, ids]) => ids),
     ),
   );
-  const offlineUnavailable = createMemo(() => themes() && offlineProgress() === 0);
-  const ready = createMemo(() => themes() && (basicStore.online() || offlineProgress() === 1));
+  const offlineUnavailable = createMemo(() => themes() && cachingProgress() === 0);
+  const ready = createMemo(() => themes() && (basicStore.online() || cachingProgress() === 1));
 
   // === Functions ===
-  /**
-   * Verifies and updates cache. If offline only validates
-   *
-   * !!!Works as generator so you must iterate through it to complete update!!!
-   *
-   * required must be passed ALL needed ids.
-   */
-  async function* updateEntity<T extends 'studySubjects' | 'studyQuestions'>(
-    url: string,
-    type: T,
-    required: Set<number>,
-  ) {
-    const lastUpdateKey = 'lastUpdate_' + type;
-    const lastUpdate = ((await db.get('keyval', lastUpdateKey)) as number) ?? 0;
-    const updated = await request<string>(`${url}/updated/${lastUpdate}`)
-      .then(
-        (str) => new Map(str.split('\n').map((x) => x.split(',').map((x) => Number.parseInt(x)) as [number, number])),
-      )
-      .catch(() => new Map<number, number>());
-    let maxTime = 0;
-    for (const id of required) {
-      let item = (await db.get(type, id)) as DBOptions[T]['value'];
-      const DBupdatedTime = updated.get(id);
-      let updatedTime = item ? ~~(new Date(item.updated).getTime() / 1000) : undefined;
-      if (item && (!DBupdatedTime || updatedTime! >= DBupdatedTime)) yield item;
-      else {
-        item = await request<DBOptions[T]['value']>(`${url}/${id}`);
-        await db.put(type, item);
-        updatedTime = ~~(new Date(item.updated).getTime() / 1000);
-        yield item;
-      }
-      if (updatedTime! > maxTime) maxTime = updatedTime!;
-    }
-    await db.put('keyval', maxTime, lastUpdateKey);
-    let keyCursor = await db.transaction(type, 'readwrite').store.openCursor();
-    while (keyCursor) {
-      if (!required.has(keyCursor.primaryKey)) await keyCursor.delete();
-      keyCursor = await keyCursor.continue();
-    }
-  }
   let updateCount = 0;
   // eslint-disable-next-line sonarjs/cognitive-complexity
   async function update() {
+    let lastUpdateTime = Date.now();
     const curUpdateCount = ++updateCount;
-    offlineProgress(0.01);
+    cachingProgress(0.01);
     const $online = untrack(basicStore.online);
     try {
       // If online always update Themes cause they are small
@@ -431,26 +393,33 @@ function getProvided() {
         for (const id of theme.lessons) requiredSubjects.add(id);
         for (const ids of Object.values(theme.reviews)) for (const id of ids) requiredSubjects.add(id);
       }
-      offlineProgress(0.1);
+      cachingProgress(0.1);
       // Building required questions
       const requiredQuestions = new Set<number>();
       let i = 0;
-
-      for await (const subject of updateEntity('/api/study/subjects', 'studySubjects', requiredSubjects)) {
+      for await (const [subject] of updateDBEntity('/api/study/subjects', 'studySubjects', requiredSubjects)) {
         if (curUpdateCount !== updateCount) return;
         for (const id of subject.questionIds) requiredQuestions.add(id);
         i++;
-        offlineProgress((i / requiredSubjects.size) * 0.2 + 0.1);
+        const t = Date.now();
+        if (lastUpdateTime + 200 < t) {
+          lastUpdateTime = t;
+          cachingProgress((i / requiredSubjects.size) * 0.2 + 0.1);
+        }
       }
       requiredSubjects.clear();
       i = 0;
       const assets = new Set<string>();
-      for await (const question of updateEntity('/api/study/questions', 'studyQuestions', requiredQuestions)) {
+      for await (const [question] of updateDBEntity('/api/study/questions', 'studyQuestions', requiredQuestions)) {
         if (curUpdateCount !== updateCount) return;
         for (const path of findAllStringBetween(question.description + question.question, '"/static/', '"'))
           assets.add(path);
         i++;
-        offlineProgress((i / requiredQuestions.size) * 0.4 + 0.3);
+        const t = Date.now();
+        if (lastUpdateTime + 200 < t) {
+          lastUpdateTime = t;
+          cachingProgress((i / requiredQuestions.size) * 0.4 + 0.3);
+        }
       }
       i = 0;
       let isStaticNotLoaded = false;
@@ -462,7 +431,11 @@ function getProvided() {
             isStaticNotLoaded = true;
           });
         i++;
-        offlineProgress((i / requiredQuestions.size) * 0.3 + 0.7);
+        const t = Date.now();
+        if (lastUpdateTime + 200 < t) {
+          lastUpdateTime = t;
+          cachingProgress((i / requiredQuestions.size) * 0.3 + 0.7);
+        }
       }
       if (isStaticNotLoaded)
         basicStore.notify({
@@ -470,15 +443,21 @@ function getProvided() {
           timeout: 10000,
           type: NotificationType.Info,
         });
-      offlineProgress(1);
+      cachingProgress(1);
       requiredQuestions.clear();
     } catch (e) {
-      offlineProgress(0);
+      cachingProgress(0);
       console.error(e);
     }
   }
+
+  // === Effects ===
   createEffect(() => {
     if (authStore.ready() && untrack(authStore.me)) void update();
+  });
+  createEffect(() => {
+    const $offlineProgress = cachingProgress();
+    basicStore.loadingProgress($offlineProgress === 0 || $offlineProgress === 1 ? undefined : $offlineProgress);
   });
 
   return {
@@ -501,7 +480,6 @@ function getProvided() {
     turnedOnThemes,
     availableLessons,
     availableReviews,
-    offlineProgress,
     offlineUnavailable,
     ready,
     srsMap,

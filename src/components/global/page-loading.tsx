@@ -14,7 +14,7 @@ const transition = createTransitionOptions(
 );
 
 const PageLoading: Component = () => {
-  const { loading, online } = BasicStore;
+  const { loading, online, loadingProgress } = BasicStore;
 
   return (
     <Transition {...transition}>
@@ -22,8 +22,16 @@ const PageLoading: Component = () => {
         <Match when={!online()}>
           <div class={s.offline}>Offline</div>
         </Match>
+        <Match when={loadingProgress()}>
+          <div
+            class={s.pageLoadingProgress}
+            style={{
+              transform: `scaleX(${loadingProgress()})`,
+            }}
+          />
+        </Match>
         <Match when={loading()}>
-          <div class={s.pageLoadingComponent} />
+          <div class={s.pageLoading} />
         </Match>
       </Switch>
     </Transition>

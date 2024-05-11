@@ -76,6 +76,7 @@ export default createRoot(() => {
   const online = atom(true);
   const notifications = atom<Notification[]>([]);
   const activeRequests = atom(0);
+  const loadingProgress = atom<number>();
   const loading = atom(false);
   let loadingTimeout: number;
 
@@ -107,5 +108,6 @@ export default createRoot(() => {
     activeRequests,
     loading,
     online,
+    loadingProgress,
   };
 });

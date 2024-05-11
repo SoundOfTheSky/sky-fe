@@ -16,19 +16,25 @@ const StudyActivity: Component = () => {
   return (
     <div class={`card ${s.studyActivity}`}>
       <Skeleton loading={!statsGraph().length} offline={offlineUnavailable()} class={s.skeleton}>
-        <div
-          class={`${s.progress} ${activity()[0] < 25 ? s.bad : ''}`}
-          style={{
-            transform: `scaleX(${(activity()[0] / MAX_SCORE) * 100}%)`,
-          }}
-        />
-        <div
-          class={`${s.progress} ${s.tomorrow} ${activity()[0] / 4 < 25 ? s.bad : ''}`}
-          style={{
-            transform: `scaleX(${(activity()[0] / 4 / MAX_SCORE) * 100}%)`,
-          }}
-        />
-        <div class={s.goal} />
+        <Tooltip content='Activity you will have tomorrow'>
+          <div
+            class={`${s.progress} ${activity()[0] < 25 ? s.bad : ''}`}
+            style={{
+              transform: `scaleX(${(activity()[0] / MAX_SCORE) * 100}%)`,
+            }}
+          />
+        </Tooltip>
+        <Tooltip content='Your current activity'>
+          <div
+            class={`${s.progress} ${s.tomorrow} ${activity()[0] / 4 < 25 ? s.bad : ''}`}
+            style={{
+              transform: `scaleX(${(activity()[0] / 4 / MAX_SCORE) * 100}%)`,
+            }}
+          />
+        </Tooltip>
+        <Tooltip content='Goal you need to achieve to not lose the streak'>
+          <div class={s.goal} />
+        </Tooltip>
         <Tooltip content='Activity score'>
           <span class={s.stat}>
             {activity()[0]}

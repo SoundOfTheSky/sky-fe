@@ -1,6 +1,17 @@
 @use '@/vars' as *;
 
-.page-loading-component {
+.page-loading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 1px;
+  background-color: $color-main;
+  transition: transform $transition-time;
+  transform-origin: left;
+}
+
+.page-loading {
   position: fixed;
   top: 0;
   left: -50vw;

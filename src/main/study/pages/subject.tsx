@@ -139,6 +139,7 @@ const Subject: Component<{ id?: number }> = (properties) => {
               <button
                 onClick={() => questionI(index())}
                 classList={{
+                  [s.storyItem]: true,
                   [s.current]: index() === questionI(),
                 }}
               />
