@@ -18,7 +18,7 @@ module.exports = {
     'import/resolver': {
       typescript: true,
     },
-    'import/core-modules': ['virtual:pwa-register/solid']
+    'import/core-modules': ['virtual:pwa-register/solid'],
   },
   rules: {
     'prettier/prettier': 1,
@@ -26,9 +26,10 @@ module.exports = {
     'sonarjs/cognitive-complexity': ['error', 20],
     'sonarjs/no-nested-template-literals': 0,
 
-    '@typescript-eslint/no-non-null-assertion': 0,
-    '@typescript-eslint/no-misused-promises': 0,
+    '@typescript-eslint/explicit-member-accessibility': 1,
     '@typescript-eslint/consistent-type-definitions': [2, 'type'],
+    '@typescript-eslint/no-misused-promises': 0,
+    '@typescript-eslint/no-non-null-assertion': 0,
     '@typescript-eslint/no-unused-vars': 0,
 
     'unused-imports/no-unused-imports': 1,
@@ -58,8 +59,8 @@ module.exports = {
         ],
         'newlines-between': 'always',
         alphabetize: {
-          order: 'asc'
-        }
+          order: 'asc',
+        },
       },
     ],
     'import/newline-after-import': 1,

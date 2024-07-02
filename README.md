@@ -1,5 +1,5 @@
 # SKY-FE
-Frontend for my website. Accessible here: https://softsky.site
+Frontend for my website. Accessible here: https://soft-sky.ru
 
 Main focus of this website is to teach myself japanese and other little tools. Many subsystems called after Norse mythology, bare with it.
 

@@ -1,9 +1,10 @@
-import { ParentComponent, createContext, createEffect, untrack, useContext } from 'solid-js';
+import { toString as fromatCron } from 'cronstrue';
+import { ParentComponent, createContext, createEffect, createMemo, untrack, useContext } from 'solid-js';
 
 import authStore from '@/services/auth.store';
-import basicStore from '@/services/basic.store';
 import { updateDBEntity } from '@/services/db';
 import { atom } from '@/services/reactive';
+import { DAY_MS, formatTime } from '@/services/utils';
 
 export enum PlanEventStatus {
   DEFAULT = 0,
@@ -23,13 +24,15 @@ export type PlanEvent = {
   repeat?: string; // cron
   description?: string;
   parentId?: number;
+  date?: Date;
+  readableRepeat?: string;
 };
 
 export function getNextCron(cronString: string, datetime = new Date()) {
   const cron = cronString.split(' ');
   if (cron.length !== 5) throw new Error('Only 5 cron params supported');
   const dt = new Date(datetime);
-  dt.setMinutes(dt.getMinutes() + 1, 0, 0);
+  dt.setSeconds(0, 0);
   const items = [
     [
       parseCronItem(cron[4], 0, 6),
@@ -70,7 +73,7 @@ export function getNextCron(cronString: string, datetime = new Date()) {
   return dt;
 }
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export function parseCronItem(cronString: string, min: number, max: number) {
+export function parseCronItem(cronString: string, min: number, max: number): number[] {
   const cron = cronString.split(',');
   const ok = new Set<number>();
   const err = new Error(`Can\'t parse CRON string: ${cronString}`);
@@ -108,21 +111,113 @@ export function parseCronItem(cronString: string, min: number, max: number) {
 
 function getProvided() {
   // === Hooks ===
-  const { loadingProgress, online } = basicStore;
-  const { ready, me } = authStore;
+  const { me } = authStore;
 
   // === State ===
-  const now = atom(Date.now());
+  const today = atom(
+    (() => {
+      const t = new Date();
+      t.setHours(0, 0, 0, 0);
+      return t;
+    })(),
+  );
+  const selectedDate = atom(
+    (() => {
+      const t = new Date();
+      t.setHours(0, 0, 0, 0);
+      return t;
+    })(),
+  );
   const cachingProgress = atom(0);
-  const events = atom<PlanEvent[]>([]);
+  const events = atom<PlanEvent[]>([
+    {
+      created: '',
+      updated: '',
+      duration: 30,
+      id: 0,
+      start: ~~(Date.now() / 60000) - 32,
+      status: PlanEventStatus.DEFAULT,
+      title: 'test',
+      userId: 1,
+      repeat: '0 14 * * 0,2,4',
+      description: 'Tuesday, Thursday and Sunday\nPlease do this at 14:00\nblablabla',
+    },
+    {
+      created: '',
+      updated: '',
+      duration: 30,
+      id: 0,
+      start: ~~(Date.now() / 60000) + 2,
+      status: PlanEventStatus.DEFAULT,
+      title: 'test 2',
+      userId: 1,
+      repeat: '2880',
+    },
+    {
+      created: '',
+      updated: '',
+      duration: 30,
+      id: 0,
+      start: ~~(Date.now() / 60000) + 20,
+      status: PlanEventStatus.DEFAULT,
+      title: 'test 3',
+      userId: 1,
+    },
+  ]);
+  const daysRange = atom(0);
+
+  // === Memos ===
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  const days = createMemo(() => {
+    const curDate = new Date(selectedDate());
+    const $daysRange = daysRange();
+    curDate.setDate(curDate.getDate() - $daysRange);
+    const days = [];
+    const amountOfDays = $daysRange * 2 + 1;
+    for (let i = 0; i < amountOfDays; i++) {
+      days.push({
+        date: new Date(curDate),
+        events: [] as PlanEvent[],
+        selected: $daysRange === i,
+        today: today().getTime() === curDate.getTime(),
+      });
+      curDate.setDate(curDate.getDate() + 1);
+    }
+    for (const event of events()) {
+      let date = new Date(event.start * 60000);
+      if (!event.repeat) {
+        const i = ~~((date.getTime() - days[0].date.getTime()) / DAY_MS);
+        if (i >= 0 && i < amountOfDays) days[i].events.push({ ...event, date: new Date(event.start * 60000) });
+        continue;
+      }
+      try {
+        event.readableRepeat = fromatCron(event.repeat, {
+          locale: navigator.language,
+        });
+      } catch {
+        event.readableRepeat = `every ${formatTime(Number.parseInt(event.repeat) * 60000)}`;
+      }
+      while (true) {
+        const i = ~~((date.getTime() - days[0].date.getTime()) / DAY_MS);
+        if (i >= amountOfDays) break;
+        if (i >= 0) days[i].events.push({ ...event, date });
+        try {
+          date = getNextCron(event.repeat, date > days[0].date ? new Date(date.getTime() + 60000) : days[0].date);
+        } catch {
+          date = new Date(date.getTime() + Number.parseInt(event.repeat) * 60000);
+        }
+      }
+    }
+    for (const day of days) day.events.sort((a, b) => a.date!.getTime() - b.date!.getTime());
+
+    return days;
+  });
 
   // === Effects ===
   createEffect(() => {
-    if (authStore.ready() && untrack(me)) void update();
-  });
-  createEffect(() => {
-    const $p = cachingProgress();
-    loadingProgress($p === 0 || $p === 1 ? undefined : $p);
+    const $me = untrack(me);
+    if (authStore.ready() && $me && ($me.permissions.includes('admin') || $me.permissions.includes('planner')))
+      void update();
   });
 
   // === Functions ===
@@ -146,13 +241,19 @@ function getProvided() {
       console.error(e);
     }
   }
+
   return {
-    now,
+    today,
     update,
+    days,
+    events,
+    cachingProgress,
+    selectedDate,
+    daysRange,
   };
 }
 const Context = createContext<ReturnType<typeof getProvided>>();
-export const PlanProvider: ParentComponent = (props) => (
+export const PlannerProvider: ParentComponent = (props) => (
   <Context.Provider value={getProvided()}>{props.children}</Context.Provider>
 );
-export const usePlan = () => useContext(Context);
+export const usePlanner = () => useContext(Context);

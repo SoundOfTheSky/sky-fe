@@ -4,13 +4,9 @@
 
 // === Types ===
 export type MakeOptional<Type, Key extends keyof Type> = Omit<Type, Key> & Partial<Pick<Type, Key>>;
-
-// === Errors ===
-/** Says that an error is by-design */
-export class ValidationError extends Error {
-  override name = 'ValidationError';
-}
-
+// === Contst ===
+export const DAY_MS = 86400000;
+export const HOUR_MS = 3600000;
 // === Formatting and logging ===
 /** Milliseconds to human readable time. Minimum accuracy, if set to 1000 will stop at seconds  */
 export function formatTime(time: number, min = 1) {
@@ -45,40 +41,6 @@ export function formatBytes(bytes: number) {
 /** Logger (adds date to log)*/
 export function log(...agrs: unknown[]) {
   console.log(new Date().toLocaleString('ru'), ...agrs);
-}
-/** Can pass streams through to log the progress */
-export class ProgressLoggerTransform<T extends { length: number }> extends TransformStream<T> {
-  constructor(str: string, logInterval: number, maxSize?: number) {
-    let bytes = 0;
-    const start = Date.now();
-    let lastBytes = 0;
-    super({
-      transform(chunk, controller) {
-        bytes += chunk.length;
-        controller.enqueue(chunk);
-      },
-      flush() {
-        clearInterval(interval);
-        log('Done!');
-      },
-    });
-    const interval = setInterval(() => {
-      let msg = str;
-      const speed = (bytes - lastBytes) / logInterval;
-      msg = msg
-        .replace('%b', formatBytes(bytes))
-        .replace('%t', formatTime(Date.now() - start, 1000))
-        .replace('%s', formatBytes(speed));
-      if (maxSize) {
-        msg = msg
-          .replace('%lt', formatTime(Math.floor((maxSize - bytes) / speed) * 1000))
-          .replace('%p', Math.floor((bytes / maxSize) * 100).toString())
-          .replace('%s', formatBytes(maxSize));
-      }
-      log(msg);
-      lastBytes = bytes;
-    }, logInterval * 1000);
-  }
 }
 /** Find substring between two strings */
 export function findAllStringBetween(str: string, a: string, b: string) {

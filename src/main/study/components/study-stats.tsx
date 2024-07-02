@@ -6,6 +6,7 @@ import Tooltip from '@/components/tooltip';
 import { useStudy } from '../services/study.context';
 
 import s from './study-stats.module.scss';
+import { DAY_MS } from '@/services/utils';
 
 const StudyStats: Component = () => {
   const { startDate, statsGraph, today, offlineUnavailable } = useStudy()!;
@@ -25,7 +26,7 @@ const StudyStats: Component = () => {
         <div class={s.days} ref={element}>
           <Index each={statsGraph()}>
             {(reviews, i) => {
-              const date = new Date(startDate().getTime() + i * 86400000);
+              const date = new Date(startDate().getTime() + i * DAY_MS);
               return (
                 <Tooltip
                   content={

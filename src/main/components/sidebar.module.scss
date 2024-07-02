@@ -15,6 +15,7 @@
 
   .menu {
     .item {
+      position: relative;
       display: flex;
       align-items: center;
       width: 100%;
@@ -36,40 +37,40 @@
         margin-left: 8px;
       }
 
-      .notifications {
-        display: grid;
-        place-items: center;
-        width: 24px;
-        height: 24px;
-        margin-left: auto;
-        border-radius: 50%;
-        background: rgb(255 255 255);
-        color: $color-content-background;
-        font-size: 16px;
+      .progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: $color-main-light;
+        opacity: 0;
+        transition:
+          opacity $transition-time $transition-time,
+          transform $transition-time;
+        transform-origin: left;
+
+        &.shown {
+          opacity: 1;
+        }
+      }
+    }
+
+    .profile {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+
+      .avatar {
+        min-width: 32px;
+        max-width: 32px;
+        min-height: 32px;
+        max-height: 32px;
       }
     }
   }
-
-  .profile {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-
-    .avatar {
-      min-width: 32px;
-      max-width: 32px;
-      min-height: 32px;
-      max-height: 32px;
-    }
-  }
-}
-
-.skeleton {
-  width: 256px;
-  margin: 0 -24px;
-  border-radius: 0;
 }
 
 @media screen and (width <= 900px) {

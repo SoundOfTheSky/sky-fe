@@ -417,7 +417,6 @@ const Graph: Component<GraphProperties> = (properties) => {
       dash?: number[],
     ) {
       context.strokeStyle = typeof color === 'string' ? color : getColor(x1, y1, x2, y2, color);
-
       context.lineWidth = width;
       context.beginPath();
       context.setLineDash(dash ?? []);

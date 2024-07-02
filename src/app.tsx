@@ -6,6 +6,8 @@ import PageLoading from '@/components/global/page-loading';
 import { persistentAtom } from '@/services/reactive';
 
 import AudioPlayer from './components/audio-player';
+import { PlannerProvider } from './main/planner/planner.context';
+import { StudyProvider } from './main/study/services/study.context';
 import { WebSocketProvider } from './services/web-socket.context';
 
 import './global.scss';
@@ -26,10 +28,14 @@ const App: ParentComponent = (properties) => {
   return (
     <MetaProvider>
       <WebSocketProvider>
-        <PageLoading />
-        <Notifications />
-        {properties.children}
-        <AudioPlayer />
+        <StudyProvider>
+          <PlannerProvider>
+            <PageLoading />
+            <Notifications />
+            {properties.children}
+            <AudioPlayer />
+          </PlannerProvider>
+        </StudyProvider>
       </WebSocketProvider>
     </MetaProvider>
   );

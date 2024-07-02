@@ -1,6 +1,6 @@
 import { ParentComponent, createMemo } from 'solid-js';
 
-import Sidebar from '@/components/global/sidebar';
+import Sidebar from '@/main/components/sidebar';
 import audioStore from '@/services/audio.store';
 import basicStore from '@/services/basic.store';
 

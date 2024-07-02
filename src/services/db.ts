@@ -1,9 +1,10 @@
 import { openDB } from 'idb';
 
-import { PlanEvent } from '@/main/plan/plan.context';
+import { PlanEvent } from '@/main/planner/planner.context';
 import { Question, Stat, Subject } from '@/main/study/services/study.context';
 
 import { RequestOptions, request } from './fetch';
+import { wait } from './utils';
 
 export type DBOptions = {
   keyval: {
@@ -67,7 +68,15 @@ export async function* updateDBEntity<T extends 'studySubjects' | 'studyQuestion
   const lastUpdateKey = 'lastUpdate_' + type;
   const lastUpdate = ((await db.get('keyval', lastUpdateKey)) as number) ?? 0;
   const updated = await request<string>(`${url}/updated/${lastUpdate}`)
-    .then((str) => new Map(str.split('\n').map((x) => x.split(',').map((x) => Number.parseInt(x)) as [number, number])))
+    .then(
+      (str) =>
+        new Map(
+          str
+            .split('\n')
+            .map((x) => x.split(',').map((x) => Number.parseInt(x)) as [number, number])
+            .filter(([k, v]) => !Number.isNaN(k) && !Number.isNaN(v)),
+        ),
+    )
     .catch(() => new Map<number, number>());
   let maxTime = 0;
   if (!required) required = new Set([...(await db.getAllKeys(type)), ...updated.keys()]);
@@ -79,6 +88,7 @@ export async function* updateDBEntity<T extends 'studySubjects' | 'studyQuestion
     let updatedTime = item ? ~~(new Date(item.updated).getTime() / 1000) : undefined;
     if (item && (!DBupdatedTime || updatedTime! >= DBupdatedTime)) yield [item, i, size];
     else {
+      await wait(100);
       item = await request<DBOptions[T]['value']>(`${url}/${id}`);
       await db.put(type, item);
       updatedTime = ~~(new Date(item.updated).getTime() / 1000);

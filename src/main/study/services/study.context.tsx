@@ -3,11 +3,11 @@ import { TypeCompiler } from '@sinclair/typebox/compiler';
 import { ParentComponent, createContext, createEffect, createMemo, untrack, useContext } from 'solid-js';
 
 import authStore from '@/services/auth.store';
-import basicStore, { NotificationType } from '@/services/basic.store';
+import basicStore from '@/services/basic.store';
 import { db, updateDBEntity } from '@/services/db';
 import { CommonRequestOptions, request } from '@/services/fetch';
 import { atom, persistentAtom } from '@/services/reactive';
-import { findAllStringBetween } from '@/services/utils';
+import { DAY_MS, findAllStringBetween } from '@/services/utils';
 
 export type Theme = {
   id: number;
@@ -180,13 +180,13 @@ function getProvided() {
   const startDate = createMemo(() => {
     const $today = today();
     // 44 weeks back
-    return new Date($today.getTime() - $today.getDay() * 86400000 - 26611200000);
+    return new Date($today.getTime() - $today.getDay() * DAY_MS - 26611200000);
   });
   const activity = createMemo(() => {
     let score = 0;
     let streak = 0;
     const $statsGraph = statsGraph();
-    const maxI = (today().getTime() - startDate().getTime()) / 86400000;
+    const maxI = (today().getTime() - startDate().getTime()) / DAY_MS;
     for (let i = 0; i <= maxI; i++) {
       score = Math.floor(score / 4) + $statsGraph[i];
       if (score >= 25) streak++;
@@ -409,6 +409,7 @@ function getProvided() {
       }
       requiredSubjects.clear();
       i = 0;
+      // eslint-disable-next-line sonarjs/no-unused-collection
       const assets = new Set<string>();
       for await (const [question] of updateDBEntity('/api/study/questions', 'studyQuestions', requiredQuestions)) {
         if (curUpdateCount !== updateCount) return;
@@ -422,27 +423,27 @@ function getProvided() {
         }
       }
       i = 0;
-      let isStaticNotLoaded = false;
-      for (const path of assets) {
-        if (curUpdateCount !== updateCount) return;
-        await fetch('/static/' + path, { cache: 'force-cache' })
-          .then((x) => x.arrayBuffer())
-          .catch(() => {
-            isStaticNotLoaded = true;
-          });
-        i++;
-        const t = Date.now();
-        if (lastUpdateTime + 200 < t) {
-          lastUpdateTime = t;
-          cachingProgress((i / requiredQuestions.size) * 0.3 + 0.7);
-        }
-      }
-      if (isStaticNotLoaded)
-        basicStore.notify({
-          title: 'Some images or audio may not be available offline.',
-          timeout: 10000,
-          type: NotificationType.Info,
-        });
+      // let isStaticNotLoaded = false;
+      // for (const path of assets) {
+      //   if (curUpdateCount !== updateCount) return;
+      //   await fetch('/static/' + path, { cache: 'force-cache' })
+      //     .then((x) => x.arrayBuffer())
+      //     .catch(() => {
+      //       isStaticNotLoaded = true;
+      //     });
+      //   i++;
+      //   const t = Date.now();
+      //   if (lastUpdateTime + 200 < t) {
+      //     lastUpdateTime = t;
+      //     cachingProgress((i / requiredQuestions.size) * 0.3 + 0.7);
+      //   }
+      // }
+      // if (isStaticNotLoaded)
+      //   basicStore.notify({
+      //     title: 'Some images or audio may not be available offline.',
+      //     timeout: 10000,
+      //     type: NotificationType.Info,
+      //   });
       cachingProgress(1);
       requiredQuestions.clear();
     } catch (e) {
@@ -453,11 +454,9 @@ function getProvided() {
 
   // === Effects ===
   createEffect(() => {
-    if (authStore.ready() && untrack(authStore.me)) void update();
-  });
-  createEffect(() => {
-    const $offlineProgress = cachingProgress();
-    basicStore.loadingProgress($offlineProgress === 0 || $offlineProgress === 1 ? undefined : $offlineProgress);
+    const me = untrack(authStore.me);
+    if (authStore.ready() && me && (me.permissions.includes('admin') || me.permissions.includes('study')))
+      void update();
   });
 
   return {
@@ -484,6 +483,7 @@ function getProvided() {
     ready,
     srsMap,
     activity,
+    cachingProgress,
   };
 }
 

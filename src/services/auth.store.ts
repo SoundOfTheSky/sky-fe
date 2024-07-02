@@ -5,7 +5,7 @@ import basicStore from './basic.store';
 import { db } from './db';
 import { CommonRequestOptions, RequestError, request } from './fetch';
 import { atom, persistentAtom, useInterval } from './reactive';
-import { noop } from './utils';
+import { HOUR_MS, noop } from './utils';
 
 import type {
   PublicKeyCredentialCreationOptionsJSON,
@@ -35,7 +35,7 @@ export default createRoot(() => {
       .then(() => basicStore.online(true))
       .catch(noop);
   }, 10000);
-  useInterval(updateCurrentUser, 3600000);
+  useInterval(updateCurrentUser, HOUR_MS);
   // Send requests that were queued offline
   createEffect(() => {
     if (basicStore.online() && ready() && untrack(me))

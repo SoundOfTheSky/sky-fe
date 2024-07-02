@@ -6,13 +6,12 @@ import { db } from './db';
 import { findErrorText } from './utils';
 
 export class RequestError<T = unknown> extends Error {
-  code;
-  body;
-  constructor(code: number, body?: T) {
+  public constructor(
+    public code: number,
+    public body?: T,
+  ) {
     super(typeof body === 'string' ? body : '');
     this.name = 'RequestError';
-    this.code = code;
-    this.body = body;
   }
 }
 export const MAIN_URL = location.origin;
