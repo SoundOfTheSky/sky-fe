@@ -3,7 +3,7 @@ import { openDB } from 'idb';
 import { PlanEvent } from '@/main/planner/planner.context';
 import { Question, Stat, Subject } from '@/main/study/services/study.context';
 
-import { RequestOptions, request } from './fetch';
+import { request } from './fetch';
 import { wait } from './utils';
 
 export type DBOptions = {
@@ -11,12 +11,9 @@ export type DBOptions = {
     key: string;
     value: unknown;
   };
-  offlineRequestQueue: {
+  offlineTasksQueue: {
     key: string;
-    value: {
-      url: string;
-      options: RequestOptions;
-    };
+    value: unknown;
   };
   studySubjects: {
     key: number;
@@ -37,8 +34,8 @@ export type DBOptions = {
 };
 export const db = await openDB<DBOptions>('skydb', 1, {
   upgrade(database) {
-    database.createObjectStore('keyval');
-    database.createObjectStore('offlineRequestQueue', {
+    for (const store of database.objectStoreNames) database.deleteObjectStore(store);
+    database.createObjectStore('offlineTasksQueue', {
       autoIncrement: true,
     });
     database.createObjectStore('studySubjects', {

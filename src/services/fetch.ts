@@ -2,7 +2,6 @@ import { createContext, useContext } from 'solid-js';
 
 import BasicStore, { NotificationType } from '@/services/basic.store';
 
-import { db } from './db';
 import { findErrorText } from './utils';
 
 export class RequestError<T = unknown> extends Error {
@@ -21,10 +20,9 @@ export type RequestOptions = Omit<RequestInit, 'body'> & {
   raw?: boolean;
   query?: Record<string, string>;
   useCache?: Map<string, unknown>;
-  offlineQueue?: boolean;
   timeout?: number;
 };
-export type CommonRequestOptions = Omit<RequestOptions, 'raw' | 'offlineQueue'>;
+export type CommonRequestOptions = Omit<RequestOptions, 'raw'>;
 
 /**
  *
@@ -36,36 +34,15 @@ export async function request(
   url: string,
   options: RequestOptions & {
     raw: true;
-    offlineQueue: true;
-  },
-): Promise<Response | undefined>;
-export async function request<T>(
-  url: string,
-  options: RequestOptions & {
-    raw?: false;
-    offlineQueue: true;
-  },
-): Promise<T | undefined>;
-export async function request(
-  url: string,
-  options: RequestOptions & {
-    raw: true;
-    offlineQueue?: false;
   },
 ): Promise<Response>;
 export async function request<T>(
   url: string,
   options?: RequestOptions & {
     raw?: false;
-    offlineQueue?: false;
   },
 ): Promise<T>;
 export async function request<T>(url: string, options: RequestOptions = {}): Promise<T | Response | undefined> {
-  if (!BasicStore.online() && options.offlineQueue) {
-    delete options.offlineQueue;
-    await db.put('offlineRequestQueue', { url, options });
-    return;
-  }
   BasicStore.activeRequests((x) => x + 1);
   try {
     options.useCache ??= useContext(CacheContext);

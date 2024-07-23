@@ -5,7 +5,7 @@ import { ParentComponent, createContext, createEffect, createMemo, untrack, useC
 import authStore from '@/services/auth.store';
 import basicStore from '@/services/basic.store';
 import { db, updateDBEntity } from '@/services/db';
-import { CommonRequestOptions, request } from '@/services/fetch';
+import { CommonRequestOptions, request, RequestError } from '@/services/fetch';
 import { atom, persistentAtom } from '@/services/reactive';
 import { DAY_MS, findAllStringBetween } from '@/services/utils';
 
@@ -82,6 +82,19 @@ export type Stat = {
   correct: boolean;
   answers: string[];
   took: number;
+};
+type OfflineTaskUpdateQuestion = {
+  id: number;
+  body: {
+    note?: string;
+    synonyms?: string[];
+  };
+};
+type OfflineTaskAnswer = {
+  id: number;
+  answers: string[];
+  took: number;
+  correct: boolean;
 };
 
 const QuestionUpdateT = TypeCompiler.Compile(
@@ -265,25 +278,30 @@ function getProvided() {
     },
   ) {
     if (!QuestionUpdateT.Check(body)) throw [...QuestionUpdateT.Errors(body)];
+    try {
+      if (!untrack(basicStore.online)) throw new Error();
+      await request(`${questionsEndpoint}/${id}`, {
+        method: 'PUT',
+        body,
+      });
+    } catch (e) {
+      if (e instanceof RequestError && e.code !== 0) throw e;
+      await db.add(
+        'offlineTasksQueue',
+        {
+          id,
+          body,
+        } satisfies OfflineTaskUpdateQuestion,
+        `study_update_question_${Date.now()}`,
+      );
+    }
     const question = await db.get('studyQuestions', id);
-    const questionCopy = structuredClone(question);
     if (question) {
       question.note = body.note;
       question.synonyms = body.synonyms;
       await db.put('studyQuestions', question);
     }
     outdated(true);
-    try {
-      return await request(`${questionsEndpoint}/${id}`, {
-        method: 'PUT',
-        body,
-        offlineQueue: true,
-      });
-    } catch (e) {
-      // Rollback if error
-      if (questionCopy) await db.put('studyQuestions', questionCopy);
-      throw e;
-    }
   }
   // eslint-disable-next-line sonarjs/cognitive-complexity
   async function submitAnswer(id: number, answers: string[], took: number, correct: boolean) {
@@ -296,8 +314,26 @@ function getProvided() {
     };
     if (!AnswerT.Check(body)) throw [...AnswerT.Errors(body)];
     // Don't update last_updated in this function!!!
+    try {
+      if (!untrack(basicStore.online)) throw new Error();
+      await request(`${subjectsEndpoint}/${id}/answer`, {
+        method: 'POST',
+        body,
+      });
+    } catch (e) {
+      if (e instanceof RequestError && e.code !== 0) throw e;
+      await db.add(
+        'offlineTasksQueue',
+        {
+          id,
+          answers,
+          took,
+          correct,
+        } satisfies OfflineTaskAnswer,
+        `study_answer_${Date.now()}`,
+      );
+    }
     const subject = await db.get('studySubjects', id);
-    const subjectCopy = structuredClone(subject);
     if (subject) {
       const SRS = srsMap[subject.srsId - 1];
       subject.stage = Math.max(1, Math.min(SRS.timings.length + 1, (subject.stage ?? 0) + (correct ? 1 : -2)));
@@ -324,19 +360,7 @@ function getProvided() {
         themeId: subject?.themeId,
       });
     }
-    // Invalidate study context
     outdated(true);
-    try {
-      return await request(`${subjectsEndpoint}/${id}/answer`, {
-        method: 'POST',
-        offlineQueue: true,
-        body,
-      });
-    } catch (e) {
-      // Rollback if error
-      if (subjectCopy) await db.put('studySubjects', subjectCopy);
-      throw e;
-    }
   }
   async function getImmersionKitExamples(word: string, options?: CommonRequestOptions) {
     return request<ImmersionKitResponse>(
@@ -378,6 +402,26 @@ function getProvided() {
     cachingProgress(0.01);
     const $online = untrack(basicStore.online);
     try {
+      if ($online) {
+        const keys = await db.getAllKeys('offlineTasksQueue', IDBKeyRange.bound('study_a', 'study_z'));
+        for (const key of keys) {
+          if (!untrack(basicStore.online) || curUpdateCount !== updateCount) return;
+          const req = await db.get('offlineTasksQueue', key);
+          if (key.startsWith('study_update_question_')) {
+            const data = req as OfflineTaskUpdateQuestion;
+            await updateQuestion(data.id, data.body);
+          } else if (key.startsWith('study_answer_')) {
+            const data = req as OfflineTaskAnswer;
+            await submitAnswer(data.id, data.answers, data.took, data.correct);
+          } else throw new Error('Unknown study offline task key');
+          await db.delete('offlineTasksQueue', key);
+        }
+        if (keys.length)
+          basicStore.notify({
+            title: 'Study answers and edits saved!',
+            timeout: 10000,
+          });
+      }
       // If online always update Themes cause they are small
       const $themes = await getThemes({
         ignoreDB: $online,
@@ -404,7 +448,7 @@ function getProvided() {
         const t = Date.now();
         if (lastUpdateTime + 200 < t) {
           lastUpdateTime = t;
-          cachingProgress((i / requiredSubjects.size) * 0.2 + 0.1);
+          cachingProgress((i / requiredSubjects.size) * 0.4 + 0.1);
         }
       }
       requiredSubjects.clear();
@@ -419,7 +463,7 @@ function getProvided() {
         const t = Date.now();
         if (lastUpdateTime + 200 < t) {
           lastUpdateTime = t;
-          cachingProgress((i / requiredQuestions.size) * 0.4 + 0.3);
+          cachingProgress((i / requiredQuestions.size) * 0.5 + 0.5);
         }
       }
       i = 0;
@@ -454,8 +498,8 @@ function getProvided() {
 
   // === Effects ===
   createEffect(() => {
-    const me = untrack(authStore.me);
-    if (authStore.ready() && me && (me.permissions.includes('admin') || me.permissions.includes('study')))
+    const $me = authStore.me();
+    if (authStore.ready() && $me && ($me.permissions.includes('admin') || $me.permissions.includes('study')))
       void update();
   });
 

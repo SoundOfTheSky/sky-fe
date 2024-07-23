@@ -29,7 +29,7 @@ export default function Subjects() {
   const scheduledQuery = createMemo<string>((last) => (!queryScheduler() ? last : query()), '');
   const [results] = createResource<SearchSubject[], [string, number[], number]>(
     () => [scheduledQuery(), themeIds(), page()] as const,
-    ([query, themeIds, page], info) => (themeIds.length ? searchSubjects(themeIds, query, page) : info.value ?? []),
+    ([query, themeIds, page], info) => (themeIds.length ? searchSubjects(themeIds, query, page) : (info.value ?? [])),
   );
   // === Effects ===
   createEffect(() => {

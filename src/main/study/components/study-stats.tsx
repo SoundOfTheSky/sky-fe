@@ -2,11 +2,11 @@ import { Component, createEffect, createMemo, Index, Show } from 'solid-js';
 
 import Skeleton from '@/components/loading/skeleton';
 import Tooltip from '@/components/tooltip';
+import { DAY_MS } from '@/services/utils';
 
 import { useStudy } from '../services/study.context';
 
 import s from './study-stats.module.scss';
-import { DAY_MS } from '@/services/utils';
 
 const StudyStats: Component = () => {
   const { startDate, statsGraph, today, offlineUnavailable } = useStudy()!;

@@ -1,5 +1,5 @@
 import { toString as fromatCron } from 'cronstrue';
-import { ParentComponent, createContext, createEffect, createMemo, untrack, useContext } from 'solid-js';
+import { ParentComponent, createContext, createEffect, createMemo, useContext } from 'solid-js';
 
 import authStore from '@/services/auth.store';
 import { updateDBEntity } from '@/services/db';
@@ -110,9 +110,6 @@ export function parseCronItem(cronString: string, min: number, max: number): num
 }
 
 function getProvided() {
-  // === Hooks ===
-  const { me } = authStore;
-
   // === State ===
   const today = atom(
     (() => {
@@ -215,7 +212,7 @@ function getProvided() {
 
   // === Effects ===
   createEffect(() => {
-    const $me = untrack(me);
+    const $me = authStore.me();
     if (authStore.ready() && $me && ($me.permissions.includes('admin') || $me.permissions.includes('planner')))
       void update();
   });

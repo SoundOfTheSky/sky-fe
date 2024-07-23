@@ -1,9 +1,8 @@
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
-import { createEffect, createRoot, untrack } from 'solid-js';
+import { batch, createRoot } from 'solid-js';
 
 import basicStore from './basic.store';
-import { db } from './db';
-import { CommonRequestOptions, RequestError, request } from './fetch';
+import { RequestError, request } from './fetch';
 import { atom, persistentAtom, useInterval } from './reactive';
 import { HOUR_MS, noop } from './utils';
 
@@ -31,39 +30,20 @@ export default createRoot(() => {
   // Then offline retry connection
   useInterval(() => {
     if (basicStore.online()) return;
-    void updateCurrentUser()
-      .then(() => basicStore.online(true))
-      .catch(noop);
+    void updateCurrentUser().catch(noop);
   }, 10000);
   useInterval(updateCurrentUser, HOUR_MS);
-  // Send requests that were queued offline
-  createEffect(() => {
-    if (basicStore.online() && ready() && untrack(me))
-      setTimeout(async () => {
-        try {
-          const keys = await db.getAllKeys('offlineRequestQueue');
-          for (const key of keys) {
-            if (!basicStore.online()) throw new Error('Offline');
-            const req = (await db.get('offlineRequestQueue', key))!;
-            await request(req.url, req.options as CommonRequestOptions);
-            await db.delete('offlineRequestQueue', key);
-          }
-          if (keys.length)
-            basicStore.notify({
-              title: 'Offline sync complete! Your data is safe.',
-              timeout: 10000,
-            });
-        } catch {}
-      }, 1000);
-  });
 
   // === Functions ===
   async function updateCurrentUser() {
     loading(true);
     try {
       const userData = await request<User>('/api/auth/me');
-      me(userData);
-      loading(false);
+      batch(() => {
+        me(userData);
+        basicStore.online(true);
+        loading(false);
+      });
       return userData;
     } catch (error) {
       loading(false);
