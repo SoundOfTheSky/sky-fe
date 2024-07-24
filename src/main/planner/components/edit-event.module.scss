@@ -1,0 +1,24 @@
+@use '@/vars' as *;
+
+.edit-event {
+  margin: 16px;
+
+  .statuses {
+    display: flex;
+    width: 100%;
+    height: 48px;
+    border: border();
+    font-weight: bold;
+    font-size: 32px;
+
+    button {
+      position: relative;
+      flex-grow: 1;
+      height: 100%;
+
+      &.active {
+        background-color: $color-main;
+      }
+    }
+  }
+}

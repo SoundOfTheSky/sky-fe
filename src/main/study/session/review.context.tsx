@@ -42,6 +42,7 @@ function getProvided() {
     submitAnswer,
     ready,
     srsMap,
+    updateSubsribtion,
   } = useStudy()!;
   const location = useLocation();
   const { notify } = basicStore;
@@ -167,6 +168,11 @@ function getProvided() {
   const questionAnswered = createMemo(() => !!previousState() || subjectStats()?.status === SubjectStatus.Unlearned);
 
   // === Effects ===
+  // Load data ONCE
+  createEffect<boolean>((prev) => {
+    if (prev) return true;
+    return updateSubsribtion();
+  });
   // Set page title
   createEffect(() => {
     document.title = (lessonsMode() ? 'Sky | Lessons ' : 'Sky | Reviews ') + stats().unpassed;

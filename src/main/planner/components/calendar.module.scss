@@ -9,6 +9,7 @@
   min-height: 128px;
 
   .day {
+    position: relative;
     display: flex;
     flex: 1 1 0px;
     flex-direction: column;
@@ -42,6 +43,18 @@
 
     .month {
       font-size: 12px;
+    }
+
+    .events {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 12px;
+      background-color: $color-main-light;
     }
   }
 }

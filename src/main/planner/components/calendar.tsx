@@ -1,4 +1,4 @@
-import { For } from 'solid-js';
+import { For, Show } from 'solid-js';
 
 import { usePlanner } from '../planner.context';
 
@@ -37,6 +37,9 @@ export default function Calendar() {
                 weekday: 'short',
               })}
             </div>
+            <Show when={day.events.length !== 0}>
+              <div class={s.events}>{day.events.length}</div>
+            </Show>
           </button>
         )}
       </For>

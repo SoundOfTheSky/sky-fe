@@ -15,12 +15,25 @@
     min-width: 256px;
     margin: 8px 0;
     padding: 16px;
-    border-radius: 16px;
+    border-bottom: border(8px, $color-main);
+    border-radius: 8px;
     background-color: $color-content-background;
     box-shadow: 0 0 4px 2px rgb(0 0 0 / 20%);
 
     &:hover {
       z-index: 1;
+    }
+
+    &.success {
+      border-bottom-color: $color-success;
+    }
+
+    &.failure {
+      border-bottom-color: $color-error;
+    }
+
+    &.skip {
+      border-bottom-color: $color-border;
     }
 
     .title {
@@ -55,7 +68,9 @@
     place-items: center;
     width: 100%;
     min-width: 256px;
-    height: 64px;
+    height: 48px;
+    border: border();
+    border-radius: 8px;
     background: repeating-linear-gradient(45deg, transparent, transparent 16px, $color-border 16px, $color-border 32px);
     font-weight: 600;
     font-size: 32px;

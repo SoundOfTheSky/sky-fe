@@ -35,6 +35,7 @@ export type DBOptions = {
 export const db = await openDB<DBOptions>('skydb', 1, {
   upgrade(database) {
     for (const store of database.objectStoreNames) database.deleteObjectStore(store);
+    database.createObjectStore('keyval');
     database.createObjectStore('offlineTasksQueue', {
       autoIncrement: true,
     });

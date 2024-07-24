@@ -7,6 +7,7 @@ export type MakeOptional<Type, Key extends keyof Type> = Omit<Type, Key> & Parti
 // === Contst ===
 export const DAY_MS = 86400000;
 export const HOUR_MS = 3600000;
+export const MIN_MS = 60000;
 // === Formatting and logging ===
 /** Milliseconds to human readable time. Minimum accuracy, if set to 1000 will stop at seconds  */
 export function formatTime(time: number, min = 1) {

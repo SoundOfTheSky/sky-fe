@@ -163,7 +163,7 @@ function getProvided() {
     disabledThemeIds: [] as number[],
   });
   const now = atom(Math.floor(Date.now() / 3_600_000));
-  const outdated = atom(false);
+  const outdated = atom(true);
   const cachingProgress = atom(0);
   const themes = atom<Theme[]>();
   const srsMap = [
@@ -261,6 +261,7 @@ function getProvided() {
     await request(`${themesEndpoint}/${id}`, {
       method: 'POST',
     });
+    outdated(true);
     await update();
   }
   async function removeTheme(id: number) {
@@ -268,6 +269,7 @@ function getProvided() {
     await request(`${themesEndpoint}/${id}`, {
       method: 'DELETE',
     });
+    outdated(true);
     await update();
   }
   async function updateQuestion(
@@ -397,6 +399,7 @@ function getProvided() {
   let updateCount = 0;
   // eslint-disable-next-line sonarjs/cognitive-complexity
   async function update() {
+    console.log('UPDATE!');
     let lastUpdateTime = Date.now();
     const curUpdateCount = ++updateCount;
     cachingProgress(0.01);
@@ -495,15 +498,31 @@ function getProvided() {
       console.error(e);
     }
   }
+  /** Put this into createEffect to subsribe to updates */
+  function updateSubsribtion() {
+    const $me = authStore.me();
+    if (
+      authStore.ready() &&
+      $me &&
+      ($me.permissions.includes('admin') || $me.permissions.includes('study')) &&
+      outdated()
+    ) {
+      void update();
+      return true;
+    }
+    return false;
+  }
 
   // === Effects ===
-  createEffect(() => {
-    const $me = authStore.me();
-    if (authStore.ready() && $me && ($me.permissions.includes('admin') || $me.permissions.includes('study')))
-      void update();
+  // Outdate on becoming online from offline
+  createEffect<boolean>((prev) => {
+    const $online = basicStore.online();
+    if (prev === false && $online) outdated(true);
+    return $online;
   });
 
   return {
+    updateSubsribtion,
     update,
     outdated,
     startDate,

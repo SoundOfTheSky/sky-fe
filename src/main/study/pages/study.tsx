@@ -20,18 +20,14 @@ export default function StudyTab() {
   // === Hooks ===
   document.title = 'Sky | Study';
 
-  const { availableLessons, availableReviews, settings, offlineUnavailable, ready, update, outdated } = useStudy()!;
-  const { online } = basicStore;
+  const { availableLessons, availableReviews, settings, offlineUnavailable, ready, updateSubsribtion } = useStudy()!;
 
   // === State ===
   const showReviewsSettings = atom(false);
   const showLessonsSettings = atom(false);
 
   // === Effect ===
-  createEffect(() => {
-    online();
-    if (outdated()) void update();
-  });
+  createEffect(updateSubsribtion);
 
   return (
     <div class='card-container'>

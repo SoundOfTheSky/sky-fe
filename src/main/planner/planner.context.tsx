@@ -2,9 +2,10 @@ import { toString as fromatCron } from 'cronstrue';
 import { ParentComponent, createContext, createEffect, createMemo, useContext } from 'solid-js';
 
 import authStore from '@/services/auth.store';
+import basicStore from '@/services/basic.store';
 import { updateDBEntity } from '@/services/db';
 import { atom } from '@/services/reactive';
-import { DAY_MS, formatTime } from '@/services/utils';
+import { DAY_MS, formatTime, MIN_MS } from '@/services/utils';
 
 export enum PlanEventStatus {
   DEFAULT = 0,
@@ -21,11 +22,19 @@ export type PlanEvent = {
   duration: number; // Minutes
   userId: number;
   status: PlanEventStatus;
-  repeat?: string; // cron
+  repeat?: string; // cron or interval
   description?: string;
   parentId?: number;
+  // === Calculated in days memo ===
   date?: Date;
   readableRepeat?: string;
+};
+
+export type PlanDay = {
+  date: Date;
+  events: PlanEvent[];
+  selected: boolean;
+  today: boolean;
 };
 
 export function getNextCron(cronString: string, datetime = new Date()) {
@@ -132,7 +141,7 @@ function getProvided() {
       updated: '',
       duration: 30,
       id: 0,
-      start: ~~(Date.now() / 60000) - 32,
+      start: ~~(Date.now() / MIN_MS) - 32,
       status: PlanEventStatus.DEFAULT,
       title: 'test',
       userId: 1,
@@ -144,8 +153,8 @@ function getProvided() {
       updated: '',
       duration: 30,
       id: 0,
-      start: ~~(Date.now() / 60000) + 2,
-      status: PlanEventStatus.DEFAULT,
+      start: ~~(Date.now() / MIN_MS) + 2,
+      status: PlanEventStatus.FAILURE,
       title: 'test 2',
       userId: 1,
       repeat: '2880',
@@ -155,8 +164,8 @@ function getProvided() {
       updated: '',
       duration: 30,
       id: 0,
-      start: ~~(Date.now() / 60000) + 20,
-      status: PlanEventStatus.DEFAULT,
+      start: ~~(Date.now() / MIN_MS) + 20,
+      status: PlanEventStatus.SUCCESS,
       title: 'test 3',
       userId: 1,
     },
@@ -165,7 +174,7 @@ function getProvided() {
 
   // === Memos ===
   // eslint-disable-next-line sonarjs/cognitive-complexity
-  const days = createMemo(() => {
+  const days = createMemo<PlanDay[]>(() => {
     const curDate = new Date(selectedDate());
     const $daysRange = daysRange();
     curDate.setDate(curDate.getDate() - $daysRange);
@@ -181,37 +190,34 @@ function getProvided() {
       curDate.setDate(curDate.getDate() + 1);
     }
     for (const event of events()) {
-      let date = new Date(event.start * 60000);
+      let date = new Date(event.start * MIN_MS);
       if (!event.repeat) {
         const i = ~~((date.getTime() - days[0].date.getTime()) / DAY_MS);
-        if (i >= 0 && i < amountOfDays) days[i].events.push({ ...event, date: new Date(event.start * 60000) });
+        if (i >= 0 && i < amountOfDays) days[i].events.push({ ...event, date: new Date(event.start * MIN_MS) });
         continue;
       }
-      try {
-        event.readableRepeat = fromatCron(event.repeat, {
-          locale: navigator.language,
-        });
-      } catch {
-        event.readableRepeat = `every ${formatTime(Number.parseInt(event.repeat) * 60000)}`;
-      }
+      const intervalMode = !event.repeat.includes(' ') && Number.parseInt(event.repeat) * MIN_MS;
+      event.readableRepeat = intervalMode
+        ? `every ${formatTime(intervalMode)}`
+        : fromatCron(event.repeat, {
+            locale: navigator.language.slice(0, navigator.language.indexOf('_')),
+          });
       while (true) {
         const i = ~~((date.getTime() - days[0].date.getTime()) / DAY_MS);
         if (i >= amountOfDays) break;
         if (i >= 0) days[i].events.push({ ...event, date });
-        try {
-          date = getNextCron(event.repeat, date > days[0].date ? new Date(date.getTime() + 60000) : days[0].date);
-        } catch {
-          date = new Date(date.getTime() + Number.parseInt(event.repeat) * 60000);
-        }
+        date = intervalMode
+          ? new Date(date.getTime() + intervalMode)
+          : getNextCron(event.repeat, date > days[0].date ? new Date(date.getTime() + MIN_MS) : days[0].date);
       }
     }
     for (const day of days) day.events.sort((a, b) => a.date!.getTime() - b.date!.getTime());
-
     return days;
   });
 
   // === Effects ===
   createEffect(() => {
+    basicStore.online();
     const $me = authStore.me();
     if (authStore.ready() && $me && ($me.permissions.includes('admin') || $me.permissions.includes('planner')))
       void update();
