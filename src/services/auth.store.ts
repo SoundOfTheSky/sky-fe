@@ -56,19 +56,15 @@ export default createRoot(() => {
       }
     }
   }
-  async function register(username: string) {
+  async function register(query: { username: string } | { key: string }) {
     const resp = await request<PublicKeyCredentialCreationOptionsJSON>('/api/auth/register', {
-      query: {
-        username,
-      },
+      query,
     });
     const fingerprint = await startRegistration(resp);
     await request('/api/auth/register', {
       method: 'POST',
       body: fingerprint,
-      query: {
-        username,
-      },
+      query,
     });
     await updateCurrentUser();
   }

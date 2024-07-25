@@ -10,6 +10,7 @@ export default () => {
     <Route path='/' component={lazy(() => import('./layout'))}>
       <Route path='/' component={lazy(() => import('./pages/default-tab'))} />
       <Route path='/profile' component={lazy(() => import('./pages/profile'))} />
+      <Route path='/reg/:key' component={lazy(() => import('./pages/reg'))} />
       <StudyRoutes />
       <JPConjugationRoutes />
       <PlannerRoutes />

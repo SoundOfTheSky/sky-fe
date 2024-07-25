@@ -5,9 +5,12 @@ import { atom } from '@/services/reactive';
 
 import s from './dialog.module.scss';
 
-const Dialog: ParentComponent<{ forceFullscreen?: boolean; dark?: boolean; onClose?: () => unknown }> = (
-  properties,
-) => {
+const Dialog: ParentComponent<{
+  forceFullscreen?: boolean;
+  dark?: boolean;
+  onClose?: () => unknown;
+  width?: string;
+}> = (properties) => {
   // === Hooks ===
   onMount(() => {
     setTimeout(() => {
@@ -68,6 +71,7 @@ const Dialog: ParentComponent<{ forceFullscreen?: boolean; dark?: boolean; onClo
         style={{
           transform: offsetY() ? `translateY(${offsetY()}px)` : undefined,
           transition: touchStartY() ? 'none' : undefined,
+          width: properties.width,
         }}
       >
         <Show when={properties.onClose}>

@@ -35,7 +35,7 @@ export default ((properties) => {
     } catch (error) {
       if (error instanceof RequestError && error.body === 'User not found') {
         try {
-          await AuthStore.register(username);
+          await AuthStore.register({ username });
         } catch (error) {
           handleError(error);
         }

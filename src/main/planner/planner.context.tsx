@@ -1,4 +1,4 @@
-import { toString as fromatCron } from 'cronstrue';
+import { toString as _fomatCron } from 'cronstrue';
 import { ParentComponent, createContext, createEffect, createMemo, useContext } from 'solid-js';
 
 import authStore from '@/services/auth.store';
@@ -8,10 +8,10 @@ import { atom } from '@/services/reactive';
 import { DAY_MS, formatTime, MIN_MS } from '@/services/utils';
 
 export enum PlanEventStatus {
-  DEFAULT = 0,
-  SUCCESS = 1,
-  FAILURE = 2,
-  SKIP = 3,
+  TODO = 0,
+  DONE = 1,
+  FAILED = 2,
+  SKIPPED = 3,
 }
 export type PlanEvent = {
   id: number;
@@ -118,6 +118,12 @@ export function parseCronItem(cronString: string, min: number, max: number): num
   return [...ok].sort((a, b) => a - b);
 }
 
+export function formatCron(cronString: string) {
+  return _fomatCron(cronString, {
+    locale: navigator.language.slice(0, navigator.language.indexOf('_')),
+  });
+}
+
 function getProvided() {
   // === State ===
   const today = atom(
@@ -142,7 +148,7 @@ function getProvided() {
       duration: 30,
       id: 0,
       start: ~~(Date.now() / MIN_MS) - 32,
-      status: PlanEventStatus.DEFAULT,
+      status: PlanEventStatus.TODO,
       title: 'test',
       userId: 1,
       repeat: '0 14 * * 0,2,4',
@@ -154,7 +160,7 @@ function getProvided() {
       duration: 30,
       id: 0,
       start: ~~(Date.now() / MIN_MS) + 2,
-      status: PlanEventStatus.FAILURE,
+      status: PlanEventStatus.FAILED,
       title: 'test 2',
       userId: 1,
       repeat: '2880',
@@ -165,7 +171,7 @@ function getProvided() {
       duration: 30,
       id: 0,
       start: ~~(Date.now() / MIN_MS) + 20,
-      status: PlanEventStatus.SUCCESS,
+      status: PlanEventStatus.DONE,
       title: 'test 3',
       userId: 1,
     },
@@ -197,11 +203,7 @@ function getProvided() {
         continue;
       }
       const intervalMode = !event.repeat.includes(' ') && Number.parseInt(event.repeat) * MIN_MS;
-      event.readableRepeat = intervalMode
-        ? `every ${formatTime(intervalMode)}`
-        : fromatCron(event.repeat, {
-            locale: navigator.language.slice(0, navigator.language.indexOf('_')),
-          });
+      event.readableRepeat = intervalMode ? `every ${formatTime(intervalMode)}` : formatCron(event.repeat);
       while (true) {
         const i = ~~((date.getTime() - days[0].date.getTime()) / DAY_MS);
         if (i >= amountOfDays) break;
