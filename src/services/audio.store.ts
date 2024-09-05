@@ -13,6 +13,7 @@ export default createRoot(() => {
   const time = atom(0);
   const currentI = atom(0);
   const queue = atom<Audio[]>([]);
+
   // === Memos ===
   const current = createMemo<Audio | undefined>(() => queue()[currentI()]);
   return {

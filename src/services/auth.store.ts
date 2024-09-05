@@ -1,15 +1,10 @@
-import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 import { batch, createRoot } from 'solid-js';
+
+import { HOUR_MS, noop } from '@/sky-utils';
 
 import basicStore from './basic.store';
 import { RequestError, request } from './fetch';
 import { atom, persistentAtom, useInterval } from './reactive';
-import { HOUR_MS, noop } from './utils';
-
-import type {
-  PublicKeyCredentialCreationOptionsJSON,
-  PublicKeyCredentialRequestOptionsJSON,
-} from '@simplewebauthn/types';
 
 export type User = {
   id: number;
@@ -29,8 +24,7 @@ export default createRoot(() => {
   // === Effects ===
   // Then offline retry connection
   useInterval(() => {
-    if (basicStore.online()) return;
-    void updateCurrentUser().catch(noop);
+    if (!basicStore.online()) void updateCurrentUser().catch(noop);
   }, 10000);
   useInterval(updateCurrentUser, HOUR_MS);
 
@@ -46,41 +40,28 @@ export default createRoot(() => {
       });
       return userData;
     } catch (error) {
-      loading(false);
       if (error instanceof RequestError) {
-        if (error.code === 401) me(undefined);
+        if (error.code >= 400 && error.code < 500) me(undefined);
         else {
           basicStore.online(false);
           throw error;
         }
       }
+    } finally {
+      loading(false);
     }
   }
-  async function register(query: { username: string } | { key: string }) {
-    const resp = await request<PublicKeyCredentialCreationOptionsJSON>('/api/auth/register', {
-      query,
-    });
-    const fingerprint = await startRegistration(resp);
+  async function register(body: { username: string; password: string }) {
     await request('/api/auth/register', {
       method: 'POST',
-      body: fingerprint,
-      query,
+      body,
     });
     await updateCurrentUser();
   }
-  async function login(username: string) {
-    const resp = await request<PublicKeyCredentialRequestOptionsJSON>('/api/auth/login', {
-      query: {
-        username,
-      },
-    });
-    const fingerprint = await startAuthentication(resp);
+  async function login(body: { username: string; password: string }) {
     await request('/api/auth/login', {
       method: 'POST',
-      body: fingerprint,
-      query: {
-        username,
-      },
+      body,
     });
     await updateCurrentUser();
   }
@@ -96,9 +77,7 @@ export default createRoot(() => {
       }),
     );
   }
-  async function getRegLink() {
-    return request<string>('/api/auth/reg-link');
-  }
+
   void updateCurrentUser()
     .catch(noop)
     .finally(() => ready(true));
@@ -112,6 +91,5 @@ export default createRoot(() => {
     loading,
     ready,
     updateData,
-    getRegLink,
   };
 });

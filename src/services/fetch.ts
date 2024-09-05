@@ -1,8 +1,7 @@
 import { createContext, useContext } from 'solid-js';
 
 import BasicStore, { NotificationType } from '@/services/basic.store';
-
-import { findErrorText } from './utils';
+import { findErrorText } from '@/sky-utils';
 
 export class RequestError<T = unknown> extends Error {
   public constructor(
@@ -98,3 +97,12 @@ export function handleError(error: unknown) {
   });
   console.error(error);
 }
+
+export const formatDBDate = (d: Date) =>
+  `${d.getUTCFullYear()}-${`${d.getUTCMonth() + 1}`.padStart(2, '0')}-${d
+    .getUTCDate()
+    .toString()
+    .padStart(2, '0')} ${d.getUTCHours().toString().padStart(2, '0')}:${d
+    .getUTCMinutes()
+    .toString()
+    .padStart(2, '0')}:${d.getUTCSeconds().toString().padStart(2, '0')}`;

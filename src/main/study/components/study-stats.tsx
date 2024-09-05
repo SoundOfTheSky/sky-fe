@@ -2,15 +2,20 @@ import { Component, createEffect, createMemo, Index, Show } from 'solid-js';
 
 import Skeleton from '@/components/loading/skeleton';
 import Tooltip from '@/components/tooltip';
-import { DAY_MS } from '@/services/utils';
+import { DAY_MS } from '@/sky-utils';
 
 import { useStudy } from '../services/study.context';
 
 import s from './study-stats.module.scss';
 
 const StudyStats: Component = () => {
-  const { startDate, statsGraph, today, offlineUnavailable } = useStudy()!;
+  // === Hooks ===
+  const { offlineUnavailable, statsGraph, startDate, today } = useStudy()!;
+
+  // === State ===
   let element: HTMLDivElement | undefined;
+
+  // === Memos ===
   const maxReviewsPerDay = createMemo(() => Math.max(...statsGraph()));
 
   // === Effects ===

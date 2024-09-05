@@ -1,19 +1,15 @@
-import { mdiBookOpenPageVariant, mdiCalendar, mdiHome, mdiIdeogramCjk } from '@mdi/js';
+import { mdiBookOpenPageVariant, mdiHome, mdiIdeogramCjk } from '@mdi/js';
 import { A } from '@solidjs/router';
 import { Component, Index, createMemo } from 'solid-js';
 
 import AuthStore from '@/services/auth.store';
 
 import Icon from '../../components/icon';
-import { usePlanner } from '../planner/planner.context';
-import { useStudy } from '../study/services/study.context';
 
 import s from './sidebar.module.scss';
 
 const Sidebar: Component = () => {
   // === Hooks ===
-  const { cachingProgress: studyCacheProgress } = useStudy()!;
-  const { cachingProgress: plannerCacheProgress } = usePlanner()!;
   const items = createMemo(() => [
     {
       icon: mdiHome,
@@ -24,18 +20,12 @@ const Sidebar: Component = () => {
       icon: mdiBookOpenPageVariant,
       title: 'Study',
       link: '/study',
-      progress: studyCacheProgress(),
+      progress: 1,
     },
     {
       icon: mdiIdeogramCjk,
       title: 'JP Conjugation',
       link: '/jp-conjugation',
-    },
-    {
-      icon: mdiCalendar,
-      title: 'Planner',
-      link: '/planner',
-      progress: plannerCacheProgress(),
     },
   ]);
   return (

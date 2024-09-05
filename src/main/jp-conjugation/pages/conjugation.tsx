@@ -25,7 +25,7 @@ import Icon from '@/components/icon';
 import Tooltip from '@/components/tooltip';
 import basicStore, { NotificationType } from '@/services/basic.store';
 import { atom, useGlobalEvent, useInterval } from '@/services/reactive';
-import { formatTime, randomFromArray } from '@/services/utils';
+import { formatTime, randomFromArray } from '@/sky-utils';
 
 import { ConjugateOptions, conjugate } from '../services/conjugator';
 import { removeFurigana, toHiragana, words } from '../services/data';
@@ -360,130 +360,80 @@ const Conjugation: Component = () => {
             <Icon path={mdiClose} size='32' />
           </Button>
           <h2>Verbs</h2>
-          <Toggle
-            mutableStore={settings.v}
-            key='enabled'
-            label='Verbs'
-            onChange={() => onFilterChange('v', 'enabled')}
-          />
+          <Toggle store={settings.v} key='enabled' label='Verbs' onChange={() => onFilterChange('v', 'enabled')} />
           <Show when={settings.v.enabled}>
             <hr />
-            <Toggle
-              mutableStore={settings.v}
-              key='v1'
-              label='Ichidan verbs'
-              onChange={() => onFilterChange('v', 'v1')}
-            />
-            <Toggle mutableStore={settings.v} key='v5' label='Godan verbs' onChange={() => onFilterChange('v', 'v5')} />
-            <Toggle
-              mutableStore={settings.v}
-              key='irv'
-              label='Irregular verbs'
-              onChange={() => onFilterChange('v', 'irv')}
-            />
+            <Toggle store={settings.v} key='v1' label='Ichidan verbs' onChange={() => onFilterChange('v', 'v1')} />
+            <Toggle store={settings.v} key='v5' label='Godan verbs' onChange={() => onFilterChange('v', 'v5')} />
+            <Toggle store={settings.v} key='irv' label='Irregular verbs' onChange={() => onFilterChange('v', 'irv')} />
             <hr />
             <Toggle
-              mutableStore={settings.v}
+              store={settings.v}
               key='present'
               label='Present time'
               onChange={() => onFilterChange('v', 'present')}
             />
-            <Toggle
-              mutableStore={settings.v}
-              key='past'
-              label='Past time'
-              onChange={() => onFilterChange('v', 'past')}
-            />
-            <Toggle mutableStore={settings.v} key='te' label='-て form' onChange={() => onFilterChange('v', 'te')} />
+            <Toggle store={settings.v} key='past' label='Past time' onChange={() => onFilterChange('v', 'past')} />
+            <Toggle store={settings.v} key='te' label='-て form' onChange={() => onFilterChange('v', 'te')} />
             <hr />
             <Toggle
-              mutableStore={settings.v}
+              store={settings.v}
               key='affirmative'
               label='Affirmative'
               onChange={() => onFilterChange('v', 'affirmative')}
             />
             <Toggle
-              mutableStore={settings.v}
+              store={settings.v}
               key='negative'
               label='Negative'
               onChange={() => onFilterChange('v', 'negative')}
             />
             <hr />
-            <Toggle mutableStore={settings.v} key='plain' label='Plain' onChange={() => onFilterChange('v', 'plain')} />
-            <Toggle
-              mutableStore={settings.v}
-              key='polite'
-              label='Polite'
-              onChange={() => onFilterChange('v', 'polite')}
-            />
+            <Toggle store={settings.v} key='plain' label='Plain' onChange={() => onFilterChange('v', 'plain')} />
+            <Toggle store={settings.v} key='polite' label='Polite' onChange={() => onFilterChange('v', 'polite')} />
           </Show>
           <h2>Adjectives</h2>
           <Toggle
-            mutableStore={settings.adj}
+            store={settings.adj}
             key='enabled'
             label='Adjectives'
             onChange={() => onFilterChange('adj', 'enabled')}
           />
           <Show when={settings.adj.enabled}>
             <hr />
-            <Toggle mutableStore={settings.adj} key='i' label='い-verbs' onChange={() => onFilterChange('adj', 'i')} />
+            <Toggle store={settings.adj} key='i' label='い-verbs' onChange={() => onFilterChange('adj', 'i')} />
+            <Toggle store={settings.adj} key='na' label='な-verbs' onChange={() => onFilterChange('adj', 'na')} />
             <Toggle
-              mutableStore={settings.adj}
-              key='na'
-              label='な-verbs'
-              onChange={() => onFilterChange('adj', 'na')}
-            />
-            <Toggle
-              mutableStore={settings.adj}
+              store={settings.adj}
               key='ira'
               label='Irregular adjectives'
               onChange={() => onFilterChange('adj', 'ira')}
             />
             <hr />
             <Toggle
-              mutableStore={settings.adj}
+              store={settings.adj}
               key='present'
               label='Present time'
               onChange={() => onFilterChange('adj', 'present')}
             />
-            <Toggle
-              mutableStore={settings.adj}
-              key='past'
-              label='Past time'
-              onChange={() => onFilterChange('adj', 'past')}
-            />
-            <Toggle
-              mutableStore={settings.adj}
-              key='adverb'
-              label='Adverb'
-              onChange={() => onFilterChange('adj', 'adverb')}
-            />
+            <Toggle store={settings.adj} key='past' label='Past time' onChange={() => onFilterChange('adj', 'past')} />
+            <Toggle store={settings.adj} key='adverb' label='Adverb' onChange={() => onFilterChange('adj', 'adverb')} />
             <hr />
             <Toggle
-              mutableStore={settings.adj}
+              store={settings.adj}
               key='affirmative'
               label='Affirmative'
               onChange={() => onFilterChange('adj', 'affirmative')}
             />
             <Toggle
-              mutableStore={settings.adj}
+              store={settings.adj}
               key='negative'
               label='Negative'
               onChange={() => onFilterChange('adj', 'negative')}
             />
             <hr />
-            <Toggle
-              mutableStore={settings.adj}
-              key='plain'
-              label='Plain'
-              onChange={() => onFilterChange('adj', 'plain')}
-            />
-            <Toggle
-              mutableStore={settings.adj}
-              key='polite'
-              label='Polite'
-              onChange={() => onFilterChange('adj', 'polite')}
-            />
+            <Toggle store={settings.adj} key='plain' label='Plain' onChange={() => onFilterChange('adj', 'plain')} />
+            <Toggle store={settings.adj} key='polite' label='Polite' onChange={() => onFilterChange('adj', 'polite')} />
           </Show>
         </div>
       </Show>

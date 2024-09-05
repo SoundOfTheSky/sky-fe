@@ -1,8 +1,9 @@
 import { ParentComponent, batch, createContext, createEffect, onCleanup, untrack, useContext } from 'solid-js';
 
+import { log } from '@/sky-utils';
+
 import basicStore, { NotificationType } from './basic.store';
 import { atom } from './reactive';
-import { log } from './utils';
 
 export enum WebSocketStatus {
   closed,

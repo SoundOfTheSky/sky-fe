@@ -8,6 +8,7 @@ import {
   createMemo,
   createResource,
   getOwner,
+  onMount,
   ParentComponent,
   runWithOwner,
   untrack,
@@ -18,48 +19,45 @@ import { isJapanese as wkIsJapanese, toKana } from 'wanakana';
 import basicStore, { NotificationType } from '@/services/basic.store';
 import { handleError } from '@/services/fetch';
 import { atom, atomize, persistentAtom, useInterval, useTimeout } from '@/services/reactive';
-import { shuffleArray } from '@/services/utils';
+import { getDefaultRestFields } from '@/services/rest';
+import { shuffleArray } from '@/sky-utils';
 
-import { Question, useStudy } from '../services/study.context';
+import { useStudy } from '../services/study.context';
+import {
+  RESTStudyAnswer,
+  RESTStudyUserQuestion,
+  studyQuestionEndpoint,
+  studySubjectEndpoint,
+  studyUserQuestionEndpoint,
+  studyUserSubjectEndpoint,
+} from '../services/study.rest';
 
 export enum SubjectStatus {
-  Unanswered,
   Correct,
   CorrectAfterWrong,
+  Unanswered,
   Wrong,
   Unlearned,
 }
 
 function getProvided() {
   // === Hooks ===
-  const {
-    availableReviews,
-    getSubject,
-    getQuestion,
-    availableLessons,
-    updateQuestion,
-    settings,
-    submitAnswer,
-    ready,
-    srsMap,
-    updateSubsribtion,
-  } = useStudy()!;
+  const { settings, ready, lessons, reviews, update } = useStudy()!;
   const location = useLocation();
   const { notify } = basicStore;
   const timeInterval = useInterval(updateTime, 1000);
   const owner = getOwner();
+  onMount(update);
 
   // === State ===
-  /** Cache for all requests happening in this scope */
-  const cache = new Map();
+  /** Array of all subject ids to do in this session. Order is important */
+  const subjectIds = atom<number[]>([]);
   /** Time then review started */
   const startTime = Date.now();
-  /** Is doing lessons instead of reviews*/
+  /** Is doing lessons instead of reviews */
   const lessonsMode = createMemo(() => location.pathname.includes('/lessons'));
   /** End index of current batch of lessons. Used only in lessons mode */
   const lessonsBatchLimit = atomize(createWritableMemo(() => settings()[lessonsMode() ? 'lessons' : 'reviews'].batch));
-  /** Array of all subject ids to do in this session. Order is important */
-  const subjectIds = atom<number[]>([]);
   /** Stats for each subject */
   const subjectsStats = new ReactiveMap<
     number,
@@ -106,36 +104,47 @@ function getProvided() {
   const cooldownNext = atom<number>();
   /** setTimeout for cooldown of undo */
   const cooldownUndo = atom<number>();
+  /**  */
 
   // === Memos ===
   /** Current subject id */
   const subjectId = createMemo<number | undefined>(() => subjectIds()[subjectI()]);
+  /** Current subject */
+  const [subject] = createResource(subjectId, (id) => studySubjectEndpoint.get(id));
+  /** Current question id */
+  const questionId = createMemo<number | undefined>(() => subject()?.data.questionIds[questionI()]);
+  /** Current question */
+  const [question] = createResource(questionId, (id) => studyQuestionEndpoint.get(id));
+  /** Current subject info */
+  const [subjectInfo] = createResource(subject, (subject) =>
+    subject.data.userSubjectId ? studyUserSubjectEndpoint.get(subject.data.userSubjectId) : undefined,
+  );
+  /** Current question info */
+  const [questionInfo, { mutate: mutateQuestionInfo }] = createResource(question, (question) =>
+    question.data.userQuestionId ? studyUserQuestionEndpoint.get(question.data.userQuestionId) : undefined,
+  );
+
   /** Current subject stats */
   const subjectStats = createMemo(() => subjectsStats.get(subjectId() ?? 0));
-  /** Current subject */
-  const [subject] = createResource(subjectId, (id) => getSubject(id));
   /** Subject question statuses array. Also this memo populates questionsStatuses as new question appear */
-  const currentSubjectQuestionsStatuses = createMemo<SubjectStatus[]>(
-    () =>
-      subject()?.questionIds.map((id) => {
+  const currentSubjectQuestionsStatuses = createMemo<SubjectStatus[]>(() => {
+    // console.log('a', subject());
+    return (
+      subject()?.data.questionIds.map((id) => {
         let s = questionsStatuses.get(id);
         if (s === undefined) {
           s = lessonsMode() ? SubjectStatus.Unlearned : SubjectStatus.Unanswered;
           questionsStatuses.set(id, s);
         }
         return s;
-      }) ?? [],
-  );
+      }) ?? []
+    );
+  });
   /** Current question status */
   const questionStatus = createMemo<SubjectStatus | undefined>(() => currentSubjectQuestionsStatuses()[questionI()]);
-  /** Current question id */
-  const questionId = createMemo<number | undefined>(() => subject()?.questionIds[questionI()]);
-  /** Current question */
-  const [question] = createResource(questionId, (id) => getQuestion(id));
+
   /** Is answers to question in japanese */
-  const isJapanese = createMemo(() => (question() ? wkIsJapanese(question()!.answers[0]) : false));
-  /** Current subject SRS */
-  const srs = createMemo(() => (subject() ? srsMap[subject()!.srsId - 1] : undefined));
+  const isJapanese = createMemo(() => (question() ? wkIsJapanese(question()!.data.answers[0]) : false));
   /** Some stats of session */
   const stats = createMemo(() => {
     const amount = subjectIds().length;
@@ -163,25 +172,37 @@ function getProvided() {
     };
   });
   /** Is something loading */
-  const isLoading = createMemo(() => !ready() || !subject() || subject.loading || !question() || question.loading);
+  const isLoading = createMemo(() => {
+    const $subjectId = subjectId();
+    const $subject = subject();
+    const $question = question();
+    const $subjectInfo = subjectInfo();
+    const $questionInfo = questionInfo(); // May be undefined
+    return (
+      !ready() ||
+      !$subject ||
+      !$question ||
+      !$subjectInfo ||
+      questionInfo.loading ||
+      $subject.data.id !== $subjectId ||
+      $question.data.subjectId !== $subjectId ||
+      ($questionInfo && $questionInfo?.data.questionId !== $question.data.id)
+    );
+  });
   /** Is current question answered */
   const questionAnswered = createMemo(() => !!previousState() || subjectStats()?.status === SubjectStatus.Unlearned);
 
   // === Effects ===
-  // Load data ONCE
-  createEffect<boolean>((prev) => {
-    if (prev) return true;
-    return updateSubsribtion();
-  });
   // Set page title
   createEffect(() => {
     document.title = (lessonsMode() ? 'Sky | Lessons ' : 'Sky | Reviews ') + stats().unpassed;
   });
-  // On load
-  createEffect(() => {
+  // On load ONCE
+  createEffect<true | undefined>((isDone) => {
+    if (isDone) return true;
     if (!ready()) return;
     const $lessonsMode = lessonsMode();
-    let subjects = $lessonsMode ? availableLessons() : availableReviews();
+    let subjects = $lessonsMode ? lessons() : reviews();
     if (untrack(shuffleSubjects)) subjects = shuffleArray(subjects);
     else subjects.sort((a, b) => a - b);
     subjects = subjects.slice(0, settings()[$lessonsMode ? 'lessons' : 'reviews'].amount);
@@ -194,17 +215,16 @@ function getProvided() {
       subjectIds(subjects);
       for (const id of subjects) subjectsStats.set(id, { title: '', status, time: 0, undo: false, answers: [] });
     });
+    return true;
   });
   // On subject load save it's title to stats
   createEffect(() => {
-    const $subject = subject();
-    const $subjectStats = subjectStats();
-    if (!$subject || !$subjectStats) return;
-    $subjectStats.title = $subject.title;
+    if (isLoading()) return;
+    const $subject = subject()!;
+    const $subjectStats = subjectStats()!;
+    $subjectStats.title = $subject.data.title;
   });
-  // On question change
-  createEffect(onQuestionChange);
-  // On subject change, change current question
+  // On subject change, change current question FIXME
   createEffect(() => {
     subject();
     questionI(
@@ -213,38 +233,41 @@ function getProvided() {
       ),
     );
   });
+  // Question info updated
+  createEffect(() => {
+    if (isLoading()) return;
+    const $questionInfo = questionInfo();
+    synonyms($questionInfo?.data.synonyms ?? []);
+    note($questionInfo?.data.note ?? '');
+  });
 
   // === Functions ===
   /** Get all answers for current question */
   function getAnswers() {
     return untrack(() => {
       const $question = question();
-      if (!$question) return [];
-      if ($question.choose) return [$question.answers[0], ...($question.synonyms ?? [])];
-      return [...$question.answers, ...($question.synonyms ?? [])];
+      if (!$question || questionInfo.loading) return [];
+      const $questionInfo = questionInfo();
+      if ($question.data.choose) return [$question.data.answers[0], ...($questionInfo?.data.synonyms ?? [])];
+      return [...$question.data.answers, ...($questionInfo?.data.synonyms ?? [])];
     }).map((x) => x.toLowerCase());
   }
-  /** Clear some state on question change. Also used as effect */
+  /** Clear some state on question change */
   function onQuestionChange() {
-    const $question = question();
-    if (!$question) return;
     untrack(() => {
       batch(() => {
         previousState(undefined);
         answer('');
-        note($question.note ?? '');
-        synonyms($question.synonyms ?? []);
-        hint(subjectStats()?.status === SubjectStatus.Unlearned ? getAnswers().join(', ') : '');
         clearTimeout(cooldownUndo());
         cooldownUndo(undefined);
+        hint(subjectStats()?.status === SubjectStatus.Unlearned ? getAnswers().join(', ') : '');
       });
     });
   }
   /** Shuffle subjects. Only shuffles lessons and reviews after current batch */
   function shuffle(enabled: boolean) {
     untrack(() => {
-      const startShuffle =
-        untrack(subjectI) + (untrack(lessonsMode) ? settings().lessons.batch : settings().reviews.batch);
+      const startShuffle = subjectI() + (lessonsMode() ? settings().lessons.batch : settings().reviews.batch);
       subjectIds((s) => [
         ...s.slice(0, startShuffle),
         ...(enabled ? shuffleArray(s.slice(startShuffle)) : s.slice(startShuffle).sort((a, b) => a - b)),
@@ -254,13 +277,13 @@ function getProvided() {
   /** On submit button press */
   function submit() {
     untrack(() => {
-      const $question = question();
+      if (isLoading()) return;
       if (isJapanese()) answer(toKana);
       const $answer = answer().trim().toLowerCase();
       const isUnlearned = subjectStats()?.status === SubjectStatus.Unlearned;
-      if (!$question || (!$answer && !isUnlearned)) return;
+      if (!$answer && !isUnlearned) return;
       if (previousState() || isUnlearned) nextQuestion();
-      else commitAnswer($question, $answer);
+      else commitAnswer($answer);
     });
   }
   /** Update current question status. Also updates subject status if needed. Saves previous state */
@@ -270,6 +293,7 @@ function getProvided() {
         const $questionI = questionI();
         const $subjectId = subjectId()!;
         const $subjectStats = subjectsStats.get($subjectId)!;
+        // Add new status
         const $questionStatuses = currentSubjectQuestionsStatuses().map((q, index) =>
           index === $questionI ? newQuestionStatus : q,
         );
@@ -277,35 +301,39 @@ function getProvided() {
           subject: $subjectStats.status,
           question: questionStatus()!,
         });
+        // When learning all questions TODO
         if ($questionStatuses.every((status) => status === SubjectStatus.Unanswered))
           $subjectStats.status = SubjectStatus.Unanswered;
+        //
         else if (
           newQuestionStatus === SubjectStatus.Wrong ||
           $questionStatuses.every((status) => status !== SubjectStatus.Unanswered)
         )
           $subjectStats.status = Math.max(...$questionStatuses);
-
         questionsStatuses.set(questionId()!, newQuestionStatus);
         subjectsStats.set($subjectId, { ...$subjectStats });
       });
     });
   }
   /** Commit answer. Doesn't send update yet, start cooldowns */
-  function commitAnswer(q: Question, a: string) {
+  function commitAnswer(answer: string) {
     untrack(() => {
       batch(() => {
+        if (isLoading()) return;
+        const $question = question()!;
         const answers = getAnswers();
-        if (answers.some((qa) => qa === a)) {
+        if (answers.some((qa) => qa === answer)) {
           updateQuestionStatus(
             lessonsMode() || questionStatus() === SubjectStatus.Unanswered
               ? SubjectStatus.Correct
               : SubjectStatus.CorrectAfterWrong,
           );
           hint(answers.join(', '));
-          subjectStats()!.answers.push(a);
-        } else if (q.alternateAnswers && a in q.alternateAnswers) hint(q.alternateAnswers[answer()]);
+          subjectStats()!.answers.push(answer);
+        } else if ($question.data.alternateAnswers && answer in $question.data.alternateAnswers)
+          hint($question.data.alternateAnswers[answer]);
         else {
-          if (!lessonsMode()) subjectStats()!.answers.push(a);
+          if (!lessonsMode()) subjectStats()!.answers.push(answer);
           updateQuestionStatus(SubjectStatus.Wrong);
           hint(answers.join(', '));
           runWithOwner(owner, () => {
@@ -438,14 +466,17 @@ function getProvided() {
           : $previousState.subject === SubjectStatus.Unanswered && $subjectStats.status !== SubjectStatus.Unanswered)
       ) {
         try {
-          await submitAnswer(
-            subjectId()!,
-            $subjectStats.answers,
-            $subjectStats.time,
-            $subjectStats.status === SubjectStatus.Correct ||
+          await new RESTStudyAnswer({
+            ...getDefaultRestFields(),
+            answers: $subjectStats.answers.filter((x) => x.toLowerCase() !== 'wrong' && x.toLowerCase() !== 'correct'),
+            took: $subjectStats.time,
+            correct:
+              $subjectStats.status === SubjectStatus.Correct ||
               // Correct after wrong is also fine in lessons mode
               ($subjectStats.status === SubjectStatus.CorrectAfterWrong && $lessonsMode),
-          );
+            subjectId: subjectId()!,
+            themeId: subject()!.data.themeId,
+          }).create();
         } catch (error) {
           notify({
             title: 'Answer is not saved!',
@@ -460,18 +491,28 @@ function getProvided() {
   /** Update synonyms and note */
   async function sendQuestionDataToServer() {
     try {
-      const $question = question();
-      if (!$question) return;
+      if (isLoading()) return;
+      const $questionInfo =
+        questionInfo() ??
+        new RESTStudyUserQuestion({
+          ...getDefaultRestFields(),
+          // Payload
+          questionId: questionId()!,
+        });
       const $synonyms = synonyms()
         .map((x) => x.trim())
         .filter(Boolean);
       const $note = note().trim();
-      $question.synonyms = $synonyms;
-      $question.note = $note;
-      await updateQuestion($question.id, {
-        note: $note,
-        synonyms: $synonyms,
-      });
+      const wasEmpty = !$questionInfo.data.synonyms && !$questionInfo.data.note;
+      $questionInfo.data.synonyms = $synonyms.length ? $synonyms : null;
+      $questionInfo.data.note = $note.length ? $note : null;
+      if (!$questionInfo.data.synonyms && !$questionInfo.data.note) {
+        mutateQuestionInfo(undefined);
+        await $questionInfo.delete();
+      } else if (wasEmpty) {
+        mutateQuestionInfo($questionInfo);
+        await $questionInfo.create();
+      } else await $questionInfo.update();
     } catch (error) {
       notify({
         title: 'Changes are not saved!',
@@ -483,46 +524,48 @@ function getProvided() {
   }
 
   return {
-    cooldownNext,
-    submit,
-    done,
-    isLoading,
-    stats,
-    subjectIds,
-    subjectId,
-    timePassed,
-    eta,
-    question,
-    hint,
-    previousState,
-    subjectStats,
-    subject,
-    autoplayAudio,
-    currentSubjectQuestionsStatuses,
-    questionI,
-    isJapanese,
+    // === State ===
     answer,
-    questionStatus,
-    shuffle,
-    shuffleSubjects,
+    autoplayAudio,
     consistentQuestions,
-    questionAnswered,
-    undo,
+    cooldownNext,
     cooldownUndo,
-    synonyms,
-    sendQuestionDataToServer,
+    done,
+    eta,
+    hint,
     note,
-    srs,
-    cache,
+    previousState,
+    shuffleSubjects,
     startTime,
+    subjectIds,
     subjectsStats,
-    getAnswers,
+    synonyms,
+    timePassed,
+
+    // === Memos ===
+    currentSubjectQuestionsStatuses,
+    isJapanese,
+    isLoading,
+    question,
+    questionAnswered,
+    questionInfo,
+    questionStatus,
+    stats,
+    subject,
+    subjectInfo,
+    subjectStats,
+
+    // === Functions ===
+    sendQuestionDataToServer,
+    shuffle,
+    submit,
+    undo,
   };
 }
 
 const Context = createContext<ReturnType<typeof getProvided>>();
-export const ReviewProvider: ParentComponent = (props) => {
+export const SessionProvider: ParentComponent = (props) => {
   const provided = getProvided();
   return <Context.Provider value={provided}>{props.children}</Context.Provider>;
 };
-export const useReview = () => useContext(Context);
+export const useSession = () => useContext(Context);

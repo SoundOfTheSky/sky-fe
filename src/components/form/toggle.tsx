@@ -4,28 +4,29 @@ import { Atom } from '@/services/reactive';
 
 import s from './toggle.module.scss';
 
-const Toggle: Component<
-  Omit<JSX.HTMLAttributes<HTMLButtonElement>, 'onClick' | 'onChange'> & {
-    value?: Atom<boolean>;
-    mutableStore?: Record<string, boolean>;
-    key?: string;
-    label?: string;
-    onChange?: (value: boolean) => unknown;
-  }
-> = (properties) => {
-  const [props, attributes] = splitProps(properties, ['value', 'label', 'onChange', 'mutableStore', 'key']);
+type Options = {
+  onChange?: (value: boolean) => unknown;
+  value?: Atom<boolean>;
+  store?: Record<string, boolean>;
+  key?: string;
+  label?: string;
+};
+export type Properties = Omit<JSX.HTMLAttributes<HTMLButtonElement>, keyof Options> & Options;
+
+const Toggle: Component<Properties> = (properties) => {
+  const [props, attributes] = splitProps(properties, ['value', 'label', 'onChange', 'store', 'key']);
   function handler() {
     if (props.value) {
       const value = props.value((x) => !x);
       props.onChange?.(value);
-    } else if (props.key && props.mutableStore) {
-      props.mutableStore[props.key] = !props.mutableStore[props.key];
-      props.onChange?.(props.mutableStore[props.key]);
+    } else if (props.key && props.store) {
+      props.store[props.key] = !props.store[props.key];
+      props.onChange?.(props.store[props.key]);
     }
   }
   return (
     <button {...attributes} class={`${s.toggle} ${attributes.class ?? ''}`} onClick={handler}>
-      <div class={s.wrapper} classList={{ [s.enabled]: props.value ? props.value() : props.mutableStore![props.key!] }}>
+      <div class={s.wrapper} classList={{ [s.enabled]: props.value ? props.value() : props.store![props.key!] }}>
         <div class={s.circle} />
       </div>
       <Show when={props.label}>

@@ -1,24 +1,38 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { mdiCheckBold, mdiClose, mdiCloseThick, mdiUndoVariant } from '@mdi/js';
 import { A } from '@solidjs/router';
-import { For, Show } from 'solid-js';
+import { createMemo, For, Show } from 'solid-js';
 
 import Button from '@/components/form/button';
 import Icon from '@/components/icon';
-import { formatTime } from '@/services/utils';
+import { formatTime } from '@/sky-utils';
 
 import parseHTML from '../services/parseHTML';
-import { SubjectStatus, useReview } from '../session/review.context';
+import { SubjectStatus, useSession } from '../session/session.context';
 
 import SubjectRef from './subject-ref';
 
-import s from './review-stats.module.scss';
+import s from './session-stats.module.scss';
 
-export default function ReviewStats() {
+export default function SessionStats() {
   // === Hooks ===
-  const { timePassed, subjectIds, startTime, stats, subjectsStats } = useReview()!;
+  const { timePassed, subjectIds, startTime, stats, subjectsStats } = useSession()!;
 
+  const statsArray = createMemo(
+    () =>
+      [...subjectsStats.entries()] as [
+        number,
+        {
+          title: string;
+          status: SubjectStatus;
+          time: number;
+          answers: string[];
+          undo: boolean;
+        },
+      ][],
+  );
   return (
-    <div class={`card ${s.reviewStats}`}>
+    <div class={`card ${s.stats}`}>
       <div class='card-title'>
         Review stats
         <Button class={s.finish}>
@@ -40,8 +54,8 @@ export default function ReviewStats() {
           <tr>
             <td>{timePassed()}</td>
             <td>{subjectIds().length}</td>
-            <td>{Math.floor((3_600_000 / (Date.now() - startTime)) * subjectIds().length * 100) / 100} S/H</td>
-            <td>{Math.floor(stats().correctPercent * 100)}%</td>
+            <td>{~~((3_600_000 / (Date.now() - startTime)) * subjectIds().length * 100) / 100} S/H</td>
+            <td>{~~(stats().correctPercent * 100)}%</td>
           </tr>
         </tbody>
       </table>
@@ -55,7 +69,7 @@ export default function ReviewStats() {
           </tr>
         </thead>
         <tbody>
-          <For each={[...subjectsStats.entries()]}>
+          <For each={statsArray()}>
             {([id, stats]) => (
               <tr>
                 <td>

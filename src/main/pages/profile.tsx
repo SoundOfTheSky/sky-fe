@@ -7,7 +7,6 @@ import Button from '@/components/form/button';
 import Input from '@/components/form/input';
 import Toggle from '@/components/form/toggle';
 import Icon from '@/components/icon';
-import Tooltip from '@/components/tooltip';
 import AuthStore from '@/services/auth.store';
 import BasicStore, { NotificationType } from '@/services/basic.store';
 import { handleError } from '@/services/fetch';
@@ -43,15 +42,6 @@ export default (() => {
       handleError(error);
     }
   }
-  async function genRegTokenAndCopy() {
-    const token = await AuthStore.getRegLink();
-    await navigator.clipboard.writeText(document.location.origin + '/reg/' + token);
-    BasicStore.notify({
-      title: 'Link copied to clipboard!',
-      type: NotificationType.Success,
-      timeout: 5000,
-    });
-  }
 
   return (
     <Auth>
@@ -69,11 +59,6 @@ export default (() => {
           <div class={s.field}>
             <div>Avatar URL:</div>
             <Input value={avatar} placeholder='URL' onChange={userDataChange} />
-          </div>
-          <div class={s.field}>
-            <Tooltip content='Generate link to add new authentication method. For example on another device.'>
-              <Button onClick={genRegTokenAndCopy}>Generate authentication link</Button>
-            </Tooltip>
           </div>
         </div>
         <div class={`card ${s.settings}`}>

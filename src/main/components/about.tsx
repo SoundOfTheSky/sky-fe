@@ -40,15 +40,13 @@ export default (() => {
               <td>
                 <b>Age:</b>
               </td>
-              <td>{Math.floor((Date.now() - new Date('2000-12-21').getTime()) / 31_536_000_000)}</td>
+              <td>{~~((Date.now() - new Date('2000-12-21').getTime()) / 31_536_000_000)}</td>
             </tr>
             <tr>
               <td>
                 <b>Experience:</b>
               </td>
-              <td>
-                {`${Math.floor(((Date.now() - new Date('2018-12-01').getTime()) / 31_536_000_000) * 10) / 10} years`}
-              </td>
+              <td>{`${~~(((Date.now() - new Date('2018-12-01').getTime()) / 31_536_000_000) * 10) / 10} years`}</td>
             </tr>
             <tr>
               <td>

@@ -5,11 +5,20 @@ import Input from '@/components/form/input';
 import Tags from '@/components/form/tags';
 import Loading from '@/components/loading/loading';
 import Skeleton from '@/components/loading/skeleton';
+import basicStore, { NotificationType } from '@/services/basic.store';
+import { handleError } from '@/services/fetch';
 import { atom, resizeTextToFit } from '@/services/reactive';
+import { srs } from '@/sky-shared/study';
 
 import Tabs from '../components/tabs';
 import parseHTML from '../services/parseHTML';
 import { useStudy } from '../services/study.context';
+import {
+  studyQuestionEndpoint,
+  studySubjectEndpoint,
+  studyUserQuestionEndpoint,
+  studyUserSubjectEndpoint,
+} from '../services/study.rest';
 
 import s from './subject.module.scss';
 
@@ -17,7 +26,7 @@ resizeTextToFit;
 
 const Subject: Component<{ id?: number }> = (properties) => {
   // === Stores ===
-  const { getQuestion, updateQuestion, getSubject, srsMap, offlineUnavailable } = useStudy()!;
+  const { offlineUnavailable } = useStudy()!;
   const params = useParams<{ id: string }>();
 
   // === State ===
@@ -27,59 +36,67 @@ const Subject: Component<{ id?: number }> = (properties) => {
 
   // === Memos ===
   const subjectId = createMemo(() => properties.id ?? +params.id);
-  const [subject] = createResource(subjectId, (id) => getSubject(id));
-  const [question] = createResource(
-    () => subject()?.questionIds[questionI()],
-    (id) => getQuestion(id),
+  const [subject] = createResource(subjectId, (id) => studySubjectEndpoint.get(id));
+  const questionId = createMemo<number | undefined>(() => subject()?.data.questionIds[questionI()]);
+  const [question] = createResource(questionId, (id) => studyQuestionEndpoint.get(id));
+  const [subjectInfo] = createResource(subject, (subject) =>
+    subject.data.userSubjectId ? studyUserSubjectEndpoint.get(subject.data.userSubjectId) : undefined,
   );
-  const srs = createMemo(() => (subject() ? srsMap[subject()!.srsId - 1] : undefined));
-  const isLoading = createMemo(() => !subject() || !question() || !srs());
+  const [questionInfo] = createResource(question, (question) =>
+    question.data.userQuestionId ? studyUserQuestionEndpoint.get(question.data.userQuestionId) : undefined,
+  );
+  const isLoading = createMemo(() => !subject() || !question() || !subjectInfo() || !questionInfo());
   /** Current subject progress percent. From 0 to 1 untill unlock, from 1 to 2 utill burned */
   const progressSpinnerOptions = createMemo(() => {
-    const $srs = srs();
-    const $subjectStage = subject()?.stage ?? 0;
-    if (!$srs)
-      return {
-        color: '#6785fd',
-        bgColor: '#192039',
-        progress: 0,
-      };
-    if ($subjectStage > $srs.ok)
+    const $subjectStage = subjectInfo()?.data.stage ?? 0;
+    if ($subjectStage > 5)
       return {
         color: '#3d63ff',
         bgColor: '#6785fd',
-        progress: ($subjectStage - $srs.ok) / ($srs.timings.length + 1 - $srs.ok),
+        progress: ($subjectStage - 5) / (srs.length + 1 - 5),
       };
     return {
       color: '#6785fd',
       bgColor: '#192039',
-      progress: $subjectStage / $srs.ok,
+      progress: $subjectStage / 5,
     };
   });
 
   // === Effects ===
   createEffect(() => {
-    const $question = question();
-    if (!$question) return;
+    const $questionInfo = questionInfo();
+    if (!$questionInfo) return;
     batch(() => {
-      synonyms($question.synonyms ?? []);
-      note($question.note ?? '');
+      synonyms($questionInfo.data.synonyms ?? []);
+      note($questionInfo.data.note ?? '');
     });
   });
 
   createEffect(() => {
     const $subject = subject();
-    document.title = $subject ? `Sky | ${$subject.title}` : `Sky | Loading...`;
+    document.title = $subject ? `Sky | ${$subject.data.title}` : `Sky | Loading...`;
   });
 
   // === Functions ===
   async function sendQuestionDataToServer() {
-    await updateQuestion(question()!.id, {
-      note: note().trim(),
-      synonyms: synonyms()
+    try {
+      const $questionInfo = questionInfo();
+      if (!$questionInfo) return;
+      const $synonyms = synonyms()
         .map((x) => x.trim())
-        .filter(Boolean),
-    });
+        .filter(Boolean);
+      const $note = note().trim();
+      $questionInfo.data.synonyms = $synonyms.length ? $synonyms : undefined;
+      $questionInfo.data.note = $note.length ? $note : undefined;
+      await $questionInfo.update();
+    } catch (error) {
+      basicStore.notify({
+        title: 'Changes are not saved!',
+        timeout: 10_000,
+        type: NotificationType.Error,
+      });
+      handleError(error);
+    }
   }
 
   return (
@@ -107,34 +124,35 @@ const Subject: Component<{ id?: number }> = (properties) => {
               }deg)`,
             }}
           />
-          <span>{subject()?.stage ?? 0}</span>
+          <span>{subjectInfo()?.data.stage ?? 0}</span>
         </div>
         <div class={s.titleWrapper}>
           <Skeleton loading={isLoading()} offline={offlineUnavailable()}>
             <div class={s.title} use:resizeTextToFit={[48, question(), isLoading()]}>
               <Show
                 when={
-                  !question()!.question.includes(subject()!.title) && !question()!.answers.includes(subject()!.title)
+                  !question()!.data.question.includes(subject()!.data.title) &&
+                  !question()!.data.answers.includes(subject()!.data.title)
                 }
               >
                 <div>
-                  <b>{subject()!.title}</b>
+                  <b>{subject()!.data.title}</b>
                 </div>
               </Show>
-              <div>{parseHTML(question()!.question)}</div>
+              <div>{parseHTML(question()!.data.question)}</div>
               <Switch>
-                <Match when={!question()!.choose}>
-                  <div>{question()!.answers.join(', ')}</div>
+                <Match when={!question()!.data.choose}>
+                  <div>{question()!.data.answers.join(', ')}</div>
                 </Match>
-                <Match when={question()!.answers[0].toLowerCase() !== 'correct'}>
-                  <div>{question()!.answers[0]}</div>
+                <Match when={question()!.data.answers[0].toLowerCase() !== 'correct'}>
+                  <div>{question()!.data.answers[0]}</div>
                 </Match>
               </Switch>
             </div>
           </Skeleton>
         </div>
         <div class={s.story}>
-          <For each={subject()?.questionIds}>
+          <For each={subject()?.data.questionIds}>
             {(_, index) => (
               <button
                 onClick={() => questionI(index())}
@@ -148,9 +166,9 @@ const Subject: Component<{ id?: number }> = (properties) => {
         </div>
       </div>
       <div class={`card ${s.description}`}>
-        <Loading when={question()}>
+        <Loading when={!isLoading()}>
           <Tabs>
-            {parseHTML(question()!.description)}
+            {parseHTML(question()!.data.description)}
             <div data-tab='Notes & Synonyms'>
               Synonyms:
               <br />

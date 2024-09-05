@@ -3,20 +3,20 @@ import Tags from '@/components/form/tags';
 import Loading from '@/components/loading/loading';
 
 import parseHTML from '../services/parseHTML';
-import { useReview } from '../session/review.context';
+import { useSession } from '../session/session.context';
 
 import Tabs from './tabs';
 
-import s from './review-description.module.scss';
+import s from './session-description.module.scss';
 
-export default function ReviewDescription() {
-  const { question, autoplayAudio, synonyms, sendQuestionDataToServer, note } = useReview()!;
+export default function SessionDescription() {
+  const { question, autoplayAudio, synonyms, sendQuestionDataToServer, note } = useSession()!;
 
   return (
     <div class={`card ${s.description}`}>
       <Loading when={question()}>
         <Tabs>
-          {parseHTML(question()!.description, autoplayAudio())}
+          {parseHTML(question()!.data.description, autoplayAudio())}
           <div data-tab='Notes & Synonyms'>
             Synonyms:
             <br />

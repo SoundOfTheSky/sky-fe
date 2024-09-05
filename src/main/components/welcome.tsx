@@ -57,7 +57,7 @@ export default (() => {
     else
       changeNumberSmooth($currentClicks, $clicks, 1000, (n) => {
         if (untrack(clicks) !== $clicks) return;
-        clicksSmooth(Math.floor(n));
+        clicksSmooth(~~n);
       });
   });
 

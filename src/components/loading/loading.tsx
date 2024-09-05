@@ -14,7 +14,7 @@ const Loading: ParentComponent<{ when: unknown }> = (properties) => {
   const text = atom('');
   const takingLong = atom(false);
   const mounted = atom(false);
-  const setRandomKaomoji = () => text(kaomoji[Math.floor(Math.random() * kaomoji.length)]);
+  const setRandomKaomoji = () => text(kaomoji[~~(Math.random() * kaomoji.length)]);
   let takingLongTimeout: number;
   let kaomojiInterval: number;
   setRandomKaomoji();

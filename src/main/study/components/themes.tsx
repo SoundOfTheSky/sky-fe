@@ -6,15 +6,19 @@ import Icon from '@/components/icon';
 import Skeleton from '@/components/loading/skeleton';
 import basicStore from '@/services/basic.store';
 import { atom } from '@/services/reactive';
+import syncStore from '@/services/sync.store';
 
 import { useStudy } from '../services/study.context';
+import { addTheme, removeTheme } from '../services/study.rest';
 
 import s from './themes.module.scss';
 
 const Themes: Component = () => {
   // === Hooks ===
-  const { themes, settings, addTheme, removeTheme, offlineUnavailable } = useStudy()!;
+  const { themes, settings, offlineUnavailable } = useStudy()!;
   const { online } = basicStore;
+  const { sync } = syncStore;
+
   // === State ===
   const disabledUpdating = atom(false);
 
@@ -27,7 +31,7 @@ const Themes: Component = () => {
       .map((theme) => ({
         id: theme.id,
         title: theme.title,
-        isAdded: !!theme.lessons,
+        isAdded: 'lessons' in theme,
         disabled: disabledIds.includes(theme.id),
       }))
       .sort((theme) => (theme.isAdded ? -1 : 1));
@@ -45,16 +49,29 @@ const Themes: Component = () => {
         else settings((x) => ({ ...x, disabledThemeIds: [...x.disabledThemeIds, theme.id] }));
       } else {
         disabledUpdating(true);
-        void addTheme(theme.id).finally(() => disabledUpdating(false));
+        void addTheme(theme.id)
+          .then((items) => {
+            themes(items);
+            void sync();
+          })
+          .finally(() => {
+            disabledUpdating(false);
+          });
       }
     });
   }
+
   function onClickRemove(id: number) {
     untrack(() => {
       if (disabledUpdating()) return;
       disabledUpdating(true);
 
-      void removeTheme(id).finally(() => disabledUpdating(false));
+      void removeTheme(id)
+        .then((items) => {
+          themes(items);
+          void sync();
+        })
+        .finally(() => disabledUpdating(false));
     });
   }
 
