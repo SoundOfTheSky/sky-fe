@@ -1,6 +1,6 @@
 /* eslint-disable sonarjs/cognitive-complexity */
 import { Component, createEffect, onMount, onCleanup } from 'solid-js';
-import { bezier, binarySearch, createCashedFunction, cutNumber, distance2d } from '@/services/utils';
+import { bezier, binarySearch, createCashedFunction, cutNumber, distance2d } from '@/sky-utils';
 
 export type GraphProperties = {
   data: {
@@ -269,7 +269,7 @@ const Graph: Component<GraphProperties> = (properties) => {
           let y: number;
           if (line.bezier) {
             const midX = (x1 + x2) / 2;
-            const deltaX = Math.floor(x2 - x1) * 2;
+            const deltaX = ~~(x2 - x1) * 2;
             const p =
               binarySearch(deltaX, (index) => Math.round(bezier(index / deltaX, x1, midX, midX, x2) - cursor[0])) /
               deltaX;
@@ -330,7 +330,7 @@ const Graph: Component<GraphProperties> = (properties) => {
         const fontSize = properties.textSize ?? 14;
         context.font = `${fontSize}px serif`;
         const steps =
-          Math.floor(properties.yStep ? minMaxDeltas[1] / properties.yStep : realChartSize[1] / fontSize / 2) + 1;
+          ~~(properties.yStep ? minMaxDeltas[1] / properties.yStep : realChartSize[1] / fontSize / 2) + 1;
         const step = properties.yStep ?? minMaxDeltas[1] / steps;
         context.textAlign = 'left';
         context.textBaseline = 'middle';

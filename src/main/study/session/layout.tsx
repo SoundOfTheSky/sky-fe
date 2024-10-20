@@ -1,9 +1,9 @@
 import { ParentComponent } from 'solid-js';
 
-import { ReviewProvider } from './review.context';
+import { SessionProvider } from './session.context';
 
 const Layout: ParentComponent = (properties) => {
-  return <ReviewProvider>{properties.children}</ReviewProvider>;
+  return <SessionProvider>{properties.children}</SessionProvider>;
 };
 
 export default Layout;

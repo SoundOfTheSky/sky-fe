@@ -2,12 +2,10 @@ import { MetaProvider } from '@solidjs/meta';
 import { ParentComponent, createRenderEffect } from 'solid-js';
 
 import Notifications from '@/components/global/notifications';
-import PageLoading from '@/components/global/page-loading';
+import PageStatus from '@/components/global/page-status';
 import { persistentAtom } from '@/services/reactive';
 
 import AudioPlayer from './components/audio-player';
-import { PlannerProvider } from './main/planner/planner.context';
-import { StudyProvider } from './main/study/services/study.context';
 import { WebSocketProvider } from './services/web-socket.context';
 
 import './global.scss';
@@ -28,14 +26,10 @@ const App: ParentComponent = (properties) => {
   return (
     <MetaProvider>
       <WebSocketProvider>
-        <StudyProvider>
-          <PlannerProvider>
-            <PageLoading />
-            <Notifications />
-            {properties.children}
-            <AudioPlayer />
-          </PlannerProvider>
-        </StudyProvider>
+        <PageStatus />
+        <Notifications />
+        {properties.children}
+        <AudioPlayer />
       </WebSocketProvider>
     </MetaProvider>
   );

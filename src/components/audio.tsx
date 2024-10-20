@@ -1,17 +1,22 @@
-import { mdiPause, mdiPlay } from '@mdi/js';
+import { mdiPause, mdiPlay, mdiPlaylistMinus, mdiPlaylistPlus } from '@mdi/js';
 import { Component, batch, createEffect, createMemo, onCleanup, onMount, untrack } from 'solid-js';
 
 import AudioStore from '@/services/audio.store';
 import { request } from '@/services/fetch';
 import { atom } from '@/services/reactive';
 
-import Button from './form/button';
 import Icon from './icon';
+import Tooltip from './tooltip';
+
+import s from './audio.module.scss';
 
 const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (properties) => {
   // === Hooks ===
   const { playing, current, queue, currentI } = AudioStore;
   onCleanup(cleanup);
+  onMount(() => {
+    if (properties.autoplay) void addToQueue();
+  });
 
   // === State ===
   const loading = atom(false);
@@ -19,9 +24,10 @@ const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (pr
 
   // === Memos ===
   const playingCurrent = createMemo(() => src() && current()?.src === src() && playing());
+  const queueIndex = createMemo(() => queue().findIndex((x) => x.src === src()));
 
   // === Functions ===
-  async function play(auto?: boolean) {
+  async function play(addToQueue?: boolean) {
     if (playingCurrent()) {
       playing(false);
       return;
@@ -34,27 +40,43 @@ const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (pr
     const $queue = queue();
     batch(() => {
       const $playing = playing();
-      const $src = src()!;
-      let i = $queue.findIndex((x) => x.src === $src);
-      if (i === -1) {
-        i = $queue.length;
-        queue([
-          ...$queue,
-          {
-            src: $src,
-            title: properties.title,
-          },
-        ]);
+      let $queueIndex = queueIndex();
+      if ($queueIndex === -1) {
+        $queueIndex = 0;
+        const queueItem = {
+          src: src()!,
+          title: properties.title,
+        };
+        if (addToQueue) queue([...$queue, queueItem]);
+        else queue([queueItem]);
       }
-      if (!auto || !$playing) currentI(i);
+      if (!addToQueue) currentI($queueIndex);
       if (!$playing) playing(true);
     });
   }
+
+  function addToQueue() {
+    untrack(() => {
+      batch(() => {
+        const $src = src()!;
+        const $queueIndex = queueIndex();
+        if ($queueIndex === -1) void play(true);
+        else {
+          queue(($queue) => $queue.filter((track) => track.src !== $src));
+          if (playingCurrent()) {
+            playing(false);
+            currentI(0);
+          }
+        }
+      });
+    });
+  }
+
   function cleanup() {
     untrack(() =>
       batch(() => {
         const $src = src();
-        if ($src && current()?.src === $src) {
+        if (playingCurrent()) {
           playing(false);
           currentI(0);
         }
@@ -76,15 +98,18 @@ const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (pr
     return properties.src;
   });
 
-  onMount(() => {
-    if (properties.autoplay) void play(true);
-  });
-
   return (
-    <Button onClick={() => play()} disabled={loading()}>
-      <Icon path={playingCurrent() ? mdiPause : mdiPlay} inline size='24' />
-      {properties.title}
-    </Button>
+    <div class={s.audio}>
+      <button onClick={() => play()} class={s.content} disabled={loading()}>
+        <Icon path={playingCurrent() ? mdiPause : mdiPlay} size='24' />
+        {properties.title}
+      </button>
+      <Tooltip content='Add to queue'>
+        <button onClick={addToQueue} disabled={loading()} class={s.add}>
+          <Icon path={queueIndex() === -1 ? mdiPlaylistPlus : mdiPlaylistMinus} inline size='24' />
+        </button>
+      </Tooltip>
+    </div>
   );
 };
 export default Audio;

@@ -9,11 +9,11 @@ import { useStudy } from '@/main/study/services/study.context';
 import s from './study-review-forecast.module.scss';
 
 const StudyReviewForecast: Component = () => {
-  const { turnedOnThemes, now, availableReviews, ready, offlineUnavailable } = useStudy()!;
+  const { turnedOnThemes, now, reviews, ready, offlineUnavailable } = useStudy()!;
 
   const data = createMemo(() => {
     const d = new Map<string, [number, number]>();
-    let sum = availableReviews().length;
+    let sum = reviews().length;
     for (const [time, ids] of turnedOnThemes()
       .flatMap((theme) =>
         Object.entries(theme.reviews).map<[number, number[]]>(([time, ids]) => [Number.parseInt(time), ids]),
@@ -21,7 +21,7 @@ const StudyReviewForecast: Component = () => {
       .filter(([time]) => time > now())
       .sort(([a], [b]) => a - b)) {
       const inHours = time - now();
-      const title = inHours === 1 ? '1 hour' : inHours < 48 ? `${inHours} hours` : `${Math.floor(inHours / 24)} days`;
+      const title = inHours === 1 ? '1 hour' : inHours < 48 ? `${inHours} hours` : `${~~(inHours / 24)} days`;
       sum += ids.length;
       if (time > now()) d.set(title, [(d.get(title)?.[0] ?? 0) + ids.length, sum]);
     }

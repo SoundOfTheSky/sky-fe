@@ -17,13 +17,13 @@ import Input from '@/components/form/input';
 import Icon from '@/components/icon';
 import Tooltip from '@/components/tooltip';
 import { atom, useGlobalEvent } from '@/services/reactive';
-import { shuffleArray } from '@/services/utils';
+import { shuffleArray } from '@/sky-utils';
 
-import { SubjectStatus, useReview } from '../session/review.context';
+import { SubjectStatus, useSession } from '../session/session.context';
 
-import s from './review-answer.module.scss';
+import s from './session-answer.module.scss';
 
-export default function ReviewAnswer() {
+export default function SessionAnswer() {
   const {
     cooldownNext,
     submit,
@@ -42,15 +42,18 @@ export default function ReviewAnswer() {
     cooldownUndo,
     undo,
     question,
-  } = useReview()!;
+    questionInfo,
+  } = useSession()!;
   // === Memos ===
   const inputDisabled = createMemo(
     () => isLoading() || !!previousState() || subjectStats()?.status === SubjectStatus.Unlearned,
   );
   const answerButtons = createMemo(() => {
-    const $question = question();
-    if (!$question?.choose) return;
-    const answers = [...$question.answers, ...($question.synonyms ?? [])];
+    if (isLoading()) return;
+    const $question = question()!;
+    const $questionInfo = questionInfo();
+    if (!$question.data.choose) return;
+    const answers = [...$question.data.answers, ...($questionInfo?.data.synonyms ?? [])];
     if (answers[0] !== 'Correct') return shuffleArray(answers);
     return answers;
   });
@@ -151,7 +154,7 @@ export default function ReviewAnswer() {
         <Tooltip content={questionAnswered() ? 'Next question' : 'Submit answer'}>
           <Button
             onClick={submit}
-            disabled={isLoading() || cooldownNext() !== undefined || (question()?.choose && !questionAnswered())}
+            disabled={isLoading() || cooldownNext() !== undefined || (question()?.data.choose && !questionAnswered())}
             classList={{ [s.cooldownNext]: cooldownNext() !== undefined }}
           >
             <Icon path={questionAnswered() ? mdiArrowRightBold : mdiCheckBold} size='32' inline />

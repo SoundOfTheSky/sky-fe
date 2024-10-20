@@ -1,13 +1,9 @@
-import { mdiFingerprint } from '@mdi/js';
-import { A } from '@solidjs/router';
 import { ParentComponent, Show } from 'solid-js';
 
-import Icon from '@/components/icon';
 import AuthStore from '@/services/auth.store';
-import { RequestError, handleError } from '@/services/fetch';
-import { atom, persistentAtom, useGlobalEvent } from '@/services/reactive';
+import { handleError } from '@/services/fetch';
+import { atom, useGlobalEvent } from '@/services/reactive';
 
-import Button from './form/button';
 import Input from './form/input';
 
 import s from './auth.module.scss';
@@ -16,30 +12,38 @@ export default ((properties) => {
   // === Hooks ===
   useGlobalEvent('keypress', (event) => {
     if (AuthStore.me() || AuthStore.loading()) return;
-    if (event.code === 'Enter') void login(username().trim());
+    if (event.code === 'Enter') void login();
   });
-  // onMount(() => {
-  //   void browserFigerprint().then((x) => console.log(x));
-  // });
 
   // === State ===
   const sendingCredentials = atom(false);
-  const username = persistentAtom('last_user', '');
+  const username = atom('');
+  const password = atom('');
 
   // === Functions ===
-  async function login(username: string) {
+  async function login() {
     if (sendingCredentials()) return;
     sendingCredentials(true);
     try {
-      await AuthStore.login(username);
+      await AuthStore.login({
+        username: username().trim(),
+        password: password().trim(),
+      });
     } catch (error) {
-      if (error instanceof RequestError && error.body === 'User not found') {
-        try {
-          await AuthStore.register({ username });
-        } catch (error) {
-          handleError(error);
-        }
-      } else handleError(error);
+      handleError(error);
+    }
+    sendingCredentials(false);
+  }
+  async function register() {
+    if (sendingCredentials()) return;
+    sendingCredentials(true);
+    try {
+      await AuthStore.register({
+        username: username().trim(),
+        password: password().trim(),
+      });
+    } catch (error) {
+      handleError(error);
     }
     sendingCredentials(false);
   }
@@ -152,18 +156,15 @@ export default ((properties) => {
       fallback={
         <div class={s.authComponent}>
           <div class={s.card}>
-            <div class={s.webauthn}>
-              <div class={s.welcome}>Login to acess this page</div>
-              <div class={s.userLine}>
-                <Input value={username} name='username' placeholder='Username' autocomplete='on' autofocus />
-                <Button onClick={() => void login(username())} disabled={sendingCredentials()}>
-                  <Icon path={mdiFingerprint} size='48' inline />
-                </Button>
-              </div>
+            <div class={s.content}>
+              <div class={s.welcome}>Authentication</div>
+              <Input value={username} name='username' placeholder='Username' autocomplete='on' autofocus />
+              <Input value={password} name='password' placeholder='Password' type='password' />
             </div>
-            <A class={s.navigate} href='/'>
-              Home
-            </A>
+            <div class={s.buttons}>
+              <button onClick={login}>Login</button>
+              <button onClick={register}>Register</button>
+            </div>
           </div>
         </div>
       }

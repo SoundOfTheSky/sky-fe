@@ -18,15 +18,16 @@
   }
 
   .title-wrapper {
+    overflow-y: auto;
     width: 100%;
     height: 100%;
-  }
 
-  .title {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    height: 100%;
+    .title {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      height: 100%;
+    }
   }
 
   .progress {
@@ -120,6 +121,11 @@
     position: absolute;
     top: 16px;
     right: 16px;
+    display: flex;
     font-size: 12px;
+
+    div {
+      margin-left: 4px;
+    }
   }
 }

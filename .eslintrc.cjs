@@ -8,7 +8,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:@typescript-eslint/strict',
     'plugin:jsx-a11y/strict',
-    'plugin:sonarjs/recommended',
+    'plugin:sonarjs/recommended-legacy',
     'plugin:prettier/recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',

@@ -1,17 +1,19 @@
 import { Show, createMemo, Index } from 'solid-js';
 
 import Skeleton from '@/components/loading/skeleton';
+import Tooltip from '@/components/tooltip';
 import { resizeTextToFit } from '@/services/reactive';
+import { srs } from '@/sky-shared/study';
 
 import parseHTML from '../services/parseHTML';
 import { useStudy } from '../services/study.context';
-import { SubjectStatus, useReview } from '../session/review.context';
+import { SubjectStatus, useSession } from '../session/session.context';
 
-import s from './review-question.module.scss';
+import s from './session-question.module.scss';
 
 resizeTextToFit;
 
-export default function ReviewQuestion() {
+export default function SessionQuestion() {
   const {
     isLoading,
     stats,
@@ -23,16 +25,17 @@ export default function ReviewQuestion() {
     previousState,
     subjectStats,
     subject,
+    subjectInfo,
     autoplayAudio,
     currentSubjectQuestionsStatuses,
-  } = useReview()!;
-  const { offlineUnavailable, srsMap } = useStudy()!;
+  } = useSession()!;
+  const { offlineUnavailable } = useStudy()!;
 
   /** Current subject stage. Automatically changes based on status. */
   const subjectStage = createMemo(() => {
-    const $subject = subject();
+    const $subjectInfo = subjectInfo();
     const $subjectStats = subjectStats();
-    if (!$subject || !$subjectStats) return 0;
+    if (!$subjectStats || !$subjectInfo) return 0;
     let delta = 0;
     switch ($subjectStats.status) {
       case SubjectStatus.Correct: {
@@ -44,9 +47,9 @@ export default function ReviewQuestion() {
         delta = -2;
       }
     }
-    return $subject.stage === 0 && delta < 0
+    return $subjectInfo.data.stage === 0 && delta < 0
       ? 0
-      : Math.max(1, Math.min(srsMap[$subject.srsId - 1].timings.length + 1, $subject.stage! + delta));
+      : Math.max(1, Math.min(srs.length + 1, $subjectInfo.data.stage! + delta));
   });
   /** Current subject progress percent. From 0 to 1 untill unlock, from 1 to 2 utill burned */
   const progressSpinnerOptions = createMemo(() => {
@@ -58,17 +61,16 @@ export default function ReviewQuestion() {
         bgColor: '#192039',
         progress: 0,
       };
-    const $srs = srsMap[$subject.srsId - 1];
-    if ($subjectStage > $srs.ok)
+    if ($subjectStage > 5)
       return {
         color: '#3d63ff',
         bgColor: '#6785fd',
-        progress: ($subjectStage - $srs.ok) / ($srs.timings.length + 1 - $srs.ok),
+        progress: ($subjectStage - 5) / (srs.length + 1 - 5),
       };
     return {
       color: '#6785fd',
       bgColor: '#192039',
-      progress: $subjectStage / $srs.ok,
+      progress: $subjectStage / 5,
     };
   });
 
@@ -107,22 +109,35 @@ export default function ReviewQuestion() {
         <span>{subjectStage()}</span>
       </div>
       <div class={s.stats}>
-        {stats().passed}/{subjectIds().length} {Math.floor(stats().correctPercent * 100)}% {timePassed()} {eta()}m
+        <Tooltip content='Passed/Total subjects'>
+          <div>
+            {stats().passed}/{subjectIds().length}
+          </div>
+        </Tooltip>{' '}
+        <Tooltip content='Correct %'>
+          <div>{~~(stats().correctPercent * 100)}%</div>
+        </Tooltip>
+        <Tooltip content='Time passed'>
+          <div>{timePassed()}</div>
+        </Tooltip>
+        <Tooltip content='ETA'>
+          <div>{eta()}m</div>
+        </Tooltip>
       </div>
-      <div class={s.titleWrapper}>
+      <div class={s.titleWrapper} use:resizeTextToFit={[48, question(), hint(), isLoading()]}>
         <Skeleton loading={isLoading()} offline={offlineUnavailable()}>
-          <div class={s.title} use:resizeTextToFit={[48, question(), hint(), isLoading()]}>
+          <div class={s.title}>
             <Show
               when={
                 (previousState() || subjectStats()?.status === SubjectStatus.Unlearned) &&
-                !question()!.question.includes(subject()!.title) &&
-                !hint().includes(subject()!.title)
+                !question()!.data.question.includes(subject()!.data.title) &&
+                !hint().includes(subject()!.data.title)
               }
             >
-              <b>{parseHTML(subject()!.title, autoplayAudio())}</b>
+              <b>{parseHTML(subject()!.data.title, autoplayAudio())}</b>
               <br />
             </Show>
-            <div>{parseHTML(question()!.question, autoplayAudio())}</div>
+            <div>{parseHTML(question()!.data.question, autoplayAudio())}</div>
             <Show when={hint().toLowerCase() !== 'correct'}>{hint()}</Show>
           </div>
         </Skeleton>
@@ -133,7 +148,7 @@ export default function ReviewQuestion() {
             <div
               classList={{
                 [s.storyItem]: true,
-                [s.current]: subject()?.questionIds[index] === question()?.id,
+                [s.current]: subject()?.data.questionIds[index] === question()?.id,
                 [s.correct]: element() === SubjectStatus.Correct,
                 [s.error]: element() === SubjectStatus.Wrong,
                 [s.correctAfterWrong]: element() === SubjectStatus.CorrectAfterWrong,
