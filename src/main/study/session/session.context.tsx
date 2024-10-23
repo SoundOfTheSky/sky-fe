@@ -77,8 +77,6 @@ function getProvided() {
   const questionI = atom(0);
   /** User's answer */
   const answer = atom('');
-  /** Hint under question */
-  const hint = atom('');
   /** User's synonyms that also count as answer */
   const synonyms = atom<string[]>([]);
   /** User's note to question */
@@ -104,7 +102,6 @@ function getProvided() {
   const cooldownNext = atom<number>();
   /** setTimeout for cooldown of undo */
   const cooldownUndo = atom<number>();
-  /**  */
 
   // === Memos ===
   /** Current subject id */
@@ -128,7 +125,6 @@ function getProvided() {
   const subjectStats = createMemo(() => subjectsStats.get(subjectId() ?? 0));
   /** Subject question statuses array. Also this memo populates questionsStatuses as new question appear */
   const currentSubjectQuestionsStatuses = createMemo<SubjectStatus[]>(() => {
-    // console.log('a', subject());
     return (
       subject()?.data.questionIds.map((id) => {
         let s = questionsStatuses.get(id);
@@ -142,7 +138,6 @@ function getProvided() {
   });
   /** Current question status */
   const questionStatus = createMemo<SubjectStatus | undefined>(() => currentSubjectQuestionsStatuses()[questionI()]);
-
   /** Is answers to question in japanese */
   const isJapanese = createMemo(() => (question() ? wkIsJapanese(question()!.data.answers[0]) : false));
   /** Some stats of session */
@@ -186,18 +181,36 @@ function getProvided() {
       questionInfo.loading ||
       $subject.data.id !== $subjectId ||
       $question.data.subjectId !== $subjectId ||
-      ($questionInfo && $questionInfo?.data.questionId !== $question.data.id)
+      (!!$questionInfo && $questionInfo?.data.questionId !== $question.data.id)
     );
   });
   /** Is current question answered */
   const questionAnswered = createMemo(() => !!previousState() || subjectStats()?.status === SubjectStatus.Unlearned);
-
+  /** Hint under question */
+  const hint = createMemo(() => {
+    const $questionStatus = questionStatus();
+    const $previousState = previousState();
+    const $answer = answer();
+    const $question = question();
+    if (
+      question.loading ||
+      !$question ||
+      $questionStatus === undefined ||
+      (!$previousState && $questionStatus !== SubjectStatus.Unlearned)
+    )
+      return '';
+    const alt = $question.data.alternateAnswers?.[$answer.toLowerCase().trim()];
+    if (alt) return alt;
+    const answers = getAnswers().join(', ');
+    if (answers.toLowerCase() === 'correct') return '';
+    return answers;
+  });
   // === Effects ===
   // Set page title
   createEffect(() => {
     document.title = (lessonsMode() ? 'Sky | Lessons ' : 'Sky | Reviews ') + stats().unpassed;
   });
-  // On load ONCE
+  // On themes ONCE
   createEffect<true | undefined>((isDone) => {
     if (isDone) return true;
     if (!ready()) return;
@@ -224,7 +237,7 @@ function getProvided() {
     const $subjectStats = subjectStats()!;
     $subjectStats.title = $subject.data.title;
   });
-  // On subject change, change current question FIXME
+  // On subject change, change current question
   createEffect(() => {
     subject();
     questionI(
@@ -260,7 +273,6 @@ function getProvided() {
         answer('');
         clearTimeout(cooldownUndo());
         cooldownUndo(undefined);
-        hint(subjectStats()?.status === SubjectStatus.Unlearned ? getAnswers().join(', ') : '');
       });
     });
   }
@@ -328,14 +340,10 @@ function getProvided() {
               ? SubjectStatus.Correct
               : SubjectStatus.CorrectAfterWrong,
           );
-          hint(answers.join(', '));
           subjectStats()!.answers.push(answer);
-        } else if ($question.data.alternateAnswers && answer in $question.data.alternateAnswers)
-          hint($question.data.alternateAnswers[answer]);
-        else {
+        } else if (!$question.data.alternateAnswers?.[answer]) {
           if (!lessonsMode()) subjectStats()!.answers.push(answer);
           updateQuestionStatus(SubjectStatus.Wrong);
-          hint(answers.join(', '));
           runWithOwner(owner, () => {
             cooldownUndo(useTimeout(() => cooldownUndo(undefined), 20_000));
             cooldownNext(useTimeout(() => cooldownNext(undefined), 2000));
@@ -409,11 +417,13 @@ function getProvided() {
         $subjectStats.status === SubjectStatus.CorrectAfterWrong
       )
         subjectI((i) => i + 1);
-      else
+      else {
         subjectIds(($subjectIds) => {
-          $subjectIds.splice($subjectI + $batch - 1, 0, $subjectIds.splice($subjectI, 1)[0]);
-          return [...$subjectIds];
+          const ids = [...$subjectIds];
+          ids.splice($subjectI + $batch - 1, 0, ids.splice($subjectI, 1)[0]);
+          return ids;
         });
+      }
     });
   }
   /** Undo commited, but not sent answer */

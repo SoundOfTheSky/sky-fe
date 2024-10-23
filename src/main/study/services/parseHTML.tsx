@@ -53,6 +53,9 @@ export default function parseHTML(text: string, autoplayAudio = 0): JSX.Element[
         />
       );
     },
+    'jp-conjugation': () => {
+      return <div />;
+    },
   };
   function parse(tag: HTMLElement) {
     for (const child of tag.children as unknown as HTMLElement[]) {

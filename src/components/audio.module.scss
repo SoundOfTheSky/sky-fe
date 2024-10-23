@@ -6,6 +6,7 @@
   width: min-content;
   border-radius: 8px;
   background-color: $color-content-background-light;
+  white-space: nowrap;
   transition: box-shadow $transition-time;
 
   &:hover {

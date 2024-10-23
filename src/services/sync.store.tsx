@@ -67,8 +67,10 @@ export default createRoot(() => {
       cached(true);
       status(SYNC_STATUS.SYNCHED);
     } catch (e) {
-      if (!(e instanceof Error) || e.message !== 'STOP') status(SYNC_STATUS.ERRORED);
-      console.error(e);
+      if (!(e instanceof Error) || e.message !== 'STOP') {
+        status(SYNC_STATUS.ERRORED);
+        console.error(e);
+      }
     }
   }
 

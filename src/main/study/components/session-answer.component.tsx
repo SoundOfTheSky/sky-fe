@@ -146,7 +146,7 @@ export default function SessionAnswer() {
             <Icon path={shuffleSubjects() ? mdiOrderBoolAscending : mdiOrderAlphabeticalAscending} size='32' inline />
           </Button>
         </Tooltip>
-        <Tooltip content={`${consistentQuestions() ? 'Disable' : 'Enable'} consistent questions`}>
+        <Tooltip content={`Consistent questions: ${consistentQuestions() ? 'enabled' : 'disabled'}`}>
           <Button onClick={() => consistentQuestions((x) => !x)}>
             <Icon path={consistentQuestions() ? mdiShuffleDisabled : mdiShuffle} size='32' inline />
           </Button>
@@ -154,16 +154,14 @@ export default function SessionAnswer() {
         <Tooltip content={questionAnswered() ? 'Next question' : 'Submit answer'}>
           <Button
             onClick={submit}
-            disabled={isLoading() || cooldownNext() !== undefined || (question()?.data.choose && !questionAnswered())}
+            disabled={isLoading() || cooldownNext() !== undefined || (!!question()?.data.choose && !questionAnswered())}
             classList={{ [s.cooldownNext]: cooldownNext() !== undefined }}
           >
             <Icon path={questionAnswered() ? mdiArrowRightBold : mdiCheckBold} size='32' inline />
           </Button>
         </Tooltip>
         <Tooltip
-          content={
-            ['Enable first audio autoplay', 'Enable ALL audio autoplay', 'Disable audio autoplay'][autoplayAudio()]
-          }
+          content={['Autoplay audio: disabled', 'Autoplay audio: first', 'Autoplay audio: all'][autoplayAudio()]}
         >
           <Button onClick={() => autoplayAudio((x) => (x + 1) % 3)}>
             <Icon path={[mdiHeadphonesOff, mdiHeadphones, mdiHeadphonesSettings][autoplayAudio()]} size='32' inline />

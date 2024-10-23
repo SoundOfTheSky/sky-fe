@@ -8,7 +8,7 @@ import { JSONSerializable, UUID } from '@/sky-utils';
 import authStore from './auth.store';
 import basicStore from './basic.store';
 import { db, DBOptions } from './db';
-import { CommonRequestOptions, handleError, request, RequestError } from './fetch';
+import { CommonRequestOptions, request, RequestError } from './fetch';
 import syncStore, { SYNC_STATUS } from './sync.store';
 
 export type RESTBody = JSONSerializable & TableDefaults;
@@ -116,8 +116,9 @@ export class RESTEndpointIDB<T extends RESTBody, B extends RESTItemIDB<T>> exten
       options.onItem?.(new this.builder(item));
       // Checkpoint every 1000 items
       if (i % 1000 === 0 || i === items.length - 1)
-        await db.put('keyval', ~~(new Date(item.updated).getTime() / 1000), lastUpdateKey);
+        await db.put('keyval', ~~(new Date(item.updated).getTime() / 1000) - 1, lastUpdateKey);
     }
+    if (items.length !== 0) await db.put('keyval', ~~(new Date(items.at(-1)!.updated).getTime() / 1000), lastUpdateKey);
     options.onProgress(1);
   }
 }

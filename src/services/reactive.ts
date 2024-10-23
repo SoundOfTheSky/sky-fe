@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import equal from 'fast-deep-equal';
 import {
   InitializedResourceOptions,
   InitializedResourceReturn,
@@ -21,7 +20,7 @@ import {
 } from 'solid-js';
 
 import * as broadcastChannel from '@/services/broadcast-channel';
-import { log } from '@/sky-utils';
+import { deepEquals, log } from '@/sky-utils';
 
 // === Reactive ===
 export type Atom<in out T> = (setTo?: Parameters<Setter<T>>[0]) => T;
@@ -31,7 +30,7 @@ export function atomize<T>([state, setState]: [Accessor<T>, Setter<T>]): Atom<T>
 export function atom<T>(): Atom<T | undefined>;
 export function atom<T>(value: T, options?: SignalOptions<T>): Atom<T>;
 export function atom<T>(value?: T, options: SignalOptions<T> = {}): Atom<T> {
-  options.equals = equal;
+  options.equals ??= deepEquals;
   // eslint-disable-next-line solid/reactivity
   return atomize(createSignal<T>(value as T, options));
 }
@@ -41,7 +40,7 @@ export function tabSynchedAtom<T>(key: string, initialValue: T): Atom<T>;
 export function tabSynchedAtom<T>(key: string, initialValue?: T): Atom<T> {
   if (tabSynchedAtomMap.has(key)) return tabSynchedAtomMap.get(key) as Atom<T>;
   const [state, setState] = createSignal<T>(initialValue as T, {
-    equals: equal,
+    equals: deepEquals,
   });
   broadcastChannel.send(`queryAtom_${key}`);
   // eslint-disable-next-line solid/reactivity

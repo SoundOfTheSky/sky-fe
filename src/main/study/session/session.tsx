@@ -19,7 +19,7 @@ export default function Session() {
 
   return (
     <Loading when={ready()}>
-      <div class={s.reviewsComponent}>
+      <div class={s.sessionComponent}>
         <Show when={!done()} fallback={<SessionStats />}>
           <SessionQuestion />
           <SessionAnswer />

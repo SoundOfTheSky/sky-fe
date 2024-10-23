@@ -10,11 +10,18 @@ import s from './layout.module.scss';
 const Layout: ParentComponent = (properties) => {
   const { queue } = audioStore;
   const { online } = basicStore;
-  const { status } = syncStore;
+
   const size = createMemo(() => {
+    const $syncStatus = syncStore.status();
     let s = 0;
     if (queue().length > 0) s += 32;
-    if (!online() || status() !== SYNC_STATUS.SYNCHED) s += 24;
+    if (
+      !online() ||
+      $syncStatus === SYNC_STATUS.ACTIONS ||
+      $syncStatus === SYNC_STATUS.CACHE ||
+      $syncStatus === SYNC_STATUS.ERRORED
+    )
+      s += 24;
     return s;
   });
 

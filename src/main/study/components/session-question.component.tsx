@@ -138,7 +138,7 @@ export default function SessionQuestion() {
               <br />
             </Show>
             <div>{parseHTML(question()!.data.question, autoplayAudio())}</div>
-            <Show when={hint().toLowerCase() !== 'correct'}>{hint()}</Show>
+            {hint()}
           </div>
         </Skeleton>
       </div>
