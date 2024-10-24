@@ -8,6 +8,7 @@ import {
   createMemo,
   createResource,
   getOwner,
+  onCleanup,
   onMount,
   ParentComponent,
   runWithOwner,
@@ -20,6 +21,7 @@ import basicStore, { NotificationType } from '@/services/basic.store';
 import { handleError } from '@/services/fetch';
 import { atom, atomize, persistentAtom, useInterval, useTimeout } from '@/services/reactive';
 import { getDefaultRestFields } from '@/services/rest';
+import syncStore from '@/services/sync.store';
 import { shuffleArray } from '@/sky-utils';
 
 import { useStudy } from '../services/study.context';
@@ -48,6 +50,9 @@ function getProvided() {
   const timeInterval = useInterval(updateTime, 1000);
   const owner = getOwner();
   onMount(update);
+  onCleanup(() => {
+    if (subjectI() !== 0) void syncStore.sync();
+  });
 
   // === State ===
   /** Array of all subject ids to do in this session. Order is important */
@@ -502,13 +507,13 @@ function getProvided() {
   async function sendQuestionDataToServer() {
     try {
       if (isLoading()) return;
-      const $questionInfo =
-        questionInfo() ??
-        new RESTStudyUserQuestion({
+      const $questionInfo = new RESTStudyUserQuestion(
+        questionInfo()?.data ?? {
           ...getDefaultRestFields(),
           // Payload
           questionId: questionId()!,
-        });
+        },
+      );
       const $synonyms = synonyms()
         .map((x) => x.trim())
         .filter(Boolean);
@@ -522,7 +527,10 @@ function getProvided() {
       } else if (wasEmpty) {
         mutateQuestionInfo($questionInfo);
         await $questionInfo.create();
-      } else await $questionInfo.update();
+      } else {
+        mutateQuestionInfo($questionInfo);
+        await $questionInfo.update();
+      }
     } catch (error) {
       notify({
         title: 'Changes are not saved!',

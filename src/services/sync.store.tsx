@@ -144,5 +144,6 @@ export default createRoot(() => {
     progress,
     status,
     sync,
+    cached,
   };
 });

@@ -1,0 +1,19 @@
+@use '@/vars' as *;
+
+.subjects-component {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+
+  .search {
+    display: flex;
+    min-height: 64px;
+    max-height: 64px;
+  }
+
+  .results {
+    overflow-y: auto;
+  }
+}

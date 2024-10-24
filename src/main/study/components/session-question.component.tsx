@@ -31,36 +31,9 @@ export default function SessionQuestion() {
   } = useSession()!;
   const { offlineUnavailable } = useStudy()!;
 
-  /** Current subject stage. Automatically changes based on status. */
-  const subjectStage = createMemo(() => {
-    const $subjectInfo = subjectInfo();
-    const $subjectStats = subjectStats();
-    if (!$subjectStats || !$subjectInfo) return 0;
-    let delta = 0;
-    switch ($subjectStats.status) {
-      case SubjectStatus.Correct: {
-        delta = 1;
-        break;
-      }
-      case SubjectStatus.Wrong:
-      case SubjectStatus.CorrectAfterWrong: {
-        delta = -2;
-      }
-    }
-    return $subjectInfo.data.stage === 0 && delta < 0
-      ? 0
-      : Math.max(1, Math.min(srs.length + 1, $subjectInfo.data.stage! + delta));
-  });
   /** Current subject progress percent. From 0 to 1 untill unlock, from 1 to 2 utill burned */
   const progressSpinnerOptions = createMemo(() => {
-    const $subject = subject();
-    const $subjectStage = subjectStage();
-    if (!$subject)
-      return {
-        color: '#6785fd',
-        bgColor: '#192039',
-        progress: 0,
-      };
+    const $subjectStage = subjectInfo()?.data.stage ?? 0;
     if ($subjectStage > 5)
       return {
         color: '#3d63ff',
@@ -106,7 +79,7 @@ export default function SessionQuestion() {
             }deg)`,
           }}
         />
-        <span>{subjectStage()}</span>
+        <span>{subjectInfo()?.data.stage ?? 0}</span>
       </div>
       <div class={s.stats}>
         <Tooltip content='Passed/Total subjects'>

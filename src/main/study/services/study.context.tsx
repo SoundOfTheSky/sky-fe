@@ -96,8 +96,6 @@ function getProvided() {
   async function update() {
     themes(undefined);
     themes(await getThemes());
-    const $syncStatus = syncStore.status();
-    if ($syncStatus !== SYNC_STATUS.ACTIONS && $syncStatus !== SYNC_STATUS.CACHE) await syncStore.sync();
   }
 
   async function getImmersionKitExamples(word: string, options?: CommonRequestOptions) {

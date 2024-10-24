@@ -13,9 +13,11 @@ const Dialog: ParentComponent<{
 }> = (properties) => {
   // === Hooks ===
   onMount(() => {
-    setTimeout(() => {
-      offsetY(0);
-    }, 0);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        offsetY(0);
+      });
+    });
   });
   // === State ===
   const offsetY = atom(window.innerHeight);
@@ -47,7 +49,7 @@ const Dialog: ParentComponent<{
   function close() {
     untrack(() => {
       offsetY(maxOffset());
-      setTimeout(properties.onClose!, 200);
+      setTimeout(properties.onClose!, 500);
     });
   }
   return (

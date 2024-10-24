@@ -8,12 +8,14 @@ import Skeleton from '@/components/loading/skeleton';
 import basicStore, { NotificationType } from '@/services/basic.store';
 import { handleError } from '@/services/fetch';
 import { atom, resizeTextToFit } from '@/services/reactive';
+import { getDefaultRestFields } from '@/services/rest';
 import { srs } from '@/sky-shared/study';
 
 import Tabs from '../components/tabs';
 import parseHTML from '../services/parseHTML';
 import { useStudy } from '../services/study.context';
 import {
+  RESTStudyUserQuestion,
   studyQuestionEndpoint,
   studySubjectEndpoint,
   studyUserQuestionEndpoint,
@@ -42,10 +44,10 @@ const Subject: Component<{ id?: number }> = (properties) => {
   const [subjectInfo] = createResource(subject, (subject) =>
     subject.data.userSubjectId ? studyUserSubjectEndpoint.get(subject.data.userSubjectId) : undefined,
   );
-  const [questionInfo] = createResource(question, (question) =>
+  const [questionInfo, { mutate: mutateQuestionInfo }] = createResource(question, (question) =>
     question.data.userQuestionId ? studyUserQuestionEndpoint.get(question.data.userQuestionId) : undefined,
   );
-  const isLoading = createMemo(() => !subject() || !question() || !subjectInfo() || !questionInfo());
+  const isLoading = createMemo(() => !subject() || !question() || subjectInfo.loading || questionInfo.loading);
   /** Current subject progress percent. From 0 to 1 untill unlock, from 1 to 2 utill burned */
   const progressSpinnerOptions = createMemo(() => {
     const $subjectStage = subjectInfo()?.data.stage ?? 0;
@@ -78,17 +80,34 @@ const Subject: Component<{ id?: number }> = (properties) => {
   });
 
   // === Functions ===
+  /** Update synonyms and note */
   async function sendQuestionDataToServer() {
     try {
-      const $questionInfo = questionInfo();
-      if (!$questionInfo) return;
+      if (isLoading()) return;
+      const $questionInfo = new RESTStudyUserQuestion(
+        questionInfo()?.data ?? {
+          ...getDefaultRestFields(),
+          // Payload
+          questionId: questionId()!,
+        },
+      );
       const $synonyms = synonyms()
         .map((x) => x.trim())
         .filter(Boolean);
       const $note = note().trim();
-      $questionInfo.data.synonyms = $synonyms.length ? $synonyms : undefined;
-      $questionInfo.data.note = $note.length ? $note : undefined;
-      await $questionInfo.update();
+      const wasEmpty = !$questionInfo.data.synonyms && !$questionInfo.data.note;
+      $questionInfo.data.synonyms = $synonyms.length ? $synonyms : null;
+      $questionInfo.data.note = $note.length ? $note : null;
+      if (!$questionInfo.data.synonyms && !$questionInfo.data.note) {
+        mutateQuestionInfo(undefined);
+        await $questionInfo.delete();
+      } else if (wasEmpty) {
+        mutateQuestionInfo($questionInfo);
+        await $questionInfo.create();
+      } else {
+        mutateQuestionInfo($questionInfo);
+        await $questionInfo.update();
+      }
     } catch (error) {
       basicStore.notify({
         title: 'Changes are not saved!',

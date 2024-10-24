@@ -9,7 +9,7 @@
   place-items: center;
   width: 100dvw;
   height: 100dvh;
-  transition: $transition-time opacity;
+  transition: 500ms opacity;
   backdrop-filter: blur(4px) brightness(0.4);
 
   .dialog {
@@ -21,7 +21,7 @@
     padding-top: 24px;
     border-radius: 16px;
     background-color: $color-content-background;
-    transition: $transition-time transform;
+    transition: 500ms transform;
 
     .close {
       position: absolute;
@@ -32,11 +32,11 @@
       border-radius: 8px;
       background-color: $color-border;
       cursor: s-resize;
-      transition: $transition-time background-color;
+      transition: 500ms background-color;
 
       span {
         opacity: 0;
-        transition: $transition-time opacity;
+        transition: 500ms opacity;
       }
 
       &:hover {

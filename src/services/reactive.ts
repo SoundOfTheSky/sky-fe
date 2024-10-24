@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -20,7 +21,7 @@ import {
 } from 'solid-js';
 
 import * as broadcastChannel from '@/services/broadcast-channel';
-import { deepEquals, log } from '@/sky-utils';
+import { createDebouncedFunction, deepEquals, log } from '@/sky-utils';
 
 // === Reactive ===
 export type Atom<in out T> = (setTo?: Parameters<Setter<T>>[0]) => T;
@@ -103,6 +104,21 @@ export function createLazyResource<T, S, R = unknown>(
       refetch: (...args: Parameters<ResourceReturn<T, R>['1']['refetch']>) => getResource()[1].refetch(...args),
     },
   ] as ResourceReturn<T, R>;
+}
+/** Is recalced after some time */
+export function createDebouncedMemo<T>(fn: (last: T | undefined) => T, time: number) {
+  const memoValue = atom<T>();
+  const debounced = createDebouncedFunction(fn, time);
+  createEffect<T | undefined>((lastVal) => {
+    try {
+      const newVal = debounced(lastVal);
+      memoValue(newVal as Setter<T>);
+      return newVal;
+    } catch (e) {
+      return lastVal;
+    }
+  });
+  return memoValue;
 }
 
 // === Auto disposable ===
