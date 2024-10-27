@@ -99,7 +99,7 @@ const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (pr
         <Icon path={isCurrent() && playing() ? mdiPause : mdiPlay} size='24' />
         {properties.title}
       </button>
-      <Tooltip content='Add to queue'>
+      <Tooltip content='Добавить в очередь'>
         <button onClick={addToQueue} disabled={loading()} class={s.add}>
           <Icon path={queueIndex() === -1 ? mdiPlaylistPlus : mdiPlaylistMinus} inline size='24' />
         </button>

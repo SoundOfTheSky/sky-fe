@@ -28,7 +28,7 @@ const PageStatus: Component = () => {
                 transform: `scaleX(${SyncStore.progress()})`,
               }}
             />
-            Sync: {~~(SyncStore.progress() * 100)}%
+            Загрузка изменений: {~~(SyncStore.progress() * 100)}%
           </div>
         </Match>
         <Match when={SyncStore.status() === SYNC_STATUS.CACHE}>
@@ -39,14 +39,14 @@ const PageStatus: Component = () => {
                 transform: `scaleX(${SyncStore.progress()})`,
               }}
             />
-            Caching: {~~(SyncStore.progress() * 100)}%
+            Кэширование: {~~(SyncStore.progress() * 100)}%
           </div>
         </Match>
         <Match when={SyncStore.status() === SYNC_STATUS.ERRORED}>
-          <div class={s.offline}>SYNC ERROR</div>
+          <div class={s.offline}>Ошибка синхронизации</div>
         </Match>
         <Match when={!online()}>
-          <div class={s.offline}>Offline</div>
+          <div class={s.offline}>Оффлайн</div>
         </Match>
         <Match when={loading()}>
           <div class={s.loading} />

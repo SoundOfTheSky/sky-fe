@@ -84,7 +84,7 @@ export default function Subjects() {
     <div class={s.subjectsComponent}>
       <Themes />
       <div class={`card ${s.search}`}>
-        <Show when={isJapanese()} fallback={<Input value={query} placeholder='Search...' />}>
+        <Show when={isJapanese()} fallback={<Input value={query} placeholder='Поиск...' />}>
           <Input japanese value={query} placeholder='検索' />
         </Show>
         <Button

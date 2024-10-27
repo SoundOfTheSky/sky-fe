@@ -117,7 +117,7 @@ const Chat: Component = () => {
             </For>
           </div>
         </div>
-        <Input value={message} placeholder='Enter your message' disabled={sendingMessage()} />
+        <Input value={message} placeholder='Введите сообщение' disabled={sendingMessage()} />
       </Skeleton>
     </div>
   );

@@ -45,7 +45,7 @@ export default function StudyTab() {
         <div class={s.top}>
           <Themes />
           <Show when={basicStore.online()}>
-            <A href='./subjects' class={`card ${s.subjects}`} title='Subjects'>
+            <A href='./subjects' class={`card ${s.subjects}`} title='Вопросы'>
               <Icon path={mdiBookOpenPageVariant} size='32' />
             </A>
           </Show>
@@ -55,15 +55,15 @@ export default function StudyTab() {
             when={showLessonsSettings()}
             fallback={
               <>
-                <h1>Lessons</h1>
+                <h1>Уроки</h1>
                 <Skeleton loading={!ready()} class={s.reviewsAmount} offline={offlineUnavailable()}>
                   <h2>{lessons().length}</h2>
                 </Skeleton>
               </>
             }
           >
-            <div title='How many lessons to do in one go'>
-              <div>Amount: {settings().lessons.amount}</div>
+            <div title='Количество уроков за одну сессию'>
+              <div>Количество: {settings().lessons.amount}</div>
               <input
                 type='range'
                 min='1'
@@ -81,8 +81,8 @@ export default function StudyTab() {
                 }
               />
             </div>
-            <div title='How many lessons need to learn before answering'>
-              <div>Batch: {settings().lessons.batch === 50 ? 'everything' : settings().lessons.batch}</div>
+            <div title='Размер группы уроков'>
+              <div>Группировать по: {settings().lessons.batch === 50 ? 'everything' : settings().lessons.batch}</div>
               <input
                 type='range'
                 min='1'
@@ -117,15 +117,15 @@ export default function StudyTab() {
             when={showReviewsSettings()}
             fallback={
               <>
-                <h1>Reviews</h1>
+                <h1>Повторения</h1>
                 <Skeleton loading={!ready()} class={s.reviewsAmount} offline={offlineUnavailable()}>
                   <h2>{reviews().length}</h2>
                 </Skeleton>
               </>
             }
           >
-            <div title='How many reviews to do in one go'>
-              <div>Amount: {settings().reviews.amount}</div>
+            <div title='Количество повторений за одну сессию'>
+              <div>Количество: {settings().reviews.amount}</div>
               <input
                 type='range'
                 min='1'
@@ -143,8 +143,8 @@ export default function StudyTab() {
                 }
               />
             </div>
-            <div title='How many wrong answers can you have before stopping progress'>
-              <div>Batch: {settings().reviews.batch === 200 ? 'everything' : settings().reviews.batch}</div>
+            <div title='Размер группы повторений'>
+              <div>Группировать по: {settings().reviews.batch}</div>
               <input
                 type='range'
                 min='1'

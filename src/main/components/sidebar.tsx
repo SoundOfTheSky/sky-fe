@@ -1,4 +1,4 @@
-import { mdiBookOpenPageVariant, mdiHome, mdiIdeogramCjk } from '@mdi/js';
+import { mdiBookOpenPageVariant, mdiHome } from '@mdi/js';
 import { A } from '@solidjs/router';
 import { Component, Index, createMemo } from 'solid-js';
 
@@ -13,24 +13,19 @@ const Sidebar: Component = () => {
   const items = createMemo(() => [
     {
       icon: mdiHome,
-      title: 'Overview',
+      title: 'Главная страница',
       link: '/',
     },
     {
       icon: mdiBookOpenPageVariant,
-      title: 'Study',
+      title: 'Уроки',
       link: '/study',
       progress: 1,
-    },
-    {
-      icon: mdiIdeogramCjk,
-      title: 'JP Conjugation',
-      link: '/jp-conjugation',
     },
   ]);
   return (
     <div class={s.sidebarComponent}>
-      <h1>Dashboard</h1>
+      <h1>Диплом</h1>
       <div class={s.menu}>
         <Index each={items()}>
           {(item) => (

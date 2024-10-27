@@ -213,7 +213,7 @@ function getProvided() {
   // === Effects ===
   // Set page title
   createEffect(() => {
-    document.title = (lessonsMode() ? 'Sky | Lessons ' : 'Sky | Reviews ') + stats().unpassed;
+    document.title = (lessonsMode() ? 'Диплом | Уроки ' : 'Диплом | Повторения ') + stats().unpassed;
   });
   // On themes ONCE
   createEffect<true | undefined>((isDone) => {
@@ -560,6 +560,7 @@ function getProvided() {
     shuffleSubjects,
     startTime,
     subjectIds,
+    subjectsStats,
     synonyms,
     timePassed,
 

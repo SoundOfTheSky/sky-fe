@@ -26,7 +26,7 @@ const StudyStats: Component = () => {
 
   return (
     <div class={`card ${s.studyStats}`}>
-      <div class='card-title'>Study activity graph</div>
+      <div class='card-title'>Календарь активности</div>
       <Skeleton loading={!statsGraph()?.length} offline={offlineUnavailable()} class={s.skeleton}>
         <div class={s.days} ref={element}>
           <Index each={statsGraph()}>
@@ -37,7 +37,7 @@ const StudyStats: Component = () => {
                   content={
                     <div class={s.dayInfo}>
                       <div class={s.title}>{date.toLocaleDateString()}</div>
-                      <div>Reviews: {reviews()}</div>
+                      <div>Повторения: {reviews()}</div>
                     </div>
                   }
                 >

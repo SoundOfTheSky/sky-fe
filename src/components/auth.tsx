@@ -158,8 +158,8 @@ export default ((properties) => {
           <div class={s.card}>
             <div class={s.content}>
               <div class={s.welcome}>Authentication</div>
-              <Input value={username} name='username' placeholder='Username' autocomplete='on' autofocus />
-              <Input value={password} name='password' placeholder='Password' type='password' />
+              <Input value={username} name='username' placeholder='Имя пользователя' autocomplete='on' autofocus />
+              <Input value={password} name='password' placeholder='Пароль' type='password' />
             </div>
             <div class={s.buttons}>
               <button onClick={login}>Login</button>

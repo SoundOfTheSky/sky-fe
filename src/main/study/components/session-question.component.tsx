@@ -88,19 +88,19 @@ export default function SessionQuestion() {
         <span>{progressSpinnerOptions().stage}</span>
       </div>
       <div class={s.stats}>
-        <Tooltip content='Passed/Total subjects'>
+        <Tooltip content='Пройдено/Всего вопросов'>
           <div>
             {stats().passed}/{subjectIds().length}
           </div>
         </Tooltip>{' '}
-        <Tooltip content='Correct %'>
+        <Tooltip content='Процент правильных овтетов'>
           <div>{~~(stats().correctPercent * 100)}%</div>
         </Tooltip>
-        <Tooltip content='Time passed'>
+        <Tooltip content='Времени прошло'>
           <div>{timePassed()}</div>
         </Tooltip>
-        <Tooltip content='ETA'>
-          <div>{eta()}m</div>
+        <Tooltip content='Приблизительно осталось'>
+          <div>{eta()}мин.</div>
         </Tooltip>
       </div>
       <div class={s.titleWrapper} use:resizeTextToFit={[48, question(), hint(), isLoading()]}>

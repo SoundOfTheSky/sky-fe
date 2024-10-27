@@ -21,7 +21,7 @@ const StudyReviewForecast: Component = () => {
       .filter(([time]) => time > now())
       .sort(([a], [b]) => a - b)) {
       const inHours = time - now();
-      const title = inHours === 1 ? '1 hour' : inHours < 48 ? `${inHours} hours` : `${~~(inHours / 24)} days`;
+      const title = inHours < 48 ? `${inHours} ч.` : `${~~(inHours / 24)} дн.`;
       sum += ids.length;
       if (time > now()) d.set(title, [(d.get(title)?.[0] ?? 0) + ids.length, sum]);
     }
@@ -40,12 +40,12 @@ const StudyReviewForecast: Component = () => {
 
   return (
     <div class={`card ${s.reviewForecast}`}>
-      <div class='card-title'>Review forecast</div>
+      <div class='card-title'>График повторений</div>
       <Skeleton loading={!ready()} offline={offlineUnavailable()} class={s.skeleton}>
         <Show
           when={data().length}
           fallback={
-            <Tooltip content='No incoming reviews'>
+            <Tooltip content='В будущем повторений не предвидится'>
               <div class={s.skeleton}>
                 <Icon path={mdiClockRemove} size='48' />
               </div>

@@ -16,7 +16,7 @@ const StudyActivity: Component = () => {
   return (
     <div class={`card ${s.studyActivity}`}>
       <Skeleton loading={!statsGraph().length} offline={offlineUnavailable()} class={s.skeleton}>
-        <Tooltip content='Your current activity'>
+        <Tooltip content='Активность'>
           <div
             class={`${s.progress} ${activity()[0] < 25 ? s.bad : ''}`}
             style={{
@@ -24,7 +24,7 @@ const StudyActivity: Component = () => {
             }}
           />
         </Tooltip>
-        <Tooltip content='Activity you will have tomorrow'>
+        <Tooltip content='Активность завтра'>
           <div
             class={`${s.progress} ${s.tomorrow} ${activity()[0] / 4 < 25 ? s.bad : ''}`}
             style={{
@@ -32,16 +32,16 @@ const StudyActivity: Component = () => {
             }}
           />
         </Tooltip>
-        <Tooltip content='Goal you need to achieve to not lose the streak'>
+        <Tooltip content='Цель, которую надо достичь, для продолжения серии'>
           <div class={s.goal} />
         </Tooltip>
-        <Tooltip content='Activity score'>
+        <Tooltip content='Активность'>
           <span class={s.stat}>
             {activity()[0]}
             <Icon path={mdiFire} size='32' />
           </span>
         </Tooltip>
-        <Tooltip content='Streak'>
+        <Tooltip content='Серия (дней)'>
           <span class={s.stat}>
             {activity()[1]}
             <Icon path={mdiStar} size='32' />

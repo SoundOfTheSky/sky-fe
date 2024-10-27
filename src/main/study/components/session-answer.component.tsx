@@ -85,7 +85,7 @@ export default function SessionAnswer() {
       <Switch
         fallback={
           <Input
-            placeholder='Answer'
+            placeholder='Ответ'
             value={answer}
             type='text'
             disabled={inputDisabled()}
@@ -167,7 +167,7 @@ export default function SessionAnswer() {
             <Icon path={[mdiHeadphonesOff, mdiHeadphones, mdiHeadphonesSettings][autoplayAudio()]} size='32' inline />
           </Button>
         </Tooltip>
-        <Tooltip content='Undo'>
+        <Tooltip content='Исправить'>
           <Button
             onClick={undo}
             disabled={!previousState() || cooldownUndo() !== undefined}

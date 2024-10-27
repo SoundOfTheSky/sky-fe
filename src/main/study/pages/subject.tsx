@@ -188,23 +188,18 @@ const Subject: Component<{ id?: number }> = (properties) => {
         <Loading when={!isLoading()}>
           <Tabs>
             {parseHTML(question()!.data.description)}
-            <div data-tab='Notes & Synonyms'>
-              Synonyms:
+            <div data-tab='Заметки и синонимы'>
+              Синонимы:
               <br />
               <Tags
                 value={synonyms}
-                placeholder='Your synonyms will count as correct answers'
+                placeholder='Синонимы, которые будут защитываться, как правильные ответы'
                 onChange={sendQuestionDataToServer}
               />
               <br />
-              Note:
+              Заметки:
               <br />
-              <Input
-                value={note}
-                multiline
-                placeholder='Add your note to this question'
-                onChange={sendQuestionDataToServer}
-              />
+              <Input value={note} multiline placeholder='Место для ваших заметок' onChange={sendQuestionDataToServer} />
             </div>
           </Tabs>
         </Loading>
