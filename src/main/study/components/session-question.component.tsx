@@ -33,17 +33,23 @@ export default function SessionQuestion() {
 
   /** Current subject progress percent. From 0 to 1 untill unlock, from 1 to 2 utill burned */
   const progressSpinnerOptions = createMemo(() => {
-    const $subjectStage = subjectInfo()?.data.stage ?? 0;
+    let $subjectStage = subjectInfo()?.data.stage ?? 0;
+    const $subjectStats = subjectStats();
+    if ($subjectStats?.status === SubjectStatus.Wrong || $subjectStats?.status === SubjectStatus.CorrectAfterWrong)
+      $subjectStage = $subjectStage === 0 ? 0 : Math.max(1, $subjectStage - 2);
+    else if ($subjectStats?.status === SubjectStatus.Correct) $subjectStage++;
     if ($subjectStage > 5)
       return {
         color: '#3d63ff',
         bgColor: '#6785fd',
         progress: ($subjectStage - 5) / (srs.length + 1 - 5),
+        stage: $subjectStage,
       };
     return {
       color: '#6785fd',
       bgColor: '#192039',
       progress: $subjectStage / 5,
+      stage: $subjectStage,
     };
   });
 
@@ -79,7 +85,7 @@ export default function SessionQuestion() {
             }deg)`,
           }}
         />
-        <span>{subjectInfo()?.data.stage ?? 0}</span>
+        <span>{progressSpinnerOptions().stage}</span>
       </div>
       <div class={s.stats}>
         <Tooltip content='Passed/Total subjects'>

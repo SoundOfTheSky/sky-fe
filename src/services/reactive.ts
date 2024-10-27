@@ -147,7 +147,7 @@ export function debugReactive(data: Record<string, () => unknown>) {
     createEffect(() => {
       const newVal = accessor();
       if (lastVal === initial) log(`[DEBUG] ${title}`, newVal);
-      else log(`[DEBUG] ${title}`, lastVal, '>>>', newVal);
+      else log(`[DEBUG] ${title}`, structuredClone(lastVal), '>>>', structuredClone(newVal));
       lastVal = newVal;
     });
   }
@@ -160,12 +160,14 @@ export function resizeTextToFit(element: HTMLElement, accessor: () => [number, .
   createRenderEffect(() => {
     let [fontSize] = accessor();
     if (!mounted()) return;
-    setTimeout(() => {
-      do {
-        element.style.fontSize = `${fontSize}px`;
-        fontSize--;
-      } while (element.scrollHeight !== element.clientHeight && fontSize > 3);
-    }, 0);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        do {
+          element.style.fontSize = `${fontSize}px`;
+          fontSize--;
+        } while (element.scrollHeight !== element.clientHeight && fontSize > 3);
+      }),
+    );
   });
 }
 export function onOutside(element: HTMLElement, accessor: () => [string, () => unknown]) {

@@ -3,8 +3,8 @@ import { For, ParentComponent, createResource } from 'solid-js';
 
 import Button from '@/components/form/button';
 import Icon from '@/components/icon';
-import Loading from '@/components/loading/loading';
-import { atom, onMounted } from '@/services/reactive';
+import Skeleton from '@/components/loading/skeleton';
+import { onMounted } from '@/services/reactive';
 
 import { useStudy } from '../services/study.context';
 
@@ -15,14 +15,14 @@ onMounted;
 const IK: ParentComponent = (properties) => {
   const { getImmersionKitExamples } = useStudy()!;
 
-  const isMounted = atom(false);
   const [examples] = createResource(
-    () => [properties.children as string, isMounted()] as [string, boolean],
-    ([query, isMounted]) => (isMounted ? getImmersionKitExamples(query) : undefined),
+    () => [properties.children as string] as const,
+    ([query]) => getImmersionKitExamples(query),
   );
+
   return (
-    <div class={s.immersionKitComponent} use:onMounted={() => isMounted(true)}>
-      <Loading when={examples()}>
+    <div class={s.immersionKitComponent}>
+      <Skeleton loading={!examples()}>
         <For each={examples()!.data}>
           {(d) => (
             <For each={d.examples}>
@@ -63,7 +63,7 @@ const IK: ParentComponent = (properties) => {
             </For>
           )}
         </For>
-      </Loading>
+      </Skeleton>
     </div>
   );
 };

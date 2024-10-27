@@ -1,14 +1,17 @@
 @use '@/vars' as *;
 
 .immersion-kit-component {
+  height: 1px;
+  min-height: 128px;
+
   .example {
     display: flex;
-    height: 128px;
     margin: 8px 0;
 
     button {
       position: relative;
       min-width: min(256px, 50%);
+      height: 128px;
       padding: 0;
       background-position: center;
       background-size: cover;
@@ -46,7 +49,6 @@
       .ja,
       .en {
         width: 100%;
-        height: 50%;
       }
     }
   }

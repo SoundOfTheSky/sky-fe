@@ -2,11 +2,11 @@ import { ParentComponent, createContext, createMemo, useContext } from 'solid-js
 
 import basicStore from '@/services/basic.store';
 import { db } from '@/services/db';
-import { CommonRequestOptions, request } from '@/services/fetch';
+import { CommonRequestOptions, handleError, request } from '@/services/fetch';
 import { atom, persistentAtom, useInterval } from '@/services/reactive';
 import syncStore, { SYNC_STATUS } from '@/services/sync.store';
 import { StudyEnabledTheme, StudyTheme } from '@/sky-shared/study';
-import { DAY_MS, HOUR_MS, MIN_MS } from '@/sky-utils';
+import { DAY_MS, HOUR_MS, MIN_MS, retry, wait } from '@/sky-utils';
 
 import { getThemes } from './study.rest';
 
@@ -94,11 +94,17 @@ function getProvided() {
   }
 
   async function update() {
-    themes(undefined);
-    themes(await getThemes());
+    try {
+      themes(undefined);
+      themes(await retry(() => getThemes(), 6, 5000));
+    } catch (e) {
+      handleError(e);
+      throw e;
+    }
   }
 
   async function getImmersionKitExamples(word: string, options?: CommonRequestOptions) {
+    await wait(20000);
     return request<ImmersionKitResponse>(
       `https://api.immersionkit.com/look_up_dictionary?keyword=${word}&sort=shortness&category=anime`,
       options,

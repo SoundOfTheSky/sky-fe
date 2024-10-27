@@ -195,7 +195,7 @@ function getProvided() {
   const hint = createMemo(() => {
     const $questionStatus = questionStatus();
     const $previousState = previousState();
-    const $answer = answer();
+    const $answer = answer().toLowerCase().trim();
     const $question = question();
     if (
       question.loading ||
@@ -204,11 +204,11 @@ function getProvided() {
       (!$previousState && $questionStatus !== SubjectStatus.Unlearned)
     )
       return '';
-    const alt = $question.data.alternateAnswers?.[$answer.toLowerCase().trim()];
-    if (alt) return alt;
-    const answers = getAnswers().join(', ');
-    if (answers.toLowerCase() === 'correct') return '';
-    return answers;
+    const answers = getAnswers();
+    const alt = $question.data.alternateAnswers?.[$answer];
+    if (!answers.includes($answer) && alt) return alt;
+    if (answers.length === 0 && answers[0] === 'correct') return '';
+    return getAnswers(true).join(', ');
   });
   // === Effects ===
   // Set page title
@@ -261,14 +261,16 @@ function getProvided() {
 
   // === Functions ===
   /** Get all answers for current question */
-  function getAnswers() {
+  function getAnswers(disableLowercase?: boolean) {
     return untrack(() => {
       const $question = question();
       if (!$question || questionInfo.loading) return [];
       const $questionInfo = questionInfo();
       if ($question.data.choose) return [$question.data.answers[0], ...($questionInfo?.data.synonyms ?? [])];
-      return [...$question.data.answers, ...($questionInfo?.data.synonyms ?? [])];
-    }).map((x) => x.toLowerCase());
+      let answers = [...$question.data.answers, ...($questionInfo?.data.synonyms ?? [])];
+      if (!disableLowercase) answers = answers.map((x) => x.toLowerCase());
+      return answers;
+    });
   }
   /** Clear some state on question change */
   function onQuestionChange() {
@@ -478,7 +480,9 @@ function getProvided() {
         ($lessonsMode
           ? // Don't update if answered wrong in lessons mode
             $subjectStats.status === SubjectStatus.Correct
-          : $previousState.subject === SubjectStatus.Unanswered && $subjectStats.status !== SubjectStatus.Unanswered)
+          : ($previousState.subject === SubjectStatus.Unanswered && $subjectStats.status === SubjectStatus.Correct) ||
+            ($previousState.subject === SubjectStatus.Wrong &&
+              $subjectStats.status === SubjectStatus.CorrectAfterWrong))
       ) {
         try {
           await new RESTStudyAnswer({
@@ -556,7 +560,6 @@ function getProvided() {
     shuffleSubjects,
     startTime,
     subjectIds,
-    subjectsStats,
     synonyms,
     timePassed,
 

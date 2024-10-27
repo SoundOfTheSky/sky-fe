@@ -1,5 +1,5 @@
 import { mdiClose, mdiPause, mdiPlay, mdiSkipNext, mdiSkipPrevious } from '@mdi/js';
-import { Component, batch, createEffect, Show, getOwner, runWithOwner } from 'solid-js';
+import { Component, batch, createEffect, Show, getOwner, runWithOwner, untrack } from 'solid-js';
 
 import AudioStore from '@/services/audio.store';
 import { atom, useInterval, useTimeout } from '@/services/reactive';
@@ -12,7 +12,7 @@ import s from './audio-player.module.scss';
 
 const AudioPlayer: Component = () => {
   // === Hooks ===
-  const { current, maxTime, playing, queue, time, currentI } = AudioStore;
+  const { current, maxTime, playing, queue, time, currentI, loading } = AudioStore;
 
   // === State ===
   const audioElement = atom<HTMLAudioElement>();
@@ -42,7 +42,7 @@ const AudioPlayer: Component = () => {
     const $playing = playing();
     const $audio = audioElement();
     const $current = current();
-    if ($audio && $current && $current.src !== $audio.src) $audio.src = $current.src;
+    if ($audio && $current && $current.src !== $audio.src.replace(location.origin, '')) $audio.src = $current.src;
     if ($playing && $audio) {
       if (!updateProgressInterval)
         updateProgressInterval = runWithOwner(owner, () => useInterval(() => time($audio.currentTime), 50));
@@ -65,60 +65,60 @@ const AudioPlayer: Component = () => {
     time(((event.clientX - element.offsetLeft) / element.clientWidth) * maxTime());
   }
   function onEnded() {
-    batch(() => {
-      time(maxTime());
-      const $currentI = currentI();
-      if ($currentI < queue().length - 1) changeTrack(1);
-    });
-  }
-  function changeTrack(delta: number) {
-    playing(false);
-    batch(() => {
-      time(0);
-      currentI((x) => x + delta);
-      playing(true);
+    untrack(() => {
+      batch(() => {
+        time(maxTime());
+        const $currentI = currentI();
+        if ($currentI < queue().length - 1) {
+          currentI((x) => x + 1);
+          playing(true);
+        }
+      });
     });
   }
 
   return (
-    <Show when={shown()}>
-      <div class={s.audioPlayer}>
-        <audio
-          ref={(el) => audioElement(el)}
-          class={s.audio}
-          onPlay={() => playing(true)}
-          onPause={() => playing(false)}
-          onCanPlay={onCanPlay}
-          onEnded={onEnded}
-        />
-        <Button disabled={currentI() < 1} onClick={() => changeTrack(-1)}>
-          <Icon path={mdiSkipPrevious} size='32' />
-        </Button>
-        <Button onClick={() => playing((x) => !x)}>
-          <Icon path={playing() ? mdiPause : mdiPlay} size='32' />
-        </Button>
-        <Button disabled={currentI() >= queue().length - 1} onClick={() => changeTrack(1)}>
-          <Icon path={mdiSkipNext} size='32' />
-        </Button>
-        {
-          // eslint-disable-next-line prettier/prettier, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <>
+      <audio
+        ref={(el) => audioElement(el)}
+        class={s.audio}
+        onPlay={() => playing(true)}
+        onPause={() => playing(false)}
+        onCanPlay={onCanPlay}
+        onEnded={onEnded}
+        onLoad={() => loading(false)}
+      />
+      <Show when={shown()}>
+        <div class={s.audioPlayer}>
+          <Button disabled={currentI() < 1} onClick={() => currentI((x) => x - 1)}>
+            <Icon path={mdiSkipPrevious} size='32' />
+          </Button>
+          <Button onClick={() => playing((x) => !x)}>
+            <Icon path={playing() ? mdiPause : mdiPlay} size='32' />
+          </Button>
+          <Button disabled={currentI() >= queue().length - 1} onClick={() => currentI((x) => x + 1)}>
+            <Icon path={mdiSkipNext} size='32' />
+          </Button>
+          {
+            // eslint-disable-next-line prettier/prettier, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
           }<div class={s.progress} onClick={onProgressClick}>
-          <div>
-            {formatTime(time() * 1000)} {queue().length === 1 ? '' : `${currentI() + 1} of ${queue().length}`}
+            <div>
+              {formatTime(time() * 1000)} {queue().length === 1 ? '' : `${currentI() + 1} of ${queue().length}`}
+            </div>
+            <div>{formatTime(maxTime() * 1000)}</div>
+            <div
+              class={s.line}
+              style={{
+                transform: `scaleX(${time() / maxTime()})`,
+              }}
+            />
           </div>
-          <div>{formatTime(maxTime() * 1000)}</div>
-          <div
-            class={s.line}
-            style={{
-              transform: `scaleX(${time() / maxTime()})`,
-            }}
-          />
+          <Button onClick={() => queue([])}>
+            <Icon path={mdiClose} size='32' />
+          </Button>
         </div>
-        <Button onClick={() => queue([])}>
-          <Icon path={mdiClose} size='32' />
-        </Button>
-      </div>
-    </Show>
+      </Show>
+    </>
   );
 };
 export default AudioPlayer;

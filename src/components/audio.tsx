@@ -2,7 +2,6 @@ import { mdiPause, mdiPlay, mdiPlaylistMinus, mdiPlaylistPlus } from '@mdi/js';
 import { Component, batch, createEffect, createMemo, onCleanup, onMount, untrack } from 'solid-js';
 
 import AudioStore from '@/services/audio.store';
-import { request } from '@/services/fetch';
 import { atom } from '@/services/reactive';
 
 import Icon from './icon';
@@ -23,20 +22,16 @@ const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (pr
   const src = atom<string>();
 
   // === Memos ===
-  const playingCurrent = createMemo(() => src() && current()?.src === src() && playing());
+  const isCurrent = createMemo(() => !!src() && current()?.src === src());
   const queueIndex = createMemo(() => queue().findIndex((x) => x.src === src()));
 
   // === Functions ===
-  async function play(addToQueue?: boolean) {
-    if (playingCurrent()) {
-      playing(false);
+  function play(addToQueue?: boolean) {
+    if (isCurrent()) {
+      playing((x) => !x);
       return;
     }
-    if (!src()) {
-      loading(true);
-      src(URL.createObjectURL(await request(properties.src)));
-      loading(false);
-    }
+    if (!src()) src(properties.src);
     const $queue = queue();
     batch(() => {
       const $playing = playing();
@@ -62,11 +57,11 @@ const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (pr
         const $queueIndex = queueIndex();
         if ($queueIndex === -1) void play(true);
         else {
-          queue(($queue) => $queue.filter((track) => track.src !== $src));
-          if (playingCurrent()) {
+          if (isCurrent()) {
             playing(false);
             currentI(0);
           }
+          queue(($queue) => $queue.filter((track) => track.src !== $src));
         }
       });
     });
@@ -76,7 +71,7 @@ const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (pr
     untrack(() =>
       batch(() => {
         const $src = src();
-        if (playingCurrent()) {
+        if (isCurrent()) {
           playing(false);
           currentI(0);
         }
@@ -94,14 +89,14 @@ const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (pr
   });
   // On src change delete track
   createEffect((origSrc: string | undefined) => {
-    if (properties.src !== origSrc) cleanup();
+    if (origSrc && properties.src !== origSrc) cleanup();
     return properties.src;
   });
 
   return (
     <div class={s.audio}>
       <button onClick={() => play()} class={s.content} disabled={loading()}>
-        <Icon path={playingCurrent() ? mdiPause : mdiPlay} size='24' />
+        <Icon path={isCurrent() && playing() ? mdiPause : mdiPlay} size='24' />
         {properties.title}
       </button>
       <Tooltip content='Add to queue'>
