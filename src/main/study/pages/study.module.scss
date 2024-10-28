@@ -1,10 +1,5 @@
 @use '@/vars' as *;
 
-.top {
-  display: flex;
-  width: 100%;
-}
-
 .subjects {
   @include hover;
 
@@ -27,6 +22,16 @@
 
   &:hover {
     background-color: $color-main-light;
+  }
+
+  &.disabled {
+    background: unset;
+    background-color: $color-border;
+    cursor: no-drop;
+  }
+
+  input {
+    width: 100%;
   }
 
   /* stylelint-disable-next-line selector-pseudo-class-no-unknown */

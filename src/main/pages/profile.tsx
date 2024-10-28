@@ -26,7 +26,7 @@ export default (() => {
   async function userDataChange() {
     if (!avatarElement.complete || avatarElement.naturalHeight === 0) {
       BasicStore.notify({
-        title: 'Can not load avatar URL',
+        title: 'Не удалось загрузить URL аватара',
         type: NotificationType.Error,
         timeout: 5000,
       });

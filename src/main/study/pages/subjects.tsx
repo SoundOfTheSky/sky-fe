@@ -8,7 +8,7 @@ import basicStore, { NotificationType } from '@/services/basic.store';
 import { db } from '@/services/db';
 import { atom } from '@/services/reactive';
 import syncStore from '@/services/sync.store';
-import { StudySubject } from '@/sky-shared/study';
+import { StudyQuestion, StudySubject, StudyUserQuestion, StudyUserSubject } from '@/sky-shared/study';
 import { createDelayedFunction } from '@/sky-utils';
 
 import SubjectRef from '../components/subject-ref';
@@ -17,6 +17,14 @@ import parseHTML from '../services/parseHTML';
 import { useStudy } from '../services/study.context';
 
 import s from './subjects.module.scss';
+
+type SearchResult = {
+  subject: StudySubject;
+  questions: StudyQuestion[];
+  studyUserSubject?: StudyUserSubject;
+  studyUserQuestions: (StudyUserQuestion | undefined)[];
+  score: number;
+};
 
 export default function Subjects() {
   // === Hooks ===
@@ -31,8 +39,10 @@ export default function Subjects() {
   // === State ===
   const query = atom('');
   const isJapanese = atom(false);
-  const results = atom<StudySubject[]>([]);
-  const isLoading = atom(true);
+  const results = atom<SearchResult[]>([], {
+    equals: () => false,
+  });
+  const isLoading = atom(false);
   let searchId = 0;
 
   // === Memos ===
@@ -42,7 +52,7 @@ export default function Subjects() {
   createEffect(() => {
     if (!syncStore.cached())
       basicStore.notify({
-        title: 'Wait for caching to finish before searching.',
+        title: 'Поиск начнется только после полной синхронизации.',
         type: NotificationType.Warning,
         timeout: 10000,
       });
@@ -50,34 +60,74 @@ export default function Subjects() {
   });
 
   // === Functions ===
+  function searchText(text: string, query: string) {
+    text = text.toLowerCase().trim();
+    if (text === query) return 5;
+    else if (text.includes(query)) return 1;
+    return 0;
+  }
+  function searchArray(text: string[], query: string) {
+    text = text.map((x) => x.toLowerCase().trim());
+    if (text.includes(query)) return 5;
+    else if (text.some((x) => x.includes(query))) return 1;
+    return 0;
+  }
+
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const search = createDelayedFunction(async (themeIds: Set<number>, query?: string) => {
     results([]);
+    if (!query) return;
+    query = query.toLowerCase().trim();
+    const $results = results();
     isLoading(true);
     const sId = ++searchId;
-    const tx = db.transaction(['studySubjects', 'studyQuestions'], 'readonly');
-    const subjectsStore = tx.objectStore('studySubjects');
-    const questionsStore = tx.objectStore('studyQuestions');
-    subjects: for await (const { value } of subjectsStore) {
-      if (sId !== searchId || results().length === 1000) break;
+    const tx = db.transaction(
+      ['studySubjects', 'studyQuestions', 'studyUserSubjects', 'studyUserQuestions'],
+      'readonly',
+    );
+    const studySubjects = tx.objectStore('studySubjects');
+    const studyQuestions = tx.objectStore('studyQuestions');
+    const studyUserSubjects = tx.objectStore('studyUserSubjects');
+    const studyUserQuestions = tx.objectStore('studyUserQuestions');
+    for await (const { value } of studySubjects) {
       if (!themeIds.has(value.themeId)) continue;
-      if (!query || value.title.includes(query)) {
-        results((x) => [...x, value]);
-        continue;
-      }
+      const result: SearchResult = {
+        score: 0,
+        questions: [],
+        studyUserQuestions: [],
+        subject: value,
+      };
+      result.score += searchText(value.title, query);
+      result.studyUserSubject = value.userSubjectId ? await studyUserSubjects.get(value.userSubjectId) : undefined;
       for (const id of value.questionIds) {
-        const question = await questionsStore.get(id);
-        if (
-          question &&
-          (question.answers.includes(query) ||
-            question.question.includes(query) ||
-            question.description.includes(query))
-        ) {
-          results((x) => [...x, value]);
-          continue subjects;
+        const question = await studyQuestions.get(id);
+        if (!question) continue;
+        result.questions.push(question);
+        result.score +=
+          searchArray(question.answers, query) +
+          searchText(question.question, query) +
+          searchText(question.description, query);
+        const userQuestion = question.userQuestionId
+          ? await studyUserQuestions.get(question.userQuestionId)
+          : undefined;
+        result.studyUserQuestions.push(userQuestion);
+        if (userQuestion) {
+          if (userQuestion.note) result.score += searchText(userQuestion.note, query);
+          if (userQuestion.synonyms) result.score += searchArray(userQuestion.synonyms, query);
         }
       }
+      if (sId !== searchId) break;
+      if (result.score !== 0) {
+        const maxxed = $results.length > 500;
+        const index = $results.findIndex((x) => x.score < result.score);
+        const isNotFound = index === -1;
+        if (maxxed && isNotFound) continue;
+        $results.splice(isNotFound ? $results.length - 1 : index, 0, result);
+        if (maxxed) $results.pop();
+        results($results);
+      }
     }
-    isLoading(false);
+    if (sId === searchId) isLoading(false);
   }, 1000);
 
   return (
@@ -97,7 +147,12 @@ export default function Subjects() {
         </Button>
       </div>
       <div class={`card ${s.results}`}>
-        <For each={results()}>{(subject) => <SubjectRef id={subject.id}>{parseHTML(subject.title)}</SubjectRef>}</For>
+        <Show when={isLoading()}>
+          <div class={s.loading}>Ищем...</div>
+        </Show>
+        <For each={results()}>
+          {(result) => <SubjectRef id={result.subject.id}>{parseHTML(result.subject.title)}</SubjectRef>}
+        </For>
       </div>
     </div>
   );

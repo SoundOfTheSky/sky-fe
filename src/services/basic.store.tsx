@@ -50,7 +50,7 @@ export default createRoot(() => {
     onRegisterError(error) {
       console.error('[SW] Register error', error);
       notify({
-        title: `Couldn\'t register application...\n${(error as Error).toString()}`,
+        title: `Не удалось зарегистрировать приложение...\n${(error as Error).toString()}`,
         timeout: 5000,
         type: NotificationType.Error,
       });

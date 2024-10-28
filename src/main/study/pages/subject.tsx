@@ -110,7 +110,7 @@ const Subject: Component<{ id?: number }> = (properties) => {
       }
     } catch (error) {
       basicStore.notify({
-        title: 'Changes are not saved!',
+        title: 'Изменения не сохранены! Возможна потеря данных!',
         timeout: 10_000,
         type: NotificationType.Error,
       });
@@ -155,7 +155,7 @@ const Subject: Component<{ id?: number }> = (properties) => {
                 }
               >
                 <div>
-                  <b>{subject()!.data.title}</b>
+                  <b>{parseHTML(subject()!.data.title)}</b>
                 </div>
               </Show>
               <div>{parseHTML(question()!.data.question)}</div>
@@ -193,7 +193,7 @@ const Subject: Component<{ id?: number }> = (properties) => {
               <br />
               <Tags
                 value={synonyms}
-                placeholder='Синонимы, которые будут защитываться, как правильные ответы'
+                placeholder='Синонимы, которые будут засчитываться, как правильные ответы'
                 onChange={sendQuestionDataToServer}
               />
               <br />

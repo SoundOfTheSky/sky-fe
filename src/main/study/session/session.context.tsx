@@ -498,7 +498,7 @@ function getProvided() {
           }).create();
         } catch (error) {
           notify({
-            title: 'Answer is not saved!',
+            title: 'Ответ не был сохранен! Возможно придется повторить этот вопрос.',
             timeout: 10_000,
             type: NotificationType.Error,
           });
@@ -537,7 +537,7 @@ function getProvided() {
       }
     } catch (error) {
       notify({
-        title: 'Changes are not saved!',
+        title: 'Изменения не сохранены. Возможна потеря данных!',
         timeout: 10_000,
         type: NotificationType.Error,
       });

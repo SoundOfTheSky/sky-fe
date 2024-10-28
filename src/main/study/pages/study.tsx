@@ -1,4 +1,4 @@
-import { mdiBookOpenPageVariant, mdiCog, mdiCogOff } from '@mdi/js';
+import { mdiCog, mdiCogOff } from '@mdi/js';
 import { A } from '@solidjs/router';
 import { createEffect, Show } from 'solid-js';
 
@@ -6,7 +6,6 @@ import Button from '@/components/form/button';
 import Icon from '@/components/icon';
 import Skeleton from '@/components/loading/skeleton';
 import FatalError from '@/main/pages/fatal-error';
-import basicStore from '@/services/basic.store';
 import { atom } from '@/services/reactive';
 import syncStore, { SYNC_STATUS } from '@/services/sync.store';
 
@@ -42,15 +41,15 @@ export default function StudyTab() {
   return (
     <Show when={!offlineUnavailable()} fallback={<FatalError />}>
       <div class='card-container'>
-        <div class={s.top}>
-          <Themes />
-          <Show when={basicStore.online()}>
-            <A href='./subjects' class={`card ${s.subjects}`} title='Вопросы'>
-              <Icon path={mdiBookOpenPageVariant} size='32' />
-            </A>
-          </Show>
-        </div>
-        <A class={`card ${s.special}`} href={showLessonsSettings() ? '' : './session/lessons'} draggable={false}>
+        <Themes />
+        <A
+          class={`card ${s.special}`}
+          classList={{
+            [s.disabled]: lessons().length === 0,
+          }}
+          href={showLessonsSettings() || lessons().length === 0 ? '' : './session/lessons'}
+          draggable={false}
+        >
           <Show
             when={showLessonsSettings()}
             fallback={
@@ -112,7 +111,14 @@ export default function StudyTab() {
             <Icon path={showLessonsSettings() ? mdiCogOff : mdiCog} size='24' />
           </Button>
         </A>
-        <A class={`card ${s.special}`} href={showReviewsSettings() ? '' : './session/reviews'} draggable={false}>
+        <A
+          class={`card ${s.special}`}
+          classList={{
+            [s.disabled]: reviews().length === 0,
+          }}
+          href={reviews().length === 0 || showReviewsSettings() ? '' : './session/reviews'}
+          draggable={false}
+        >
           <Show
             when={showReviewsSettings()}
             fallback={

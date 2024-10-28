@@ -34,7 +34,7 @@ function onMessage(packet: MessageEvent<unknown>) {
   const data = packet.data.slice(splitter + 1);
   if (event === 'error')
     BasicStore.notify({
-      title: data ?? 'Uknown error',
+      title: data ?? 'Неизвестная ошибка',
       timeout: 5000,
       type: NotificationType.Error,
     });

@@ -58,7 +58,7 @@ function getProvided() {
         i === -1 ? [message.data] : [message.data.slice(0, i), message.data.slice(i + 1)];
       if (event[0] === 'error')
         basicStore.notify({
-          title: event[1] || 'Uknown error',
+          title: event[1] || 'Неизвестная ошибка',
           timeout: 5000,
           type: NotificationType.Error,
         });

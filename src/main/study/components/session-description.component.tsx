@@ -22,7 +22,7 @@ export default function SessionDescription() {
             <br />
             <Tags
               value={synonyms}
-              placeholder='Синонимы, которые будут защитываться, как правильные ответы'
+              placeholder='Синонимы, которые будут засчитываться, как правильные ответы'
               onChange={sendQuestionDataToServer}
             />
             <br />

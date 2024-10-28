@@ -1,4 +1,4 @@
-import { mdiBookOpenPageVariant, mdiHome } from '@mdi/js';
+import { mdiBookOpenPageVariant, mdiHome, mdiMagnify } from '@mdi/js';
 import { A } from '@solidjs/router';
 import { Component, Index, createMemo } from 'solid-js';
 
@@ -13,14 +13,18 @@ const Sidebar: Component = () => {
   const items = createMemo(() => [
     {
       icon: mdiHome,
-      title: 'Главная страница',
+      title: 'Информация',
       link: '/',
     },
     {
       icon: mdiBookOpenPageVariant,
-      title: 'Уроки',
+      title: 'Главная страница',
       link: '/study',
-      progress: 1,
+    },
+    {
+      icon: mdiMagnify,
+      title: 'Поиск',
+      link: '/study/subjects',
     },
   ]);
   return (
@@ -32,15 +36,6 @@ const Sidebar: Component = () => {
             <A class={s.item} href={item().link} activeClass={s.active}>
               <Icon path={item().icon} size='32' />
               <span class={s.title}>{item().title}</span>
-              <div
-                class={s.progress}
-                classList={{
-                  [s.shown]: !!item().progress && item().progress! > 0 && item().progress! < 1,
-                }}
-                style={{
-                  transform: `scaleX(${item().progress!})`,
-                }}
-              />
             </A>
           )}
         </Index>
