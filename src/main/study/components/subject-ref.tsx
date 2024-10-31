@@ -8,7 +8,9 @@ import Subject from '../pages/subject';
 
 import s from './subject-ref.module.scss';
 
-const SubjectRef: Component<{ id: number; children: JSX.Element | string }> = (properties) => {
+const SubjectRef: Component<{ id: number; children: JSX.Element | string }> = (
+  properties,
+) => {
   // === State ===
   const dialogShown = atom(false);
   return (

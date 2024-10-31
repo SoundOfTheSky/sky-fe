@@ -1,4 +1,10 @@
-import { createMemo, Index, ParentComponent, children as createChildren, createEffect } from 'solid-js';
+import {
+  createMemo,
+  Index,
+  ParentComponent,
+  children as createChildren,
+  createEffect,
+} from 'solid-js';
 
 import { atom } from '@/services/reactive';
 
@@ -25,7 +31,10 @@ const Tabs: ParentComponent = (properties) => {
       <div class={s.titles}>
         <Index each={tabs()}>
           {(tab, tabI) => (
-            <button onClick={() => activeTabI(tabI)} classList={{ [s.active]: activeTabI() === tabI }}>
+            <button
+              onClick={() => activeTabI(tabI)}
+              classList={{ [s.active!]: activeTabI() === tabI }}
+            >
               {tab()}
             </button>
           )}

@@ -20,18 +20,32 @@ type Options<T> = {
   store?: Record<string, T>;
   key?: string;
 };
-export type Properties<T> = Omit<JSX.HTMLAttributes<HTMLDivElement>, keyof Options<T>> & Options<T>;
+export type Properties<T> = Omit<
+  JSX.HTMLAttributes<HTMLDivElement>,
+  keyof Options<T>
+> &
+  Options<T>;
 
-function SelectLine<T extends string | number | boolean>(properties: Properties<T>) {
+function SelectLine<T extends string | number | boolean>(
+  properties: Properties<T>,
+) {
   // === Hooks ===
-  const [props, attributes] = splitProps(properties, ['onChange', 'value', 'store', 'key', 'buttons']);
+  const [props, attributes] = splitProps(properties, [
+    'onChange',
+    'value',
+    'store',
+    'key',
+    'buttons',
+  ]);
 
   // === State ===
   const hovering = atom(false);
   const hoverI = atom(0);
 
   // === Memos ===
-  const value = createMemo(() => (props.key && props.store ? props.store[props.key] : props.value?.()));
+  const value = createMemo(() =>
+    props.key && props.store ? props.store[props.key] : props.value?.(),
+  );
   const valueI = createMemo(() => {
     const $value = value();
     return properties.buttons.findIndex((b) => b.value === $value);
@@ -76,7 +90,12 @@ function SelectLine<T extends string | number | boolean>(properties: Properties<
       <For each={props.buttons}>
         {(button, i) => (
           <Tooltip content={button.tooltip ?? ''}>
-            <button onClick={() => handler(button.value)} onMouseEnter={() => hoverI(i())}>
+            <button
+              onClick={() => {
+                handler(button.value);
+              }}
+              onMouseEnter={() => hoverI(i())}
+            >
               <Show when={button.title}>{button.title!}</Show>
               <Show when={button.icon}>
                 <Icon path={button.icon!} size='32' />

@@ -1,5 +1,19 @@
-import { mdiClose, mdiPause, mdiPlay, mdiSkipNext, mdiSkipPrevious } from '@mdi/js';
-import { Component, batch, createEffect, Show, getOwner, runWithOwner, untrack } from 'solid-js';
+import {
+  mdiClose,
+  mdiPause,
+  mdiPlay,
+  mdiSkipNext,
+  mdiSkipPrevious,
+} from '@mdi/js';
+import {
+  Component,
+  batch,
+  createEffect,
+  Show,
+  getOwner,
+  runWithOwner,
+  untrack,
+} from 'solid-js';
 
 import AudioStore from '@/services/audio.store';
 import { atom, useInterval, useTimeout } from '@/services/reactive';
@@ -12,7 +26,8 @@ import s from './audio-player.module.scss';
 
 const AudioPlayer: Component = () => {
   // === Hooks ===
-  const { current, maxTime, playing, queue, time, currentI, loading } = AudioStore;
+  const { current, maxTime, playing, queue, time, currentI, loading } =
+    AudioStore;
 
   // === State ===
   const audioElement = atom<HTMLAudioElement>();
@@ -42,10 +57,17 @@ const AudioPlayer: Component = () => {
     const $playing = playing();
     const $audio = audioElement();
     const $current = current();
-    if ($audio && $current && $current.src !== $audio.src.replace(location.origin, '')) $audio.src = $current.src;
+    if (
+      $audio &&
+      $current &&
+      $current.src !== $audio.src.replace(location.origin, '')
+    )
+      $audio.src = $current.src;
     if ($playing && $audio) {
       if (!updateProgressInterval)
-        updateProgressInterval = runWithOwner(owner, () => useInterval(() => time($audio.currentTime), 50));
+        updateProgressInterval = runWithOwner(owner, () =>
+          useInterval(() => time($audio.currentTime), 50),
+        );
       if ($audio.paused) void $audio.play();
     } else {
       if (updateProgressInterval) {
@@ -62,7 +84,9 @@ const AudioPlayer: Component = () => {
   }
   function onProgressClick(event: MouseEvent) {
     const element = event.currentTarget as HTMLDivElement;
-    time(((event.clientX - element.offsetLeft) / element.clientWidth) * maxTime());
+    time(
+      ((event.clientX - element.offsetLeft) / element.clientWidth) * maxTime(),
+    );
   }
   function onEnded() {
     untrack(() => {
@@ -90,20 +114,29 @@ const AudioPlayer: Component = () => {
       />
       <Show when={shown()}>
         <div class={s.audioPlayer}>
-          <Button disabled={currentI() < 1} onClick={() => currentI((x) => x - 1)}>
+          <Button
+            disabled={currentI() < 1}
+            onClick={() => currentI((x) => x - 1)}
+          >
             <Icon path={mdiSkipPrevious} size='32' />
           </Button>
           <Button onClick={() => playing((x) => !x)}>
             <Icon path={playing() ? mdiPause : mdiPlay} size='32' />
           </Button>
-          <Button disabled={currentI() >= queue().length - 1} onClick={() => currentI((x) => x + 1)}>
+          <Button
+            disabled={currentI() >= queue().length - 1}
+            onClick={() => currentI((x) => x + 1)}
+          >
             <Icon path={mdiSkipNext} size='32' />
           </Button>
           {
             // eslint-disable-next-line prettier/prettier, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
           }<div class={s.progress} onClick={onProgressClick}>
             <div>
-              {formatTime(time() * 1000)} {queue().length === 1 ? '' : `${currentI() + 1} of ${queue().length}`}
+              {formatTime(time() * 1000)}{' '}
+              {queue().length === 1
+                ? ''
+                : `${currentI() + 1} of ${queue().length}`}
             </div>
             <div>{formatTime(maxTime() * 1000)}</div>
             <div

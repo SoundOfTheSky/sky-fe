@@ -14,15 +14,28 @@ type Options = {
 };
 function Input(
   properties:
-    | (Omit<JSX.InputHTMLAttributes<HTMLInputElement>, 'onInput' | 'value' | 'multiline'> & {
+    | (Omit<
+        JSX.InputHTMLAttributes<HTMLInputElement>,
+        'onInput' | 'value' | 'multiline'
+      > & {
         multiline?: false;
       } & Options)
-    | (Omit<JSX.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onInput' | 'value' | 'multiline'> & {
+    | (Omit<
+        JSX.TextareaHTMLAttributes<HTMLTextAreaElement>,
+        'onInput' | 'value' | 'multiline'
+      > & {
         multiline: true;
       } & Options),
 ) {
   // === State ===
-  const [props, attributes] = splitProps(properties, ['value', 'multiline', 'japanese', 'onInput', 'success', 'error']);
+  const [props, attributes] = splitProps(properties, [
+    'value',
+    'multiline',
+    'japanese',
+    'onInput',
+    'success',
+    'error',
+  ]);
   const element = atom<HTMLInputElement | HTMLTextAreaElement>();
 
   // === Effects ===
@@ -53,7 +66,12 @@ function Input(
       fallback={
         <input
           {...(attributes as JSX.InputHTMLAttributes<HTMLInputElement>)}
-          class={[s.input, props.success && s.success, props.error && s.error, attributes.class]
+          class={[
+            s.input,
+            props.success && s.success,
+            props.error && s.error,
+            attributes.class,
+          ]
             .filter(Boolean)
             .join(' ')}
           onInput={changeHandler}
@@ -65,7 +83,12 @@ function Input(
       <div class={s.textareaWrap} data-value={props.value()}>
         <textarea
           {...(attributes as JSX.TextareaHTMLAttributes<HTMLTextAreaElement>)}
-          class={[s.input, props.success && s.success, props.error && s.error, attributes.class]
+          class={[
+            s.input,
+            props.success && s.success,
+            props.error && s.error,
+            attributes.class,
+          ]
             .filter(Boolean)
             .join(' ')}
           onInput={(x) => props.value(x.target.value)}

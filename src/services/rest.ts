@@ -10,6 +10,7 @@ import basicStore from './basic.store';
 import { db, DBOptions } from './db';
 import { CommonRequestOptions, request, RequestError } from './fetch';
 import syncStore, { SYNC_STATUS } from './sync.store';
+import { TypeCheckerError } from '@/sky-shared/type-checker';
 
 export type RESTBody = JSONSerializable & TableDefaults;
 export type RESTItemIDBRequestOptions = CommonRequestOptions & {
@@ -31,7 +32,9 @@ export class RESTEndpoint<T extends RESTBody, B extends RESTItem<T>> {
   }
 
   public getAll(options?: CommonRequestOptions): Promise<B[]> {
-    return request<T[]>(this.url, options).then((items) => items.map((item) => new this.builder(item)));
+    return request<T[]>(this.url, options).then((items) =>
+      items.map((item) => new this.builder(item)),
+    );
   }
 
   public async delete(id: number, options?: CommonRequestOptions) {
@@ -43,7 +46,10 @@ export class RESTEndpoint<T extends RESTBody, B extends RESTItem<T>> {
   }
 }
 
-export class RESTEndpointIDB<T extends RESTBody, B extends RESTItemIDB<T>> extends RESTEndpoint<T, B> {
+export class RESTEndpointIDB<
+  T extends RESTBody,
+  B extends RESTItemIDB<T>,
+> extends RESTEndpoint<T, B> {
   public constructor(
     url: string,
     builder: new (data: T) => B,
@@ -65,8 +71,14 @@ export class RESTEndpointIDB<T extends RESTBody, B extends RESTItemIDB<T>> exten
   }
 
   public async getAll(options?: RESTItemIDBRequestOptions): Promise<B[]> {
-    if (!untrack(basicStore.online) && !options?.ignoreDB && untrack(syncStore.status) === SYNC_STATUS.SYNCHED)
-      return db.getAll(this.idb, options?.dbquery).then((items) => items.map((item) => new this.builder(item as T)));
+    if (
+      !untrack(basicStore.online) &&
+      !options?.ignoreDB &&
+      untrack(syncStore.status) === SYNC_STATUS.SYNCHED
+    )
+      return db
+        .getAll(this.idb, options?.dbquery)
+        .then((items) => items.map((item) => new this.builder(item as T)));
     return request<T[]>(this.url, options).then((items) =>
       Promise.all(
         items.map(async (item) => {
@@ -85,7 +97,8 @@ export class RESTEndpointIDB<T extends RESTBody, B extends RESTItemIDB<T>> exten
         ...options,
       });
     } catch (e) {
-      if (options?.ignoreDB || (e instanceof RequestError && e.code !== 0)) throw e;
+      if (options?.ignoreDB || (e instanceof RequestError && e.code !== 0))
+        throw e;
       await db.add('offlineTasksQueue', id, `${UUID()}_${this.idb}_delete`);
     }
     if (!options?.ignoreDB) await db.delete(this.idb, id);
@@ -99,26 +112,38 @@ export class RESTEndpointIDB<T extends RESTBody, B extends RESTItemIDB<T>> exten
     required?: Set<number>;
   }) {
     const lastUpdateKey = `lastUpdate_${this.idb}`;
-    const lastUpdate = ((await db.get('keyval', lastUpdateKey)) as number) ?? 0;
+    const lastUpdate =
+      ((await db.get('keyval', lastUpdateKey)) as number | undefined) ?? 0;
     const items = await request<T[]>(this.url, {
       query: {
         'updated>': lastUpdate.toString(),
       },
     });
     // If user stops midway we can continue from lastUpdateKey
-    items.sort((a, b) => new Date(a.updated).getTime() - new Date(b.updated).getTime());
+    items.sort(
+      (a, b) => new Date(a.updated).getTime() - new Date(b.updated).getTime(),
+    );
     for (let i = 0; i < items.length; i++) {
       options.checkIfAborted();
-      const item = items[i];
+      const item = items[i]!;
       if (options.required && !options.required.has(item.id)) continue;
       await db.put(this.idb, item);
       options.onProgress(i / items.length);
       options.onItem?.(new this.builder(item));
       // Checkpoint every 1000 items
       if (i % 1000 === 0 || i === items.length - 1)
-        await db.put('keyval', ~~(new Date(item.updated).getTime() / 1000) - 1, lastUpdateKey);
+        await db.put(
+          'keyval',
+          ~~(new Date(item.updated).getTime() / 1000) - 1,
+          lastUpdateKey,
+        );
     }
-    if (items.length !== 0) await db.put('keyval', ~~(new Date(items.at(-1)!.updated).getTime() / 1000), lastUpdateKey);
+    if (items.length !== 0)
+      await db.put(
+        'keyval',
+        ~~(new Date(items.at(-1)!.updated).getTime() / 1000),
+        lastUpdateKey,
+      );
     options.onProgress(1);
   }
 }
@@ -141,7 +166,10 @@ export class RESTItem<T extends RESTBody> {
   public constructor(public data: T) {}
 
   public async refresh(options?: CommonRequestOptions) {
-    this.data = await request<T>(`${this.endpoint.url}/${this.data.id}`, options);
+    this.data = await request<T>(
+      `${this.endpoint.url}/${this.data.id}`,
+      options,
+    );
     return this;
   }
 
@@ -172,8 +200,8 @@ export class RESTItem<T extends RESTBody> {
   }
 
   public typeCheck() {
-    if (this.endpoint.typeChecker && !this.endpoint.typeChecker.Check(this.data))
-      throw [...this.endpoint.typeChecker.Errors(this.data)];
+    if (!this.endpoint.typeChecker.Check(this.data))
+      throw new TypeCheckerError(this.endpoint.typeChecker.Errors(this.data));
     return this;
   }
 
@@ -189,7 +217,10 @@ export class RESTItemIDB<T extends RESTBody> extends RESTItem<T> {
   public declare endpoint: RESTEndpointIDB<T, RESTItemIDB<T>>;
 
   public async refresh(options?: RESTItemIDBRequestOptions) {
-    this.data = await request<T>(`${this.endpoint.url}/${this.data.id}`, options);
+    this.data = await request<T>(
+      `${this.endpoint.url}/${this.data.id}`,
+      options,
+    );
     if (!options?.ignoreDB) await db.add(this.endpoint.idb, this.data);
     return this;
   }
@@ -214,12 +245,18 @@ export class RESTItemIDB<T extends RESTBody> extends RESTItem<T> {
         if (key.endsWith(`_${this.endpoint.idb}_update`)) {
           (task as RESTBody).id = this.data.id;
           await db.put('offlineTasksQueue', this.data, key);
-        } else if (key.endsWith(`_${this.endpoint.idb}_delete`)) await db.put('offlineTasksQueue', this.data.id, key);
+        } else if (key.endsWith(`_${this.endpoint.idb}_delete`))
+          await db.put('offlineTasksQueue', this.data.id, key);
       }
     } catch (e) {
-      if (options?.ignoreDB || (e instanceof RequestError && e.code !== 0)) throw e;
+      if (options?.ignoreDB || (e instanceof RequestError && e.code !== 0))
+        throw e;
       this.data.id = -UUID();
-      await db.add('offlineTasksQueue', this.data, `${UUID()}_${this.endpoint.idb}_create`);
+      await db.add(
+        'offlineTasksQueue',
+        this.data,
+        `${UUID()}_${this.endpoint.idb}_create`,
+      );
     }
     if (!options?.ignoreDB) await db.add(this.endpoint.idb, this.data);
     return this;
@@ -235,14 +272,18 @@ export class RESTItemIDB<T extends RESTBody> extends RESTItem<T> {
         ...options,
       });
     } catch (e) {
-      if (options?.ignoreDB || (e instanceof RequestError && e.code !== 0)) throw e;
-      await db.add('offlineTasksQueue', this.data, `${UUID()}_${this.endpoint.idb}_update`);
+      if (options?.ignoreDB || (e instanceof RequestError && e.code !== 0))
+        throw e;
+      await db.add(
+        'offlineTasksQueue',
+        this.data,
+        `${UUID()}_${this.endpoint.idb}_update`,
+      );
     }
     if (!options?.ignoreDB) await db.put(this.endpoint.idb, this.data);
     return this;
   }
 
-  // eslint-disable-next-line sonarjs/no-identical-functions
   public async delete(options?: RESTItemIDBRequestOptions) {
     await this.endpoint.delete(this.data.id, options);
     return this;

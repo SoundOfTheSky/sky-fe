@@ -1,4 +1,11 @@
-import { JSX, ParentComponent, Show, children, createEffect, onCleanup } from 'solid-js';
+import {
+  JSX,
+  ParentComponent,
+  Show,
+  children,
+  createEffect,
+  onCleanup,
+} from 'solid-js';
 import { Transition } from 'solid-transition-group';
 
 import { atom, onOutside, useGlobalEvent } from '@/services/reactive';
@@ -6,17 +13,24 @@ import { opacityTransitionImmediate } from '@/services/transition';
 
 import s from './tooltip.module.scss';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 onOutside;
 
-const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (properties) => {
+const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (
+  properties,
+) => {
   // === Hooks ===
   onCleanup(() => {
     clean(c() as HTMLElement);
   });
   useGlobalEvent('click', (e) => {
-    const $c = c() as HTMLElement;
+    const $c = c() as HTMLElement | undefined;
     if (!$c || !e.target || !tooltipElement) return;
-    if (!$c.contains(e.target as HTMLElement) && !tooltipElement.contains(e.target as HTMLElement)) close();
+    if (
+      !$c.contains(e.target as HTMLElement) &&
+      !tooltipElement.contains(e.target as HTMLElement)
+    )
+      close();
   });
 
   // === State ===
@@ -37,11 +51,15 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
 
   // === Functions ===
   function open() {
-    const $c = c() as HTMLElement;
+    const $c = c() as HTMLElement | undefined;
     if (!$c) return;
     const box = $c.getBoundingClientRect();
     const top = (box.y + box.height) * 2 > window.innerHeight;
-    pos({ x: box.x + box.width / 2, y: top ? box.y - 8 : box.y + box.height + 8, top });
+    pos({
+      x: box.x + box.width / 2,
+      y: top ? box.y - 8 : box.y + box.height + 8,
+      top,
+    });
     isOpen(true);
   }
   function close() {
@@ -67,7 +85,10 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (pr
             }}
             ref={tooltipElement}
           >
-            <Show when={typeof properties.content === 'string'} fallback={properties.content}>
+            <Show
+              when={typeof properties.content === 'string'}
+              fallback={properties.content}
+            >
               <div class={s.tooltipContent}>{properties.content}</div>
             </Show>
           </div>

@@ -46,14 +46,20 @@ export default function SessionAnswer() {
   } = useSession()!;
   // === Memos ===
   const inputDisabled = createMemo(
-    () => isLoading() || !!previousState() || subjectStats()?.status === SubjectStatus.Unlearned,
+    () =>
+      isLoading() ||
+      !!previousState() ||
+      subjectStats()?.status === SubjectStatus.Unlearned,
   );
   const answerButtons = createMemo(() => {
     if (isLoading()) return;
     const $question = question()!;
     const $questionInfo = questionInfo();
     if (!$question.data.choose) return;
-    const answers = [...$question.data.answers, ...($questionInfo?.data.synonyms ?? [])];
+    const answers = [
+      ...$question.data.answers,
+      ...($questionInfo?.data.synonyms ?? []),
+    ];
     if (answers[0] !== 'Correct') return shuffleArray(answers);
     return answers;
   });
@@ -91,7 +97,8 @@ export default function SessionAnswer() {
             disabled={inputDisabled()}
             success={
               previousState() &&
-              (questionStatus() === SubjectStatus.Correct || questionStatus() === SubjectStatus.CorrectAfterWrong)
+              (questionStatus() === SubjectStatus.Correct ||
+                questionStatus() === SubjectStatus.CorrectAfterWrong)
             }
             error={previousState() && questionStatus() === SubjectStatus.Wrong}
             ref={(element) => answerInputElement(element)}
@@ -124,7 +131,8 @@ export default function SessionAnswer() {
             disabled={inputDisabled()}
             success={
               previousState() &&
-              (questionStatus() === SubjectStatus.Correct || questionStatus() === SubjectStatus.CorrectAfterWrong)
+              (questionStatus() === SubjectStatus.Correct ||
+                questionStatus() === SubjectStatus.CorrectAfterWrong)
             }
             error={previousState() && questionStatus() === SubjectStatus.Wrong}
             ref={(element) => answerInputElement(element)}
@@ -143,35 +151,73 @@ export default function SessionAnswer() {
               shuffle(shuffleSubjects((x) => !x));
             }}
           >
-            <Icon path={shuffleSubjects() ? mdiOrderBoolAscending : mdiOrderAlphabeticalAscending} size='32' inline />
-          </Button>
-        </Tooltip>
-        <Tooltip content={`Consistent questions: ${consistentQuestions() ? 'enabled' : 'disabled'}`}>
-          <Button onClick={() => consistentQuestions((x) => !x)}>
-            <Icon path={consistentQuestions() ? mdiShuffleDisabled : mdiShuffle} size='32' inline />
-          </Button>
-        </Tooltip>
-        <Tooltip content={questionAnswered() ? 'Next question' : 'Submit answer'}>
-          <Button
-            onClick={submit}
-            disabled={isLoading() || cooldownNext() !== undefined || (!!question()?.data.choose && !questionAnswered())}
-            classList={{ [s.cooldownNext]: cooldownNext() !== undefined }}
-          >
-            <Icon path={questionAnswered() ? mdiArrowRightBold : mdiCheckBold} size='32' inline />
+            <Icon
+              path={
+                shuffleSubjects()
+                  ? mdiOrderBoolAscending
+                  : mdiOrderAlphabeticalAscending
+              }
+              size='32'
+              inline
+            />
           </Button>
         </Tooltip>
         <Tooltip
-          content={['Autoplay audio: disabled', 'Autoplay audio: first', 'Autoplay audio: all'][autoplayAudio()]}
+          content={`Consistent questions: ${consistentQuestions() ? 'enabled' : 'disabled'}`}
+        >
+          <Button onClick={() => consistentQuestions((x) => !x)}>
+            <Icon
+              path={consistentQuestions() ? mdiShuffleDisabled : mdiShuffle}
+              size='32'
+              inline
+            />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          content={questionAnswered() ? 'Next question' : 'Submit answer'}
+        >
+          <Button
+            onClick={submit}
+            disabled={
+              isLoading() ||
+              cooldownNext() !== undefined ||
+              (!!question()?.data.choose && !questionAnswered())
+            }
+            classList={{ [s.cooldownNext!]: cooldownNext() !== undefined }}
+          >
+            <Icon
+              path={questionAnswered() ? mdiArrowRightBold : mdiCheckBold}
+              size='32'
+              inline
+            />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          content={
+            [
+              'Autoplay audio: disabled',
+              'Autoplay audio: first',
+              'Autoplay audio: all',
+            ][autoplayAudio()]
+          }
         >
           <Button onClick={() => autoplayAudio((x) => (x + 1) % 3)}>
-            <Icon path={[mdiHeadphonesOff, mdiHeadphones, mdiHeadphonesSettings][autoplayAudio()]} size='32' inline />
+            <Icon
+              path={
+                [mdiHeadphonesOff, mdiHeadphones, mdiHeadphonesSettings][
+                  autoplayAudio()
+                ]!
+              }
+              size='32'
+              inline
+            />
           </Button>
         </Tooltip>
         <Tooltip content='Исправить'>
           <Button
             onClick={undo}
             disabled={!previousState() || cooldownUndo() !== undefined}
-            classList={{ [s.cooldownUndo]: cooldownUndo() !== undefined }}
+            classList={{ [s.cooldownUndo!]: cooldownUndo() !== undefined }}
           >
             <Icon path={mdiUndoVariant} size='32' inline />
           </Button>

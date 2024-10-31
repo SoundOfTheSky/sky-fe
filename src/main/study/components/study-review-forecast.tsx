@@ -9,21 +9,26 @@ import { useStudy } from '@/main/study/services/study.context';
 import s from './study-review-forecast.module.scss';
 
 const StudyReviewForecast: Component = () => {
-  const { turnedOnThemes, now, reviews, ready, offlineUnavailable } = useStudy()!;
+  const { turnedOnThemes, now, reviews, ready, offlineUnavailable } =
+    useStudy()!;
 
   const data = createMemo(() => {
     const d = new Map<string, [number, number]>();
     let sum = reviews().length;
     for (const [time, ids] of turnedOnThemes()
       .flatMap((theme) =>
-        Object.entries(theme.reviews).map<[number, number[]]>(([time, ids]) => [Number.parseInt(time), ids]),
+        Object.entries(theme.reviews).map<[number, number[]]>(([time, ids]) => [
+          Number.parseInt(time),
+          ids,
+        ]),
       )
       .filter(([time]) => time > now())
       .sort(([a], [b]) => a - b)) {
       const inHours = time - now();
       const title = inHours < 48 ? `${inHours} ч.` : `${~~(inHours / 24)} дн.`;
       sum += ids.length;
-      if (time > now()) d.set(title, [(d.get(title)?.[0] ?? 0) + ids.length, sum]);
+      if (time > now())
+        d.set(title, [(d.get(title)?.[0] ?? 0) + ids.length, sum]);
     }
     return [...d.entries()].map(([title, [reviews, total]]) => ({
       title,
@@ -41,7 +46,11 @@ const StudyReviewForecast: Component = () => {
   return (
     <div class={`card ${s.reviewForecast}`}>
       <div class='card-title'>График повторений</div>
-      <Skeleton loading={!ready()} offline={offlineUnavailable()} class={s.skeleton}>
+      <Skeleton
+        loading={!ready()}
+        offline={offlineUnavailable()}
+        class={s.skeleton}
+      >
         <Show
           when={data().length}
           fallback={

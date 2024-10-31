@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { mdiCheckBold, mdiClose, mdiCloseThick, mdiUndoVariant } from '@mdi/js';
 import { A } from '@solidjs/router';
 import { createMemo, For, Show } from 'solid-js';
@@ -16,7 +15,8 @@ import s from './session-stats.module.scss';
 
 export default function SessionStats() {
   // === Hooks ===
-  const { timePassed, subjectIds, startTime, stats, subjectsStats } = useSession()!;
+  const { timePassed, subjectIds, startTime, stats, subjectsStats } =
+    useSession()!;
 
   const statsArray = createMemo(
     () =>
@@ -54,7 +54,14 @@ export default function SessionStats() {
           <tr>
             <td>{timePassed()}</td>
             <td>{subjectIds().length}</td>
-            <td>{~~((3_600_000 / (Date.now() - startTime)) * subjectIds().length * 100) / 100} S/H</td>
+            <td>
+              {~~(
+                (3_600_000 / (Date.now() - startTime)) *
+                subjectIds().length *
+                100
+              ) / 100}{' '}
+              S/H
+            </td>
             <td>{~~(stats().correctPercent * 100)}%</td>
           </tr>
         </tbody>
@@ -82,7 +89,15 @@ export default function SessionStats() {
                   </Show>
                 </td>
                 <td>
-                  <Icon inline path={stats.status === SubjectStatus.Correct ? mdiCheckBold : mdiCloseThick} size='24' />
+                  <Icon
+                    inline
+                    path={
+                      stats.status === SubjectStatus.Correct
+                        ? mdiCheckBold
+                        : mdiCloseThick
+                    }
+                    size='24'
+                  />
                 </td>
               </tr>
             )}

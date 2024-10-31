@@ -19,7 +19,13 @@ import { isJapanese as wkIsJapanese, toKana } from 'wanakana';
 
 import basicStore, { NotificationType } from '@/services/basic.store';
 import { handleError } from '@/services/fetch';
-import { atom, atomize, persistentAtom, useInterval, useTimeout } from '@/services/reactive';
+import {
+  atom,
+  atomize,
+  persistentAtom,
+  useInterval,
+  useTimeout,
+} from '@/services/reactive';
 import { getDefaultRestFields } from '@/services/rest';
 import syncStore from '@/services/sync.store';
 import { shuffleArray } from '@/sky-utils';
@@ -62,7 +68,11 @@ function getProvided() {
   /** Is doing lessons instead of reviews */
   const lessonsMode = createMemo(() => location.pathname.includes('/lessons'));
   /** End index of current batch of lessons. Used only in lessons mode */
-  const lessonsBatchLimit = atomize(createWritableMemo(() => settings()[lessonsMode() ? 'lessons' : 'reviews'].batch));
+  const lessonsBatchLimit = atomize(
+    createWritableMemo(
+      () => settings()[lessonsMode() ? 'lessons' : 'reviews'].batch,
+    ),
+  );
   /** Stats for each subject */
   const subjectsStats = new ReactiveMap<
     number,
@@ -95,7 +105,10 @@ function getProvided() {
   /** Is shuffle enabled */
   const shuffleSubjects = persistentAtom('study-shuffle-subjects', false);
   /** Is consistent question enabled. If enabled each time you answer question, subject will change */
-  const consistentQuestions = persistentAtom('study-consistent-questions', true);
+  const consistentQuestions = persistentAtom(
+    'study-consistent-questions',
+    true,
+  );
   /** Is autoplay audio enabled. If enabled all <Audio> will automatically play on render */
   const autoplayAudio = persistentAtom('study-audio-autoplay', 0);
   /** State to return to if undo is pressed */
@@ -110,20 +123,34 @@ function getProvided() {
 
   // === Memos ===
   /** Current subject id */
-  const subjectId = createMemo<number | undefined>(() => subjectIds()[subjectI()]);
+  const subjectId = createMemo<number | undefined>(
+    () => subjectIds()[subjectI()],
+  );
   /** Current subject */
-  const [subject] = createResource(subjectId, (id) => studySubjectEndpoint.get(id));
+  const [subject] = createResource(subjectId, (id) =>
+    studySubjectEndpoint.get(id),
+  );
   /** Current question id */
-  const questionId = createMemo<number | undefined>(() => subject()?.data.questionIds[questionI()]);
+  const questionId = createMemo<number | undefined>(
+    () => subject()?.data.questionIds[questionI()],
+  );
   /** Current question */
-  const [question] = createResource(questionId, (id) => studyQuestionEndpoint.get(id));
+  const [question] = createResource(questionId, (id) =>
+    studyQuestionEndpoint.get(id),
+  );
   /** Current subject info */
   const [subjectInfo] = createResource(subject, (subject) =>
-    subject.data.userSubjectId ? studyUserSubjectEndpoint.get(subject.data.userSubjectId) : undefined,
+    subject.data.userSubjectId
+      ? studyUserSubjectEndpoint.get(subject.data.userSubjectId)
+      : undefined,
   );
   /** Current question info */
-  const [questionInfo, { mutate: mutateQuestionInfo }] = createResource(question, (question) =>
-    question.data.userQuestionId ? studyUserQuestionEndpoint.get(question.data.userQuestionId) : undefined,
+  const [questionInfo, { mutate: mutateQuestionInfo }] = createResource(
+    question,
+    (question) =>
+      question.data.userQuestionId
+        ? studyUserQuestionEndpoint.get(question.data.userQuestionId)
+        : undefined,
   );
 
   /** Current subject stats */
@@ -134,7 +161,9 @@ function getProvided() {
       subject()?.data.questionIds.map((id) => {
         let s = questionsStatuses.get(id);
         if (s === undefined) {
-          s = lessonsMode() ? SubjectStatus.Unlearned : SubjectStatus.Unanswered;
+          s = lessonsMode()
+            ? SubjectStatus.Unlearned
+            : SubjectStatus.Unanswered;
           questionsStatuses.set(id, s);
         }
         return s;
@@ -142,9 +171,13 @@ function getProvided() {
     );
   });
   /** Current question status */
-  const questionStatus = createMemo<SubjectStatus | undefined>(() => currentSubjectQuestionsStatuses()[questionI()]);
+  const questionStatus = createMemo<SubjectStatus | undefined>(
+    () => currentSubjectQuestionsStatuses()[questionI()],
+  );
   /** Is answers to question in japanese */
-  const isJapanese = createMemo(() => (question() ? wkIsJapanese(question()!.data.answers[0]) : false));
+  const isJapanese = createMemo(() =>
+    question() ? wkIsJapanese(question()!.data.answers[0]) : false,
+  );
   /** Some stats of session */
   const stats = createMemo(() => {
     const amount = subjectIds().length;
@@ -155,8 +188,10 @@ function getProvided() {
       switch (status) {
         case SubjectStatus.Correct:
           correct++;
+        // eslint-disable-next-line no-fallthrough
         case SubjectStatus.CorrectAfterWrong:
           passed++;
+        // eslint-disable-next-line no-fallthrough
         case SubjectStatus.Wrong:
           answered++;
       }
@@ -186,11 +221,14 @@ function getProvided() {
       questionInfo.loading ||
       $subject.data.id !== $subjectId ||
       $question.data.subjectId !== $subjectId ||
-      (!!$questionInfo && $questionInfo?.data.questionId !== $question.data.id)
+      (!!$questionInfo && $questionInfo.data.questionId !== $question.data.id)
     );
   });
   /** Is current question answered */
-  const questionAnswered = createMemo(() => !!previousState() || subjectStats()?.status === SubjectStatus.Unlearned);
+  const questionAnswered = createMemo(
+    () =>
+      !!previousState() || subjectStats()?.status === SubjectStatus.Unlearned,
+  );
   /** Hint under question */
   const hint = createMemo(() => {
     const $questionStatus = questionStatus();
@@ -213,7 +251,9 @@ function getProvided() {
   // === Effects ===
   // Set page title
   createEffect(() => {
-    document.title = (lessonsMode() ? 'Диплом | Уроки ' : 'Диплом | Повторения ') + stats().unpassed;
+    document.title =
+      (lessonsMode() ? 'Диплом | Уроки ' : 'Диплом | Повторения ') +
+      stats().unpassed;
   });
   // On themes ONCE
   createEffect<true | undefined>((isDone) => {
@@ -223,15 +263,27 @@ function getProvided() {
     let subjects = $lessonsMode ? lessons() : reviews();
     if (untrack(shuffleSubjects)) subjects = shuffleArray(subjects);
     else subjects.sort((a, b) => a - b);
-    subjects = subjects.slice(0, settings()[$lessonsMode ? 'lessons' : 'reviews'].amount);
+    subjects = subjects.slice(
+      0,
+      settings()[$lessonsMode ? 'lessons' : 'reviews'].amount,
+    );
     if (subjects.length === 0) {
       done(true);
       clearInterval(timeInterval);
     }
-    const status = $lessonsMode ? SubjectStatus.Unlearned : SubjectStatus.Unanswered;
+    const status = $lessonsMode
+      ? SubjectStatus.Unlearned
+      : SubjectStatus.Unanswered;
     batch(() => {
       subjectIds(subjects);
-      for (const id of subjects) subjectsStats.set(id, { title: '', status, time: 0, undo: false, answers: [] });
+      for (const id of subjects)
+        subjectsStats.set(id, {
+          title: '',
+          status,
+          time: 0,
+          undo: false,
+          answers: [],
+        });
     });
     return true;
   });
@@ -247,7 +299,10 @@ function getProvided() {
     subject();
     questionI(
       untrack(currentSubjectQuestionsStatuses).findIndex(
-        (q) => q === SubjectStatus.Unlearned || q === SubjectStatus.Unanswered || q === SubjectStatus.Wrong,
+        (q) =>
+          q === SubjectStatus.Unlearned ||
+          q === SubjectStatus.Unanswered ||
+          q === SubjectStatus.Wrong,
       ),
     );
   });
@@ -266,9 +321,14 @@ function getProvided() {
       const $question = question();
       if (!$question || questionInfo.loading) return [];
       const $questionInfo = questionInfo();
-      if ($question.data.choose) return [$question.data.answers[0], ...($questionInfo?.data.synonyms ?? [])];
-      let answers = [...$question.data.answers, ...($questionInfo?.data.synonyms ?? [])];
-      if (!disableLowercase) answers = answers.map((x) => x.toLowerCase());
+      const answers = $question.data.choose
+        ? [$question.data.answers[0]!]
+        : $question.data.answers;
+      if ($questionInfo?.data.synonyms)
+        answers.push(...$questionInfo.data.synonyms);
+      if (!disableLowercase)
+        for (let i = 0; i < answers.length; i++)
+          answers[i] = answers[i]!.toLocaleLowerCase();
       return answers;
     });
   }
@@ -286,10 +346,14 @@ function getProvided() {
   /** Shuffle subjects. Only shuffles lessons and reviews after current batch */
   function shuffle(enabled: boolean) {
     untrack(() => {
-      const startShuffle = subjectI() + (lessonsMode() ? settings().lessons.batch : settings().reviews.batch);
+      const startShuffle =
+        subjectI() +
+        (lessonsMode() ? settings().lessons.batch : settings().reviews.batch);
       subjectIds((s) => [
         ...s.slice(0, startShuffle),
-        ...(enabled ? shuffleArray(s.slice(startShuffle)) : s.slice(startShuffle).sort((a, b) => a - b)),
+        ...(enabled
+          ? shuffleArray(s.slice(startShuffle))
+          : s.slice(startShuffle).sort((a, b) => a - b)),
       ]);
     });
   }
@@ -313,20 +377,26 @@ function getProvided() {
         const $subjectId = subjectId()!;
         const $subjectStats = subjectsStats.get($subjectId)!;
         // Add new status
-        const $questionStatuses = currentSubjectQuestionsStatuses().map((q, index) =>
-          index === $questionI ? newQuestionStatus : q,
+        const $questionStatuses = currentSubjectQuestionsStatuses().map(
+          (q, index) => (index === $questionI ? newQuestionStatus : q),
         );
         previousState({
           subject: $subjectStats.status,
           question: questionStatus()!,
         });
         // When learning all questions TODO
-        if ($questionStatuses.every((status) => status === SubjectStatus.Unanswered))
+        if (
+          $questionStatuses.every(
+            (status) => status === SubjectStatus.Unanswered,
+          )
+        )
           $subjectStats.status = SubjectStatus.Unanswered;
         //
         else if (
           newQuestionStatus === SubjectStatus.Wrong ||
-          $questionStatuses.every((status) => status !== SubjectStatus.Unanswered)
+          $questionStatuses.every(
+            (status) => status !== SubjectStatus.Unanswered,
+          )
         )
           $subjectStats.status = Math.max(...$questionStatuses);
         questionsStatuses.set(questionId()!, newQuestionStatus);
@@ -373,11 +443,21 @@ function getProvided() {
       if ($subjectStats.status === SubjectStatus.Unlearned) {
         updateQuestionStatus(SubjectStatus.Unanswered);
         $subjectStats.status = subjectStats()!.status;
-        if ($subjectStats.status === SubjectStatus.Unlearned && $consistentQuestions)
-          questionI(currentSubjectQuestionsStatuses().indexOf(SubjectStatus.Unlearned));
+        if (
+          $subjectStats.status === SubjectStatus.Unlearned &&
+          $consistentQuestions
+        )
+          questionI(
+            currentSubjectQuestionsStatuses().indexOf(SubjectStatus.Unlearned),
+          );
         else nextSubject();
-      } else if ($consistentQuestions && $subjectStats.status === SubjectStatus.Unanswered)
-        questionI(currentSubjectQuestionsStatuses().indexOf(SubjectStatus.Unanswered));
+      } else if (
+        $consistentQuestions &&
+        $subjectStats.status === SubjectStatus.Unanswered
+      )
+        questionI(
+          currentSubjectQuestionsStatuses().indexOf(SubjectStatus.Unanswered),
+        );
       else if (
         $consistentQuestions &&
         $subjectStats.status === SubjectStatus.Wrong &&
@@ -403,10 +483,15 @@ function getProvided() {
         const $subjectIds = [...subjectIds()];
         const $lessonsBatchLimit = lessonsBatchLimit();
         if (
-          $subjectIds.slice($lessonsBatchLimit - $batch, $lessonsBatchLimit).every((id) => {
-            const { status } = subjectsStats.get(id)!;
-            return status === SubjectStatus.Correct || status === SubjectStatus.CorrectAfterWrong;
-          })
+          $subjectIds
+            .slice($lessonsBatchLimit - $batch, $lessonsBatchLimit)
+            .every((id) => {
+              const { status } = subjectsStats.get(id)!;
+              return (
+                status === SubjectStatus.Correct ||
+                status === SubjectStatus.CorrectAfterWrong
+              );
+            })
         ) {
           subjectI($lessonsBatchLimit);
           lessonsBatchLimit((x) => x + $batch);
@@ -416,7 +501,11 @@ function getProvided() {
         )
           subjectI((x) => x + 1);
         else {
-          $subjectIds.splice($lessonsBatchLimit - 1, 0, $subjectIds.splice($subjectI, 1)[0]);
+          $subjectIds.splice(
+            $lessonsBatchLimit - 1,
+            0,
+            $subjectIds.splice($subjectI, 1)[0]!,
+          );
           subjectIds([...$subjectIds]);
         }
       } else if (
@@ -427,7 +516,7 @@ function getProvided() {
       else {
         subjectIds(($subjectIds) => {
           const ids = [...$subjectIds];
-          ids.splice($subjectI + $batch - 1, 0, ids.splice($subjectI, 1)[0]);
+          ids.splice($subjectI + $batch - 1, 0, ids.splice($subjectI, 1)[0]!);
           return ids;
         });
       }
@@ -457,11 +546,15 @@ function getProvided() {
     untrack(() => {
       batch(() => {
         const $stats = stats();
-        const $subjectStats = subjectStats()!;
+        const $subjectStats = subjectStats();
         const time = Date.now() - startTime;
-        const timeLeft = $stats.passed === 0 ? 0 : $stats.unpassed * (time / $stats.passed);
+        const timeLeft =
+          $stats.passed === 0 ? 0 : $stats.unpassed * (time / $stats.passed);
         const minsPassed = `${Math.floor(time / 60_000)}`.padStart(2, '0');
-        const secsPassed = `${Math.floor((time % 60_000) / 1000)}`.padStart(2, '0');
+        const secsPassed = `${Math.floor((time % 60_000) / 1000)}`.padStart(
+          2,
+          '0',
+        );
         eta(Math.floor(timeLeft / 60_000));
         timePassed(`${minsPassed}:${secsPassed}`);
         if ($subjectStats) $subjectStats.time += 1;
@@ -480,25 +573,31 @@ function getProvided() {
         ($lessonsMode
           ? // Don't update if answered wrong in lessons mode
             $subjectStats.status === SubjectStatus.Correct
-          : ($previousState.subject === SubjectStatus.Unanswered && $subjectStats.status === SubjectStatus.Correct) ||
+          : ($previousState.subject === SubjectStatus.Unanswered &&
+              $subjectStats.status === SubjectStatus.Correct) ||
             ($previousState.subject === SubjectStatus.Wrong &&
               $subjectStats.status === SubjectStatus.CorrectAfterWrong))
       ) {
         try {
           await new RESTStudyAnswer({
             ...getDefaultRestFields(),
-            answers: $subjectStats.answers.filter((x) => x.toLowerCase() !== 'wrong' && x.toLowerCase() !== 'correct'),
+            answers: $subjectStats.answers.filter(
+              (x) =>
+                x.toLowerCase() !== 'wrong' && x.toLowerCase() !== 'correct',
+            ),
             took: $subjectStats.time,
             correct:
               $subjectStats.status === SubjectStatus.Correct ||
               // Correct after wrong is also fine in lessons mode
-              ($subjectStats.status === SubjectStatus.CorrectAfterWrong && $lessonsMode),
+              ($subjectStats.status === SubjectStatus.CorrectAfterWrong &&
+                $lessonsMode),
             subjectId: subjectId()!,
             themeId: subject()!.data.themeId,
           }).create();
         } catch (error) {
           notify({
-            title: 'Ответ не был сохранен! Возможно придется повторить этот вопрос.',
+            title:
+              'Ответ не был сохранен! Возможно придется повторить этот вопрос.',
             timeout: 10_000,
             type: NotificationType.Error,
           });

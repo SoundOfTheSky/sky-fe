@@ -1,6 +1,12 @@
 import { openDB } from 'idb';
 
-import { StudyQuestion, StudySubject, StudyAnswer, StudyUserQuestion, StudyUserSubject } from '@/sky-shared/study';
+import {
+  StudyQuestion,
+  StudySubject,
+  StudyAnswer,
+  StudyUserQuestion,
+  StudyUserSubject,
+} from '@/sky-shared/study';
 
 export type DBOptions = {
   keyval: {
@@ -35,7 +41,8 @@ export type DBOptions = {
 };
 export const db = await openDB<DBOptions>('skydb', 1, {
   upgrade(database) {
-    for (const store of database.objectStoreNames) database.deleteObjectStore(store);
+    for (const store of database.objectStoreNames)
+      database.deleteObjectStore(store);
     database.createObjectStore('keyval');
     database.createObjectStore('offlineTasksQueue', {
       autoIncrement: true,

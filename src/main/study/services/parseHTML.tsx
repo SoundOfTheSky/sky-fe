@@ -6,14 +6,24 @@ import JPPitchAccent from '@/main/study/components/jp-pitch-accent';
 
 import SubjectRef from '../components/subject-ref';
 
-export default function parseHTML(text: string, autoplayAudio = 0): JSX.Element[] {
+export default function parseHTML(
+  text: string,
+  autoplayAudio = 0,
+): JSX.Element[] {
   //const owner = getOwner();
   const body = document.createElement('body');
   body.innerHTML = text.replaceAll('\n', '<br>');
   let foundAudio = false;
-  const replaceableElements: Record<string, (element: HTMLElement) => JSX.Element | (() => JSX.Element)> = {
+  const replaceableElements: Record<
+    string,
+    (element: HTMLElement) => JSX.Element | (() => JSX.Element)
+  > = {
     tab(element) {
-      return <div data-tab={/*@once*/ element.getAttribute('title')}>{/*@once*/ [...element.childNodes]}</div>;
+      return (
+        <div data-tab={/*@once*/ element.getAttribute('title')}>
+          {/*@once*/ [...element.childNodes]}
+        </div>
+      );
     },
     audio(element) {
       const f = foundAudio;
@@ -28,7 +38,9 @@ export default function parseHTML(text: string, autoplayAudio = 0): JSX.Element[
     },
     subject(element) {
       return (
-        <SubjectRef id={/*@once*/ Number.parseInt(element.getAttribute('uid')!)}>
+        <SubjectRef
+          id={/*@once*/ Number.parseInt(element.getAttribute('uid')!)}
+        >
           {/*@once*/ [...element.childNodes]}
         </SubjectRef>
       );
@@ -62,7 +74,7 @@ export default function parseHTML(text: string, autoplayAudio = 0): JSX.Element[
       parse(child);
       const name = child.tagName.toLocaleLowerCase();
       if (name in replaceableElements) {
-        let element = replaceableElements[name](child);
+        let element = replaceableElements[name]!(child);
         while (typeof element === 'function') element = element();
         child.replaceWith(element as Node);
       }

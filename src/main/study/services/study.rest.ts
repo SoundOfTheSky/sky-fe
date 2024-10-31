@@ -3,7 +3,11 @@ import { untrack } from 'solid-js';
 import basicStore from '@/services/basic.store';
 import { db } from '@/services/db';
 import { request } from '@/services/fetch';
-import { RESTEndpointIDB, RESTItemIDB, RESTItemIDBRequestOptions } from '@/services/rest';
+import {
+  RESTEndpointIDB,
+  RESTItemIDB,
+  RESTItemIDBRequestOptions,
+} from '@/services/rest';
 import {
   StudyQuestionT,
   StudySubject,
@@ -27,12 +31,10 @@ export class RESTStudySubject extends RESTItemIDB<StudySubject> {
   }
 }
 
-export const studySubjectEndpoint = new RESTEndpointIDB<StudySubject, RESTStudySubject>(
-  '/api/study/subjects',
-  RESTStudySubject,
-  StudySubjectT,
-  'studySubjects',
-);
+export const studySubjectEndpoint = new RESTEndpointIDB<
+  StudySubject,
+  RESTStudySubject
+>('/api/study/subjects', RESTStudySubject, StudySubjectT, 'studySubjects');
 
 export class RESTStudyQuestion extends RESTItemIDB<StudyQuestion> {
   public constructor(data: StudyQuestion) {
@@ -41,12 +43,10 @@ export class RESTStudyQuestion extends RESTItemIDB<StudyQuestion> {
   }
 }
 
-export const studyQuestionEndpoint = new RESTEndpointIDB<StudyQuestion, RESTStudyQuestion>(
-  '/api/study/questions',
-  RESTStudyQuestion,
-  StudyQuestionT,
-  'studyQuestions',
-);
+export const studyQuestionEndpoint = new RESTEndpointIDB<
+  StudyQuestion,
+  RESTStudyQuestion
+>('/api/study/questions', RESTStudyQuestion, StudyQuestionT, 'studyQuestions');
 
 export class RESTStudyAnswer extends RESTItemIDB<StudyAnswer> {
   public constructor(data: StudyAnswer) {
@@ -54,36 +54,49 @@ export class RESTStudyAnswer extends RESTItemIDB<StudyAnswer> {
     this.endpoint = studyAnswerEndpoint;
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async create(options?: RESTItemIDBRequestOptions): Promise<this> {
     await super.create(options);
     if (!options?.ignoreDB) {
-      const subject = await studySubjectEndpoint.get(this.data.subjectId).catch(() => undefined);
+      const subject = await studySubjectEndpoint
+        .get(this.data.subjectId)
+        .catch(() => undefined);
       const userSubject = subject?.data.userSubjectId
-        ? await studyUserSubjectEndpoint.get(subject?.data.userSubjectId).catch(() => undefined)
+        ? await studyUserSubjectEndpoint
+            .get(subject.data.userSubjectId)
+            .catch(() => undefined)
         : undefined;
       if (userSubject) {
         // Update userSubject time
         const time = ~~(this.created.getTime() / 3_600_000);
         userSubject.data.stage = Math.max(
           1,
-          Math.min(srs.length + 1, (userSubject.data.stage ?? 0) + (this.data.correct ? 1 : -2)),
+          Math.min(
+            srs.length + 1,
+            (userSubject.data.stage ?? 0) + (this.data.correct ? 1 : -2),
+          ),
         );
         userSubject.data.nextReview =
-          userSubject.data.stage >= srs.length ? null : time + srs[userSubject.data.stage - 1];
+          userSubject.data.stage >= srs.length
+            ? null
+            : time + srs[userSubject.data.stage - 1]!;
         await db.put(userSubject.endpoint.idb, userSubject.data);
 
         // Update theme cache
         const themes = (await db.get('keyval', 'themes')) as StudyTheme[];
-        const theme = themes.find((t) => t.id === subject!.data.themeId) as StudyEnabledTheme;
+        const theme = themes.find(
+          (t) => t.id === subject!.data.themeId,
+        ) as StudyEnabledTheme;
         theme.lessons = theme.lessons.filter((x) => x !== subject!.data.id);
         for (const hour in theme.reviews) {
-          theme.reviews[hour] = theme.reviews[hour].filter((x) => x !== subject!.data.id);
+          theme.reviews[hour] = theme.reviews[hour]!.filter(
+            (x) => x !== subject!.data.id,
+          );
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           if (theme.reviews[hour].length === 0) delete theme.reviews[hour];
         }
-        if (!theme.reviews[userSubject.data.nextReview!]) theme.reviews[userSubject.data.nextReview!] = [];
-        theme.reviews[userSubject.data.nextReview!].push(subject!.data.id);
+        if (!theme.reviews[userSubject.data.nextReview!])
+          theme.reviews[userSubject.data.nextReview!] = [];
+        theme.reviews[userSubject.data.nextReview!]!.push(subject!.data.id);
         await db.put('keyval', themes, 'themes');
       }
     }
@@ -91,12 +104,10 @@ export class RESTStudyAnswer extends RESTItemIDB<StudyAnswer> {
   }
 }
 
-export const studyAnswerEndpoint = new RESTEndpointIDB<StudyAnswer, RESTStudyAnswer>(
-  '/api/study/answers',
-  RESTStudyAnswer,
-  StudyAnswerT,
-  'studyAnswers',
-);
+export const studyAnswerEndpoint = new RESTEndpointIDB<
+  StudyAnswer,
+  RESTStudyAnswer
+>('/api/study/answers', RESTStudyAnswer, StudyAnswerT, 'studyAnswers');
 studyAnswerEndpoint.ignoredDTOFields = ['id', 'updated', 'user_id'];
 
 export class RESTStudyUserSubject extends RESTItemIDB<StudyUserSubject> {
@@ -130,7 +141,10 @@ export class RESTStudyUserSubject extends RESTItemIDB<StudyUserSubject> {
   }
 }
 
-export const studyUserSubjectEndpoint = new RESTEndpointIDB<StudyUserSubject, RESTStudyUserSubject>(
+export const studyUserSubjectEndpoint = new RESTEndpointIDB<
+  StudyUserSubject,
+  RESTStudyUserSubject
+>(
   '/api/study/user-subjects',
   RESTStudyUserSubject,
   StudyUserSubjectT,
@@ -168,7 +182,10 @@ export class RESTStudyUserQuestion extends RESTItemIDB<StudyUserQuestion> {
   }
 }
 
-export const studyUserQuestionEndpoint = new RESTEndpointIDB<StudyUserQuestion, RESTStudyUserQuestion>(
+export const studyUserQuestionEndpoint = new RESTEndpointIDB<
+  StudyUserQuestion,
+  RESTStudyUserQuestion
+>(
   '/api/study/user-questions',
   RESTStudyUserQuestion,
   StudyUserQuestionT,
@@ -180,23 +197,35 @@ export async function getThemes(
     ignoreDB: untrack(basicStore.online),
   },
 ) {
-  const dbSubject = options?.ignoreDB ? undefined : ((await db.get('keyval', 'themes')) as Promise<StudyTheme[]>);
+  const dbSubject = options.ignoreDB
+    ? undefined
+    : ((await db.get('keyval', 'themes')) as Promise<StudyTheme[]>);
   if (dbSubject) return dbSubject;
   const item = await request<StudyTheme[]>('/api/study/themes', options);
   void db.put('keyval', item, 'themes');
   return item;
 }
 
-export async function addTheme(themeId: number, options: RESTItemIDBRequestOptions = {}) {
+export async function addTheme(
+  themeId: number,
+  options: RESTItemIDBRequestOptions = {},
+) {
   options.method = 'POST';
   await request<StudyTheme[]>('/api/study/themes/' + themeId, options);
   return getThemes();
 }
 
-export async function removeTheme(themeId: number, options: RESTItemIDBRequestOptions = {}) {
+export async function removeTheme(
+  themeId: number,
+  options: RESTItemIDBRequestOptions = {},
+) {
   options.method = 'DELETE';
   await request<StudyTheme[]>('/api/study/themes/' + themeId, options);
-  for (const store of ['studyUserSubjects', 'studyUserQuestions', 'studyAnswers'] as const) {
+  for (const store of [
+    'studyUserSubjects',
+    'studyUserQuestions',
+    'studyAnswers',
+  ] as const) {
     await db.clear(store);
     await db.put('keyval', 0, `lastUpdate_${store}`);
   }

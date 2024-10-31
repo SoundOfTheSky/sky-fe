@@ -1,4 +1,9 @@
-import { ParentComponent, createContext, createMemo, useContext } from 'solid-js';
+import {
+  ParentComponent,
+  createContext,
+  createMemo,
+  useContext,
+} from 'solid-js';
 
 import basicStore from '@/services/basic.store';
 import { db } from '@/services/db';
@@ -47,10 +52,13 @@ function getProvided() {
   const turnedOnThemes = createMemo<StudyEnabledTheme[]>(
     () =>
       (themes()?.filter(
-        (theme) => 'lessons' in theme && !settings().disabledThemeIds.includes(theme.id),
-      ) as StudyEnabledTheme[]) ?? [],
+        (theme) =>
+          'lessons' in theme && !settings().disabledThemeIds.includes(theme.id),
+      ) as StudyEnabledTheme[] | undefined) ?? [],
   );
-  const lessons = createMemo(() => turnedOnThemes().flatMap((theme) => theme.lessons));
+  const lessons = createMemo(() =>
+    turnedOnThemes().flatMap((theme) => theme.lessons),
+  );
   const reviews = createMemo(() =>
     turnedOnThemes().flatMap((theme) =>
       Object.entries(theme.reviews)
@@ -58,9 +66,17 @@ function getProvided() {
         .flatMap(([, ids]) => ids),
     ),
   );
-  const offlineUnavailable = createMemo(() => themes() && syncStore.status() === SYNC_STATUS.ERRORED);
-  const ready = createMemo(() => themes() && (basicStore.online() || syncStore.status() === SYNC_STATUS.SYNCHED));
-  const today = createMemo(() => new Date((now() - new Date().getHours()) * HOUR_MS));
+  const offlineUnavailable = createMemo(
+    () => themes() && syncStore.status() === SYNC_STATUS.ERRORED,
+  );
+  const ready = createMemo(
+    () =>
+      themes() &&
+      (basicStore.online() || syncStore.status() === SYNC_STATUS.SYNCHED),
+  );
+  const today = createMemo(
+    () => new Date((now() - new Date().getHours()) * HOUR_MS),
+  );
   const startDate = createMemo(() => {
     const $today = today();
     // 44 weeks back
@@ -72,7 +88,7 @@ function getProvided() {
     const $statsGraph = statsGraph();
     const maxI = (today().getTime() - startDate().getTime()) / DAY_MS;
     for (let i = 0; i <= maxI; i++) {
-      score = Math.floor(score / 4) + $statsGraph[i];
+      score = Math.floor(score / 4) + $statsGraph[i]!;
       if (score >= 25) streak++;
       else if (i !== maxI) streak = 0;
     }
@@ -85,10 +101,14 @@ function getProvided() {
     const disabledThemeIds = new Set(settings().disabledThemeIds);
     const startTime = ~~(startDate().getTime() / 1000);
     // 52 weeks ahead
-    const data = Array(Math.ceil((startTime + 31449600 - startTime) / 86400)).fill(0);
-    for await (const { value } of db.transaction('studyAnswers', 'readwrite').store) {
+    const data = Array(
+      Math.ceil((startTime + 31449600 - startTime) / 86400),
+    ).fill(0);
+    for await (const { value } of db.transaction('studyAnswers', 'readwrite')
+      .store) {
       const time = ~~(new Date(value.created).getTime() / 1000);
-      if (!disabledThemeIds.has(value.themeId) && startTime <= time) data[~~((time - startTime) / 86400)]++;
+      if (!disabledThemeIds.has(value.themeId) && startTime <= time)
+        data[~~((time - startTime) / 86400)]++;
     }
     statsGraph(data);
   }
@@ -103,7 +123,10 @@ function getProvided() {
     }
   }
 
-  async function getImmersionKitExamples(word: string, options?: CommonRequestOptions) {
+  async function getImmersionKitExamples(
+    word: string,
+    options?: CommonRequestOptions,
+  ) {
     await wait(20000);
     return request<ImmersionKitResponse>(
       `https://api.immersionkit.com/look_up_dictionary?keyword=${word}&sort=shortness&category=anime`,

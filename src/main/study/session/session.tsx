@@ -1,7 +1,5 @@
 import { Show } from 'solid-js';
 
-import Loading from '@/components/loading/loading';
-
 import SessionAnswer from '../components/session-answer.component';
 import SessionDescription from '../components/session-description.component';
 import SessionQuestion from '../components/session-question.component';
@@ -11,6 +9,7 @@ import { useStudy } from '../services/study.context';
 import { SubjectStatus, useSession } from './session.context';
 
 import s from './session.module.scss';
+import Skeleton from '@/components/loading/skeleton';
 
 export default function Session() {
   // === Hooks ===
@@ -18,17 +17,22 @@ export default function Session() {
   const { ready } = useStudy()!;
 
   return (
-    <Loading when={ready()}>
+    <Skeleton loading={!ready()}>
       <div class={s.sessionComponent}>
         <Show when={!done()} fallback={<SessionStats />}>
           <SessionQuestion />
           <SessionAnswer />
 
-          <Show when={previousState() || subjectStats()?.status === SubjectStatus.Unlearned}>
+          <Show
+            when={
+              previousState() ??
+              subjectStats()?.status === SubjectStatus.Unlearned
+            }
+          >
             <SessionDescription />
           </Show>
         </Show>
       </div>
-    </Loading>
+    </Skeleton>
   );
 }

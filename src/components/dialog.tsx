@@ -23,17 +23,26 @@ const Dialog: ParentComponent<{
   const offsetY = atom(window.innerHeight);
   const touchStartY = atom<number>();
   // === Memos ===
-  const fullscreen = createMemo(() => properties.forceFullscreen ?? window.innerHeight > window.innerWidth);
-  const maxOffset = createMemo(() => (fullscreen() ? window.innerHeight * 0.6 : window.innerHeight));
+  const fullscreen = createMemo(
+    () => properties.forceFullscreen ?? window.innerHeight > window.innerWidth,
+  );
+  const maxOffset = createMemo(() =>
+    fullscreen() ? window.innerHeight * 0.6 : window.innerHeight,
+  );
   // === Functions ===
   function touchStart(e: TouchEvent | MouseEvent) {
-    touchStartY('touches' in e ? e.touches[0].clientY : e.clientY);
+    touchStartY('touches' in e ? e.touches[0]!.clientY : e.clientY);
   }
   function touchMove(e: TouchEvent | MouseEvent) {
     untrack(() => {
       const $touchStartY = touchStartY();
       if (!$touchStartY) return;
-      offsetY(Math.max(0, ('touches' in e ? e.touches[0].clientY : e.clientY) - $touchStartY));
+      offsetY(
+        Math.max(
+          0,
+          ('touches' in e ? e.touches[0]!.clientY : e.clientY) - $touchStartY,
+        ),
+      );
     });
   }
   function touchEnd() {
@@ -41,7 +50,8 @@ const Dialog: ParentComponent<{
       const $touchStartY = touchStartY();
       if (!$touchStartY) return;
       const $offsetY = offsetY();
-      if ($offsetY < 16 || $offsetY / (window.innerHeight - $touchStartY) > 0.2) close();
+      if ($offsetY < 16 || $offsetY / (window.innerHeight - $touchStartY) > 0.2)
+        close();
       else offsetY(0);
       touchStartY(undefined);
     });
@@ -67,8 +77,8 @@ const Dialog: ParentComponent<{
       <div
         class={s.dialog}
         classList={{
-          [s.fullscreen]: fullscreen(),
-          [s.dark]: properties.dark,
+          [s.fullscreen!]: fullscreen(),
+          [s.dark!]: properties.dark,
         }}
         style={{
           transform: offsetY() ? `translateY(${offsetY()}px)` : undefined,
@@ -77,7 +87,11 @@ const Dialog: ParentComponent<{
         }}
       >
         <Show when={properties.onClose}>
-          <button class={s.close} onTouchStart={touchStart} onMouseDown={touchStart}>
+          <button
+            class={s.close}
+            onTouchStart={touchStart}
+            onMouseDown={touchStart}
+          >
             <span>Hide</span>
           </button>
         </Show>

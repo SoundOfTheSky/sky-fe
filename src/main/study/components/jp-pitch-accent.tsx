@@ -19,7 +19,7 @@ const JPPitchAccent: Component<{ h: string; p: number }> = (properties) => {
     for (let i = 0; i <= properties.h.length; i++) {
       const letter = properties.h[i] as string | undefined;
       if (notConsideredComponent.includes(letter ?? '-')) {
-        components[components.length - 1] += letter;
+        components[components.length - 1]! += letter;
       } else components.push(letter ?? '');
     }
     return components;
@@ -29,8 +29,13 @@ const JPPitchAccent: Component<{ h: string; p: number }> = (properties) => {
       <Index each={components()}>
         {(component, i) => {
           const accent = getAccentForComponent(properties.p, i);
-          const change = i !== 0 && accent !== getAccentForComponent(properties.p, i - 1);
-          return <span class={`${accent ? s.h : s.l} ${change ? s.c : ''}`}>{component()}</span>;
+          const change =
+            i !== 0 && accent !== getAccentForComponent(properties.p, i - 1);
+          return (
+            <span class={`${accent ? s.h : s.l} ${change ? s.c : ''}`}>
+              {component()}
+            </span>
+          );
         }}
       </Index>
     </span>

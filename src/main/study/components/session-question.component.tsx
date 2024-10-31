@@ -11,6 +11,7 @@ import { SubjectStatus, useSession } from '../session/session.context';
 
 import s from './session-question.module.scss';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 resizeTextToFit;
 
 export default function SessionQuestion() {
@@ -35,7 +36,10 @@ export default function SessionQuestion() {
   const progressSpinnerOptions = createMemo(() => {
     let $subjectStage = subjectInfo()?.data.stage ?? 0;
     const $subjectStats = subjectStats();
-    if ($subjectStats?.status === SubjectStatus.Wrong || $subjectStats?.status === SubjectStatus.CorrectAfterWrong)
+    if (
+      $subjectStats?.status === SubjectStatus.Wrong ||
+      $subjectStats?.status === SubjectStatus.CorrectAfterWrong
+    )
       $subjectStage = $subjectStage === 0 ? 0 : Math.max(1, $subjectStage - 2);
     else if ($subjectStats?.status === SubjectStatus.Correct) $subjectStage++;
     if ($subjectStage > 5)
@@ -103,12 +107,16 @@ export default function SessionQuestion() {
           <div>{eta()}мин.</div>
         </Tooltip>
       </div>
-      <div class={s.titleWrapper} use:resizeTextToFit={[48, question(), hint(), isLoading()]}>
+      <div
+        class={s.titleWrapper}
+        use:resizeTextToFit={[48, question(), hint(), isLoading()]}
+      >
         <Skeleton loading={isLoading()} offline={offlineUnavailable()}>
           <div class={s.title}>
             <Show
               when={
-                (previousState() || subjectStats()?.status === SubjectStatus.Unlearned) &&
+                (previousState() ??
+                  subjectStats()?.status === SubjectStatus.Unlearned) &&
                 !question()!.data.question.includes(subject()!.data.title) &&
                 !hint().includes(subject()!.data.title)
               }
@@ -126,12 +134,14 @@ export default function SessionQuestion() {
           {(element, index) => (
             <div
               classList={{
-                [s.storyItem]: true,
-                [s.current]: subject()?.data.questionIds[index] === question()?.id,
-                [s.correct]: element() === SubjectStatus.Correct,
-                [s.error]: element() === SubjectStatus.Wrong,
-                [s.correctAfterWrong]: element() === SubjectStatus.CorrectAfterWrong,
-                [s.unlearned]: element() === SubjectStatus.Unlearned,
+                [s.storyItem!]: true,
+                [s.current!]:
+                  subject()?.data.questionIds[index] === question()?.id,
+                [s.correct!]: element() === SubjectStatus.Correct,
+                [s.error!]: element() === SubjectStatus.Wrong,
+                [s.correctAfterWrong!]:
+                  element() === SubjectStatus.CorrectAfterWrong,
+                [s.unlearned!]: element() === SubjectStatus.Unlearned,
               }}
             />
           )}

@@ -87,11 +87,20 @@ export default createRoot(() => {
   });
 
   // === Functions ===
-  function notify(notification: Omit<Notification, 'id' | 'type'> & { id?: string; type?: NotificationType }) {
+  function notify(
+    notification: Omit<Notification, 'id' | 'type'> & {
+      id?: string;
+      type?: NotificationType;
+    },
+  ) {
     if (notification.id === undefined) notification.id = createUniqueId();
-    if (notification.type === undefined) notification.type = NotificationType.Info;
+    if (notification.type === undefined)
+      notification.type = NotificationType.Info;
     if (notification.timeout)
-      setTimeout(() => notifications((n) => n.filter((x) => x !== notification)), notification.timeout);
+      setTimeout(
+        () => notifications((n) => n.filter((x) => x !== notification)),
+        notification.timeout,
+      );
     notifications((n) => [...n, notification as Notification]);
     return notification.id;
   }

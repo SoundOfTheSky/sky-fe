@@ -16,9 +16,13 @@ import s from './profile.module.scss';
 export default (() => {
   // === State ===
   let avatarElement: HTMLImageElement;
-  const avatar = atomize(createWritableMemo(() => AuthStore.me()?.avatar ?? ''));
+  const avatar = atomize(
+    createWritableMemo(() => AuthStore.me()?.avatar ?? ''),
+  );
   const imageURL = atomize(createWritableMemo(() => avatar()));
-  const username = atomize(createWritableMemo(() => AuthStore.me()?.username ?? ''));
+  const username = atomize(
+    createWritableMemo(() => AuthStore.me()?.username ?? ''),
+  );
   // const fontPixelization = persistentAtom('fontPixelization', true);
   // const JPFontPixelization = persistentAtom('JPFontPixelization', true);
 
@@ -47,13 +51,22 @@ export default (() => {
       <div class='card-container'>
         <div class='card'>
           <div class='card-title'>Предпросмотр аватара</div>
-          <img class={s.avatar} src={imageURL() || '/avatar.webp'} alt='My avatar' ref={avatarElement!} />
+          <img
+            class={s.avatar}
+            src={imageURL() || '/avatar.webp'}
+            alt='My avatar'
+            ref={avatarElement!}
+          />
         </div>
         <div class={`card ${s.info}`}>
           <div class='card-title'>Редактировать профиль</div>
           <div class={s.field}>
             <div>Имя пользователя:</div>
-            <Input value={username} placeholder='Имя пользователя' onChange={userDataChange} />
+            <Input
+              value={username}
+              placeholder='Имя пользователя'
+              onChange={userDataChange}
+            />
           </div>
           <div class={s.field}>
             <div>Аватар (URL):</div>

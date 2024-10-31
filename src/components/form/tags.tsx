@@ -18,7 +18,11 @@ const Tags: Component<
   }
 > = (properties) => {
   // === State ===
-  const [props, attributes] = splitProps(properties, ['value', 'placeholder', 'onChange']);
+  const [props, attributes] = splitProps(properties, [
+    'value',
+    'placeholder',
+    'onChange',
+  ]);
   const inputValue = atom('');
 
   // === Functions ===
@@ -41,13 +45,23 @@ const Tags: Component<
     <div {...attributes} class={`${s.tagsComponent} ${attributes.class ?? ''}`}>
       <For each={props.value()}>
         {(tag) => (
-          <Button class={s.tag} onClick={() => deleteTag(tag)}>
+          <Button
+            class={s.tag}
+            onClick={() => {
+              deleteTag(tag);
+            }}
+          >
             <span>{tag}</span>
             <Icon path={mdiCloseCircle} inline size='16' />
           </Button>
         )}
       </For>
-      <Input value={inputValue} onChange={onInputChange} placeholder={props.placeholder} type='text' />
+      <Input
+        value={inputValue}
+        onChange={onInputChange}
+        placeholder={props.placeholder}
+        type='text'
+      />
     </div>
   );
 };

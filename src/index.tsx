@@ -22,7 +22,11 @@ render(
 // TODO: Preload content in subjects (images, audio)
 
 declare global {
-  function setTimeout<TArgs extends unknown[]>(callback: (...args: TArgs) => void, ms?: number, ...args: TArgs): number;
+  function setTimeout<TArgs extends unknown[]>(
+    callback: (...args: TArgs) => void,
+    ms?: number,
+    ...args: TArgs
+  ): number;
   function setInterval<TArgs extends unknown[]>(
     callback: (...args: TArgs) => void,
     ms?: number,

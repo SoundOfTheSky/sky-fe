@@ -6,7 +6,11 @@ import basicStore from '@/services/basic.store';
 import Icon from '../icon';
 
 export default ((properties) => {
-  const [props, attributes] = splitProps(properties, ['loading', 'offline', 'children']);
+  const [props, attributes] = splitProps(properties, [
+    'loading',
+    'offline',
+    'children',
+  ]);
   return (
     <Switch fallback={props.children}>
       <Match when={props.offline ?? !basicStore.online()}>
@@ -19,4 +23,6 @@ export default ((properties) => {
       </Match>
     </Switch>
   );
-}) as ParentComponent<JSX.HTMLAttributes<HTMLDivElement> & { loading?: boolean; offline?: boolean }>;
+}) as ParentComponent<
+  JSX.HTMLAttributes<HTMLDivElement> & { loading?: boolean; offline?: boolean }
+>;

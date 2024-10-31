@@ -74,7 +74,10 @@ export default createRoot(() => {
     }
   }
 
-  async function syncOfflineTaskQueue(options: { checkIfAborted: () => void; onProgress: (p: number) => unknown }) {
+  async function syncOfflineTaskQueue(options: {
+    checkIfAborted: () => void;
+    onProgress: (p: number) => unknown;
+  }) {
     const endpoints = [
       studySubjectEndpoint,
       studyQuestionEndpoint,
@@ -85,12 +88,12 @@ export default createRoot(() => {
     const endpointsMap = new Map(endpoints.map((x) => [x.idb as string, x]));
     const keys = await db.getAllKeys('offlineTasksQueue');
     for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
+      const key = keys[i]!;
       options.checkIfAborted();
       try {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
         const req = (await db.get('offlineTasksQueue', key)) as any;
-        const [, idb, action] = key.split('_');
+        const [, idb, action] = key.split('_') as [string, string, string];
         const endpoint = endpointsMap.get(idb);
         if (endpoint) {
           switch (action) {
@@ -121,7 +124,10 @@ export default createRoot(() => {
     }
   }
 
-  async function syncStudy(options: { checkIfAborted: () => void; onProgress: (p: number) => unknown }) {
+  async function syncStudy(options: {
+    checkIfAborted: () => void;
+    onProgress: (p: number) => unknown;
+  }) {
     // Will cache single query
     if (!document.location.pathname.startsWith('/study')) await getThemes();
     const endpoints = [
@@ -132,9 +138,10 @@ export default createRoot(() => {
       studyAnswerEndpoint,
     ];
     let i = 0;
-    const onProgress = (p: number) => options.onProgress((i + p) / endpoints.length);
+    const onProgress = (p: number) =>
+      options.onProgress((i + p) / endpoints.length);
     for (; i < endpoints.length; i++)
-      await endpoints[i].syncIDB({
+      await endpoints[i]!.syncIDB({
         checkIfAborted: options.checkIfAborted,
         onProgress,
       });

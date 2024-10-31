@@ -41,12 +41,17 @@ export async function request<T>(
     raw?: false;
   },
 ): Promise<T>;
-export async function request<T>(url: string, options: RequestOptions = {}): Promise<T | Response | undefined> {
+export async function request<T>(
+  url: string,
+  options: RequestOptions = {},
+): Promise<T | Response | undefined> {
   BasicStore.activeRequests((x) => x + 1);
   try {
     options.useCache ??= useContext(CacheContext);
-    if (typeof options.body === 'object') options.body = JSON.stringify(options.body);
-    if (options.query) url += `?${new URLSearchParams(options.query).toString()}`;
+    if (typeof options.body === 'object')
+      options.body = JSON.stringify(options.body);
+    if (options.query)
+      url += `?${new URLSearchParams(options.query).toString()}`;
     let key: string;
     if (options.useCache) {
       key = `${url}|${options.raw ? 1 : 0}|${options.body as string}`;
@@ -55,7 +60,9 @@ export async function request<T>(url: string, options: RequestOptions = {}): Pro
     }
     const controller = new AbortController();
     options.signal = controller.signal;
-    const timeout = setTimeout(() => controller.abort('Request timeout'), options.timeout ?? 10000);
+    const timeout = setTimeout(() => {
+      controller.abort('Request timeout');
+    }, options.timeout ?? 10000);
     const response = await fetch(url, options as RequestInit);
     clearTimeout(timeout);
     if (options.raw) {
@@ -76,8 +83,10 @@ export async function request<T>(url: string, options: RequestOptions = {}): Pro
 }
 function getBody<T>(response: Response): Promise<T> {
   const contentType = response.headers.get('content-type');
-  if (!contentType || contentType.startsWith('text')) return response.text() as Promise<T>;
-  if (contentType.startsWith('application/json')) return response.json() as Promise<T>;
+  if (!contentType || contentType.startsWith('text'))
+    return response.text() as Promise<T>;
+  if (contentType.startsWith('application/json'))
+    return response.json() as Promise<T>;
   return response.blob() as Promise<T>;
 }
 

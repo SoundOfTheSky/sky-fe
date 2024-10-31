@@ -4,7 +4,11 @@ type KeyframesTransitionOption = Record<string, string[] | number[]>;
  * Delay is the delay before animation.
  * Can be set to true to automatically generate delay to hide one object and only then show another.
  */
-export function createTransitionOptions(keyframes: KeyframesTransitionOption, duration: number, delay?: number | true) {
+export function createTransitionOptions(
+  keyframes: KeyframesTransitionOption,
+  duration: number,
+  delay?: number | true,
+) {
   const keyframeEntries = Object.entries(keyframes);
   const transition: {
     onBeforeEnter?: (element?: Element) => unknown;
@@ -22,7 +26,9 @@ export function createTransitionOptions(keyframes: KeyframesTransitionOption, du
     onExit: async (element, done) =>
       element
         .animate(
-          Object.fromEntries(keyframeEntries.map(([k, v]) => [k, [...v].reverse()])) as KeyframesTransitionOption,
+          Object.fromEntries(
+            keyframeEntries.map(([k, v]) => [k, [...v].reverse()]),
+          ) as KeyframesTransitionOption,
           {
             duration,
           },
@@ -35,17 +41,24 @@ export function createTransitionOptions(keyframes: KeyframesTransitionOption, du
       origStyles = element?.getAttribute('style') ?? '';
       element?.setAttribute(
         'style',
-        origStyles + '; ' + keyframeEntries.map(([k, v]) => `${kebabize(k)}: ${v[0]}`).join('; '),
+        origStyles +
+          '; ' +
+          keyframeEntries.map(([k, v]) => `${kebabize(k)}: ${v[0]}`).join('; '),
       );
     };
-    transition.onAfterEnter = (element) => element.setAttribute('style', origStyles);
+    transition.onAfterEnter = (element) => {
+      element.setAttribute('style', origStyles);
+    };
   }
 
   return transition;
 }
 
 const kebabize = (string_: string) =>
-  string_.replaceAll(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? '-' : '') + $.toLowerCase());
+  string_.replaceAll(
+    /[A-Z]+(?![a-z])|[A-Z]/g,
+    ($, ofs) => (ofs ? '-' : '') + $.toLowerCase(),
+  );
 export const opacityTransitionImmediate = createTransitionOptions(
   {
     opacity: [0, 1],
@@ -72,7 +85,12 @@ export const slideDownTransition = createTransitionOptions(
   500,
 );
 
-export function changeNumberSmooth(start: number, end: number, time: number, callback: (number: number) => void) {
+export function changeNumberSmooth(
+  start: number,
+  end: number,
+  time: number,
+  callback: (number: number) => void,
+) {
   const startTime = performance.now();
   const delta = end - start;
   let frame = requestAnimationFrame(tick);

@@ -11,22 +11,41 @@ type Options = {
   key?: string;
   label?: string;
 };
-export type Properties = Omit<JSX.HTMLAttributes<HTMLButtonElement>, keyof Options> & Options;
+export type Properties = Omit<
+  JSX.HTMLAttributes<HTMLButtonElement>,
+  keyof Options
+> &
+  Options;
 
 const Toggle: Component<Properties> = (properties) => {
-  const [props, attributes] = splitProps(properties, ['value', 'label', 'onChange', 'store', 'key']);
+  const [props, attributes] = splitProps(properties, [
+    'value',
+    'label',
+    'onChange',
+    'store',
+    'key',
+  ]);
   function handler() {
     if (props.value) {
       const value = props.value((x) => !x);
       props.onChange?.(value);
     } else if (props.key && props.store) {
       props.store[props.key] = !props.store[props.key];
-      props.onChange?.(props.store[props.key]);
+      props.onChange?.(props.store[props.key]!);
     }
   }
   return (
-    <button {...attributes} class={`${s.toggle} ${attributes.class ?? ''}`} onClick={handler}>
-      <div class={s.wrapper} classList={{ [s.enabled]: props.value ? props.value() : props.store![props.key!] }}>
+    <button
+      {...attributes}
+      class={`${s.toggle} ${attributes.class ?? ''}`}
+      onClick={handler}
+    >
+      <div
+        class={s.wrapper}
+        classList={{
+          [s.enabled!]: props.value ? props.value() : props.store![props.key!],
+        }}
+      >
         <div class={s.circle} />
       </div>
       <Show when={props.label}>

@@ -7,7 +7,10 @@ export default () => {
   return (
     <Route path='/' component={lazy(() => import('./layout'))}>
       <Route path='/' component={lazy(() => import('./pages/default-tab'))} />
-      <Route path='/profile' component={lazy(() => import('./pages/profile'))} />
+      <Route
+        path='/profile'
+        component={lazy(() => import('./pages/profile'))}
+      />
       <StudyRoutes />
     </Route>
   );

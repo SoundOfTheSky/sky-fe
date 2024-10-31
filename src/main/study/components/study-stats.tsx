@@ -21,13 +21,18 @@ const StudyStats: Component = () => {
   // === Effects ===
   // Scroll in view today if possible
   createEffect(() => {
-    if (statsGraph()?.length && element) element.scrollLeft = element.scrollWidth;
+    if (statsGraph().length && element)
+      element.scrollLeft = element.scrollWidth;
   });
 
   return (
     <div class={`card ${s.studyStats}`}>
       <div class='card-title'>Календарь активности</div>
-      <Skeleton loading={!statsGraph()?.length} offline={offlineUnavailable()} class={s.skeleton}>
+      <Skeleton
+        loading={!statsGraph().length}
+        offline={offlineUnavailable()}
+        class={s.skeleton}
+      >
         <div class={s.days} ref={element}>
           <Index each={statsGraph()}>
             {(reviews, i) => {
@@ -44,8 +49,8 @@ const StudyStats: Component = () => {
                   <div
                     class={s.day}
                     classList={{
-                      [s.today]: today().getTime() === date.getTime(),
-                      [s.future]: today().getTime() < date.getTime(),
+                      [s.today!]: today().getTime() === date.getTime(),
+                      [s.future!]: today().getTime() < date.getTime(),
                     }}
                   >
                     <Show when={reviews()}>

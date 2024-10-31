@@ -40,13 +40,24 @@ const Themes: Component = () => {
   });
 
   // === Functions ===
-  function onClickThemeCard(theme: { id: number; isAdded: boolean; disabled: boolean }) {
+  function onClickThemeCard(theme: {
+    id: number;
+    isAdded: boolean;
+    disabled: boolean;
+  }) {
     untrack(() => {
       if (disabledUpdating()) return;
       if (theme.isAdded) {
         if (theme.disabled)
-          settings((x) => ({ ...x, disabledThemeIds: x.disabledThemeIds.filter((x) => x !== theme.id) }));
-        else settings((x) => ({ ...x, disabledThemeIds: [...x.disabledThemeIds, theme.id] }));
+          settings((x) => ({
+            ...x,
+            disabledThemeIds: x.disabledThemeIds.filter((x) => x !== theme.id),
+          }));
+        else
+          settings((x) => ({
+            ...x,
+            disabledThemeIds: [...x.disabledThemeIds, theme.id],
+          }));
       } else {
         disabledUpdating(true);
         void addTheme(theme.id)
@@ -77,15 +88,28 @@ const Themes: Component = () => {
 
   return (
     <div class={`${s.themes} card`}>
-      <Skeleton loading={!themes()} offline={offlineUnavailable()} class={s.skeleton}>
+      <Skeleton
+        loading={!themes()}
+        offline={offlineUnavailable()}
+        class={s.skeleton}
+      >
         <For each={themesCards()}>
           {(theme) => (
-            <div class={s.theme} classList={{ [s.added]: theme.isAdded && !theme.disabled }}>
-              <Button disabled={disabledUpdating()} onClick={[onClickThemeCard, theme]}>
+            <div
+              class={s.theme}
+              classList={{ [s.added!]: theme.isAdded && !theme.disabled }}
+            >
+              <Button
+                disabled={disabledUpdating()}
+                onClick={[onClickThemeCard, theme]}
+              >
                 {theme.title}
               </Button>
               <Show when={theme.isAdded && online()}>
-                <Button disabled={disabledUpdating()} onClick={[onClickRemove, theme.id]}>
+                <Button
+                  disabled={disabledUpdating()}
+                  onClick={[onClickRemove, theme.id]}
+                >
                   <Icon path={mdiTrashCan} size='14' />
                 </Button>
               </Show>

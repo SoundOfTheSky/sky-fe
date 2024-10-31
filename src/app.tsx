@@ -18,9 +18,11 @@ const App: ParentComponent = (properties) => {
     document.body.classList.remove('pixelated-font');
     document.body.classList.remove('jp-pixelated-font');
     document.body.classList.remove('all-pixelated-font');
-    if (fontPixelization() && JPFontPixelization()) document.body.classList.add('all-pixelated-font');
+    if (fontPixelization() && JPFontPixelization())
+      document.body.classList.add('all-pixelated-font');
     else if (fontPixelization()) document.body.classList.add('pixelated-font');
-    else if (JPFontPixelization()) document.body.classList.add('jp-pixelated-font');
+    else if (JPFontPixelization())
+      document.body.classList.add('jp-pixelated-font');
   });
 
   return (

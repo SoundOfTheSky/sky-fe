@@ -15,7 +15,11 @@ const StudyActivity: Component = () => {
 
   return (
     <div class={`card ${s.studyActivity}`}>
-      <Skeleton loading={!statsGraph().length} offline={offlineUnavailable()} class={s.skeleton}>
+      <Skeleton
+        loading={!statsGraph().length}
+        offline={offlineUnavailable()}
+        class={s.skeleton}
+      >
         <Tooltip content='Активность'>
           <div
             class={`${s.progress} ${activity()[0] < 25 ? s.bad : ''}`}

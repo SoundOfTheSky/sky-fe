@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   InitializedResourceOptions,
   InitializedResourceReturn,
@@ -25,8 +21,12 @@ import { createDebouncedFunction, deepEquals, log } from '@/sky-utils';
 
 // === Reactive ===
 export type Atom<in out T> = (setTo?: Parameters<Setter<T>>[0]) => T;
-export function atomize<T>([state, setState]: [Accessor<T>, Setter<T>]): Atom<T> {
-  return (...arguments_) => (arguments_.length === 1 ? setState(arguments_[0]!) : state());
+export function atomize<T>([state, setState]: [
+  Accessor<T>,
+  Setter<T>,
+]): Atom<T> {
+  return (...arguments_) =>
+    arguments_.length === 1 ? setState(arguments_[0]!) : state();
 }
 export function atom<T>(): Atom<T | undefined>;
 export function atom<T>(value: T, options?: SignalOptions<T>): Atom<T>;
@@ -45,7 +45,9 @@ export function tabSynchedAtom<T>(key: string, initialValue?: T): Atom<T> {
   });
   broadcastChannel.send(`queryAtom_${key}`);
   // eslint-disable-next-line solid/reactivity
-  broadcastChannel.on(`queryAtom_${key}`, () => broadcastChannel.send(`atom_${key}`, JSON.stringify(state())));
+  broadcastChannel.on(`queryAtom_${key}`, () => {
+    broadcastChannel.send(`atom_${key}`, JSON.stringify(state()));
+  });
   broadcastChannel.on(`atom_${key}`, (data) => {
     try {
       setState(JSON.parse(data!) as Parameters<Setter<T>>[0]);
@@ -64,7 +66,12 @@ export function tabSynchedAtom<T>(key: string, initialValue?: T): Atom<T> {
 }
 export function persistentAtom<T>(key: string, initialValue: T): Atom<T> {
   const rawData = localStorage.getItem(key);
-  const state = tabSynchedAtom<T>(key, !rawData || rawData === 'undefined' ? initialValue : (JSON.parse(rawData) as T));
+  const state = tabSynchedAtom<T>(
+    key,
+    !rawData || rawData === 'undefined'
+      ? initialValue
+      : (JSON.parse(rawData) as T),
+  );
   createEffect(() => {
     localStorage.setItem(key, JSON.stringify(state()));
   });
@@ -92,21 +99,29 @@ export function createLazyResource<T, S, R = unknown>(
 export function createLazyResource<T, S, R = unknown>(
   ...args: unknown[]
 ): ResourceReturn<T, R> | InitializedResourceReturn<T, R> {
-  let resource: ResourceReturn<T, R>;
+  let resource: ResourceReturn<T, R> | undefined;
   const getResource = () => {
-    if (!resource) resource = createResource<T, S, R>(...(args as Parameters<typeof createResource<T, S, R>>));
+    if (!resource)
+      resource = createResource<T, S, R>(
+        ...(args as Parameters<typeof createResource<T, S, R>>),
+      );
     return resource;
   };
   return [
     () => getResource()[0](),
     {
-      mutate: (...args: Parameters<ResourceReturn<T, R>['1']['mutate']>) => getResource()[1].mutate(...args),
-      refetch: (...args: Parameters<ResourceReturn<T, R>['1']['refetch']>) => getResource()[1].refetch(...args),
+      mutate: (...args: Parameters<ResourceReturn<T, R>['1']['mutate']>) =>
+        getResource()[1].mutate(...args),
+      refetch: (...args: Parameters<ResourceReturn<T, R>['1']['refetch']>) =>
+        getResource()[1].refetch(...args),
     },
   ] as ResourceReturn<T, R>;
 }
 /** Is recalced after some time */
-export function createDebouncedMemo<T>(fn: (last: T | undefined) => T, time: number) {
+export function createDebouncedMemo<T>(
+  fn: (last: T | undefined) => T,
+  time: number,
+) {
   const memoValue = atom<T>();
   const debounced = createDebouncedFunction(fn, time);
   createEffect<T | undefined>((lastVal) => {
@@ -114,7 +129,7 @@ export function createDebouncedMemo<T>(fn: (last: T | undefined) => T, time: num
       const newVal = debounced(lastVal);
       memoValue(newVal as Setter<T>);
       return newVal;
-    } catch (e) {
+    } catch {
       return lastVal;
     }
   });
@@ -124,12 +139,16 @@ export function createDebouncedMemo<T>(fn: (last: T | undefined) => T, time: num
 // === Auto disposable ===
 export function useInterval(handler: () => unknown, time: number) {
   const interval = setInterval(handler, time);
-  onCleanup(() => clearInterval(interval));
+  onCleanup(() => {
+    clearInterval(interval);
+  });
   return interval;
 }
 export function useTimeout(handler: () => unknown, time: number) {
   const timeout = setTimeout(handler, time);
-  onCleanup(() => clearTimeout(timeout));
+  onCleanup(() => {
+    clearTimeout(timeout);
+  });
   return timeout;
 }
 export function useGlobalEvent<K extends keyof DocumentEventMap>(
@@ -138,7 +157,9 @@ export function useGlobalEvent<K extends keyof DocumentEventMap>(
   options?: boolean | AddEventListenerOptions,
 ) {
   document.addEventListener(type, listener, options);
-  onCleanup(() => document.removeEventListener(type, listener));
+  onCleanup(() => {
+    document.removeEventListener(type, listener);
+  });
 }
 export function debugReactive(data: Record<string, () => unknown>) {
   const initial = Symbol('initial');
@@ -147,14 +168,23 @@ export function debugReactive(data: Record<string, () => unknown>) {
     createEffect(() => {
       const newVal = accessor();
       if (lastVal === initial) log(`[DEBUG] ${title}`, newVal);
-      else log(`[DEBUG] ${title}`, structuredClone(lastVal), '>>>', structuredClone(newVal));
+      else
+        log(
+          `[DEBUG] ${title}`,
+          structuredClone(lastVal),
+          '>>>',
+          structuredClone(newVal),
+        );
       lastVal = newVal;
     });
   }
 }
 
 // === Use directives ===
-export function resizeTextToFit(element: HTMLElement, accessor: () => [number, ...unknown[]]) {
+export function resizeTextToFit(
+  element: HTMLElement,
+  accessor: () => [number, ...unknown[]],
+) {
   const mounted = atom(false);
   onMounted(element, () => () => mounted(true));
   createRenderEffect(() => {
@@ -170,15 +200,23 @@ export function resizeTextToFit(element: HTMLElement, accessor: () => [number, .
     );
   });
 }
-export function onOutside(element: HTMLElement, accessor: () => [string, () => unknown]) {
+export function onOutside(
+  element: HTMLElement,
+  accessor: () => [string, () => unknown],
+) {
   const [eventName, handler] = accessor();
   const onClick = (event_: Event) => {
     if (!element.contains(event_.target as HTMLElement)) handler();
   };
   document.body.addEventListener(eventName, onClick);
-  onCleanup(() => document.body.removeEventListener(eventName, onClick));
+  onCleanup(() => {
+    document.body.removeEventListener(eventName, onClick);
+  });
 }
-export function onMounted(element: HTMLElement, accessor: () => (element: HTMLElement) => unknown) {
+export function onMounted(
+  element: HTMLElement,
+  accessor: () => (element: HTMLElement) => unknown,
+) {
   const handler = accessor();
   if (element.isConnected) handler(element);
   else {
@@ -191,7 +229,9 @@ export function onMounted(element: HTMLElement, accessor: () => (element: HTMLEl
       childList: true,
       subtree: true,
     });
-    onCleanup(() => observer.disconnect());
+    onCleanup(() => {
+      observer.disconnect();
+    });
   }
 }
 

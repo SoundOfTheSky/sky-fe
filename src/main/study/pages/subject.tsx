@@ -1,9 +1,18 @@
 import { useParams } from '@solidjs/router';
-import { batch, Component, createEffect, createMemo, createResource, For, Match, Show, Switch } from 'solid-js';
+import {
+  batch,
+  Component,
+  createEffect,
+  createMemo,
+  createResource,
+  For,
+  Match,
+  Show,
+  Switch,
+} from 'solid-js';
 
 import Input from '@/components/form/input';
 import Tags from '@/components/form/tags';
-import Loading from '@/components/loading/loading';
 import Skeleton from '@/components/loading/skeleton';
 import basicStore, { NotificationType } from '@/services/basic.store';
 import { handleError } from '@/services/fetch';
@@ -24,6 +33,7 @@ import {
 
 import s from './subject.module.scss';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 resizeTextToFit;
 
 const Subject: Component<{ id?: number }> = (properties) => {
@@ -38,16 +48,31 @@ const Subject: Component<{ id?: number }> = (properties) => {
 
   // === Memos ===
   const subjectId = createMemo(() => properties.id ?? +params.id);
-  const [subject] = createResource(subjectId, (id) => studySubjectEndpoint.get(id));
-  const questionId = createMemo<number | undefined>(() => subject()?.data.questionIds[questionI()]);
-  const [question] = createResource(questionId, (id) => studyQuestionEndpoint.get(id));
+  const [subject] = createResource(subjectId, (id) =>
+    studySubjectEndpoint.get(id),
+  );
+  const questionId = createMemo<number | undefined>(
+    () => subject()?.data.questionIds[questionI()],
+  );
+  const [question] = createResource(questionId, (id) =>
+    studyQuestionEndpoint.get(id),
+  );
   const [subjectInfo] = createResource(subject, (subject) =>
-    subject.data.userSubjectId ? studyUserSubjectEndpoint.get(subject.data.userSubjectId) : undefined,
+    subject.data.userSubjectId
+      ? studyUserSubjectEndpoint.get(subject.data.userSubjectId)
+      : undefined,
   );
-  const [questionInfo, { mutate: mutateQuestionInfo }] = createResource(question, (question) =>
-    question.data.userQuestionId ? studyUserQuestionEndpoint.get(question.data.userQuestionId) : undefined,
+  const [questionInfo, { mutate: mutateQuestionInfo }] = createResource(
+    question,
+    (question) =>
+      question.data.userQuestionId
+        ? studyUserQuestionEndpoint.get(question.data.userQuestionId)
+        : undefined,
   );
-  const isLoading = createMemo(() => !subject() || !question() || subjectInfo.loading || questionInfo.loading);
+  const isLoading = createMemo(
+    () =>
+      !subject() || !question() || subjectInfo.loading || questionInfo.loading,
+  );
   /** Current subject progress percent. From 0 to 1 untill unlock, from 1 to 2 utill burned */
   const progressSpinnerOptions = createMemo(() => {
     const $subjectStage = subjectInfo()?.data.stage ?? 0;
@@ -76,7 +101,9 @@ const Subject: Component<{ id?: number }> = (properties) => {
 
   createEffect(() => {
     const $subject = subject();
-    document.title = $subject ? `Sky | ${$subject.data.title}` : `Sky | Loading...`;
+    document.title = $subject
+      ? `Sky | ${$subject.data.title}`
+      : `Sky | Loading...`;
   });
 
   // === Functions ===
@@ -147,7 +174,10 @@ const Subject: Component<{ id?: number }> = (properties) => {
         </div>
         <div class={s.titleWrapper}>
           <Skeleton loading={isLoading()} offline={offlineUnavailable()}>
-            <div class={s.title} use:resizeTextToFit={[48, question(), isLoading()]}>
+            <div
+              class={s.title}
+              use:resizeTextToFit={[48, question(), isLoading()]}
+            >
               <Show
                 when={
                   !question()!.data.question.includes(subject()!.data.title) &&
@@ -163,7 +193,11 @@ const Subject: Component<{ id?: number }> = (properties) => {
                 <Match when={!question()!.data.choose}>
                   <div>{question()!.data.answers.join(', ')}</div>
                 </Match>
-                <Match when={question()!.data.answers[0].toLowerCase() !== 'correct'}>
+                <Match
+                  when={
+                    question()!.data.answers[0]!.toLowerCase() !== 'correct'
+                  }
+                >
                   <div>{question()!.data.answers[0]}</div>
                 </Match>
               </Switch>
@@ -176,8 +210,8 @@ const Subject: Component<{ id?: number }> = (properties) => {
               <button
                 onClick={() => questionI(index())}
                 classList={{
-                  [s.storyItem]: true,
-                  [s.current]: index() === questionI(),
+                  [s.storyItem!]: true,
+                  [s.current!]: index() === questionI(),
                 }}
               />
             )}
@@ -185,7 +219,7 @@ const Subject: Component<{ id?: number }> = (properties) => {
         </div>
       </div>
       <div class={`card ${s.description}`}>
-        <Loading when={!isLoading()}>
+        <Skeleton loading={isLoading()}>
           <Tabs>
             {parseHTML(question()!.data.description)}
             <div data-tab='Заметки и синонимы'>
@@ -199,10 +233,15 @@ const Subject: Component<{ id?: number }> = (properties) => {
               <br />
               Заметки:
               <br />
-              <Input value={note} multiline placeholder='Место для ваших заметок' onChange={sendQuestionDataToServer} />
+              <Input
+                value={note}
+                multiline
+                placeholder='Место для ваших заметок'
+                onChange={sendQuestionDataToServer}
+              />
             </div>
           </Tabs>
-        </Loading>
+        </Skeleton>
       </div>
     </div>
   );

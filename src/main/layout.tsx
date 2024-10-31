@@ -26,7 +26,10 @@ const Layout: ParentComponent = (properties) => {
   });
 
   return (
-    <div class={s.layout} style={{ height: size() ? `calc(100% - ${size()}px)` : '100%' }}>
+    <div
+      class={s.layout}
+      style={{ height: size() ? `calc(100% - ${size()}px)` : '100%' }}
+    >
       <Sidebar />
       <div class={s.content}>{properties.children}</div>
     </div>

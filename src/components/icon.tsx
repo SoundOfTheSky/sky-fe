@@ -9,7 +9,9 @@ export type IconOptions = {
   title?: string;
   color?: string;
 };
-const Icon: Component<JSX.SvgSVGAttributes<SVGSVGElement> & IconOptions> = (properties) => {
+const Icon: Component<JSX.SvgSVGAttributes<SVGSVGElement> & IconOptions> = (
+  properties,
+) => {
   const _prop = mergeProps(
     {
       size: 14,
@@ -17,7 +19,13 @@ const Icon: Component<JSX.SvgSVGAttributes<SVGSVGElement> & IconOptions> = (prop
     },
     properties,
   );
-  const [props, attributes] = splitProps(_prop, ['path', 'inline', 'size', 'title', 'color']);
+  const [props, attributes] = splitProps(_prop, [
+    'path',
+    'inline',
+    'size',
+    'title',
+    'color',
+  ]);
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -25,7 +33,7 @@ const Icon: Component<JSX.SvgSVGAttributes<SVGSVGElement> & IconOptions> = (prop
       height={props.size}
       fill={props.color}
       classList={{
-        [s.inline]: props.inline,
+        [s.inline!]: props.inline,
       }}
       {...attributes}
     >

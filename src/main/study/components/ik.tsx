@@ -10,6 +10,7 @@ import { useStudy } from '../services/study.context';
 
 import s from './ik.module.scss';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 onMounted;
 
 const IK: ParentComponent = (properties) => {
@@ -43,7 +44,9 @@ const IK: ParentComponent = (properties) => {
                     <div class={s.ja}>
                       <For
                         each={[
-                          ...example.sentence_with_furigana.matchAll(/([\u4E00-\u9FAF]+?)\[([\u3040-\u309F]+?)\]/gsu),
+                          ...example.sentence_with_furigana.matchAll(
+                            /([\u4E00-\u9FAF]+?)\[([\u3040-\u309F]+?)\]/gsu,
+                          ),
                         ]}
                       >
                         {([, a, b]) => (

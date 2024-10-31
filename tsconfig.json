@@ -1,23 +1,26 @@
 {
   "compilerOptions": {
     "baseUrl": "src",
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "composite": true,
+    "strict": true,
+    "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": true,
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "plugins": [{ "name": "ts-css-modules-vite-plugin", "root": "./" }],
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "types": ["vite/client", "vite-plugin-pwa/client"],
-    "noEmit": true,
-    "isolatedModules": true,
-    "strict": true,
-    "plugins": [{ "name": "ts-css-modules-vite-plugin", "root": "./" }],
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "skipLibCheck": true,
-    "paths": {
-      "@/*": ["./*"],
-      "virtual:pwa-register/solid": ["types/pwa-solid.d.ts"]
-    },
-  }
+  },
+  "include": ["**/*.d.ts", "**/*.ts", "**/*.tsx"]
 }

@@ -39,8 +39,16 @@ const Sidebar: Component = () => {
             </A>
           )}
         </Index>
-        <A class={`${s.item} ${s.profile}`} href='/profile' activeClass={s.active}>
-          <img class={s.avatar} src={AuthStore.me()?.avatar ?? '/avatar.webp'} alt='My avatar' />
+        <A
+          class={`${s.item} ${s.profile}`}
+          href='/profile'
+          activeClass={s.active}
+        >
+          <img
+            class={s.avatar}
+            src={AuthStore.me()?.avatar ?? '/avatar.webp'}
+            alt='My avatar'
+          />
           <span class={s.title}>{AuthStore.me()?.username ?? 'Anonymous'}</span>
         </A>
       </div>

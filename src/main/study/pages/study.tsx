@@ -21,7 +21,16 @@ export default function StudyTab() {
   // === Hooks ===
   document.title = 'Sky | Study';
 
-  const { lessons, reviews, settings, offlineUnavailable, ready, updateStats, now, update } = useStudy()!;
+  const {
+    lessons,
+    reviews,
+    settings,
+    offlineUnavailable,
+    ready,
+    updateStats,
+    now,
+    update,
+  } = useStudy()!;
 
   // === State ===
   const showReviewsSettings = atom(false);
@@ -45,9 +54,13 @@ export default function StudyTab() {
         <A
           class={`card ${s.special}`}
           classList={{
-            [s.disabled]: lessons().length === 0,
+            [s.disabled!]: lessons().length === 0,
           }}
-          href={showLessonsSettings() || lessons().length === 0 ? '' : './session/lessons'}
+          href={
+            showLessonsSettings() || lessons().length === 0
+              ? ''
+              : './session/lessons'
+          }
           draggable={false}
         >
           <Show
@@ -55,7 +68,11 @@ export default function StudyTab() {
             fallback={
               <>
                 <h1>Уроки</h1>
-                <Skeleton loading={!ready()} class={s.reviewsAmount} offline={offlineUnavailable()}>
+                <Skeleton
+                  loading={!ready()}
+                  class={s.reviewsAmount}
+                  offline={offlineUnavailable()}
+                >
                   <h2>{lessons().length}</h2>
                 </Skeleton>
               </>
@@ -74,14 +91,21 @@ export default function StudyTab() {
                     disabledThemeIds: x.disabledThemeIds,
                     lessons: {
                       ...x.lessons,
-                      amount: Number.parseInt((e.target as HTMLInputElement).value),
+                      amount: Number.parseInt(
+                        (e.target as HTMLInputElement).value,
+                      ),
                     },
                   }))
                 }
               />
             </div>
             <div title='Размер группы уроков'>
-              <div>Группировать по: {settings().lessons.batch === 50 ? 'everything' : settings().lessons.batch}</div>
+              <div>
+                Группировать по:{' '}
+                {settings().lessons.batch === 50
+                  ? 'everything'
+                  : settings().lessons.batch}
+              </div>
               <input
                 type='range'
                 min='1'
@@ -93,7 +117,9 @@ export default function StudyTab() {
                     disabledThemeIds: x.disabledThemeIds,
                     lessons: {
                       ...x.lessons,
-                      batch: Number.parseInt((e.target as HTMLInputElement).value),
+                      batch: Number.parseInt(
+                        (e.target as HTMLInputElement).value,
+                      ),
                     },
                   }))
                 }
@@ -114,9 +140,13 @@ export default function StudyTab() {
         <A
           class={`card ${s.special}`}
           classList={{
-            [s.disabled]: reviews().length === 0,
+            [s.disabled!]: reviews().length === 0,
           }}
-          href={reviews().length === 0 || showReviewsSettings() ? '' : './session/reviews'}
+          href={
+            reviews().length === 0 || showReviewsSettings()
+              ? ''
+              : './session/reviews'
+          }
           draggable={false}
         >
           <Show
@@ -124,7 +154,11 @@ export default function StudyTab() {
             fallback={
               <>
                 <h1>Повторения</h1>
-                <Skeleton loading={!ready()} class={s.reviewsAmount} offline={offlineUnavailable()}>
+                <Skeleton
+                  loading={!ready()}
+                  class={s.reviewsAmount}
+                  offline={offlineUnavailable()}
+                >
                   <h2>{reviews().length}</h2>
                 </Skeleton>
               </>
@@ -143,7 +177,9 @@ export default function StudyTab() {
                     disabledThemeIds: x.disabledThemeIds,
                     reviews: {
                       ...x.reviews,
-                      amount: Number.parseInt((e.target as HTMLInputElement).value),
+                      amount: Number.parseInt(
+                        (e.target as HTMLInputElement).value,
+                      ),
                     },
                   }))
                 }
@@ -162,7 +198,9 @@ export default function StudyTab() {
                     disabledThemeIds: x.disabledThemeIds,
                     reviews: {
                       ...x.reviews,
-                      batch: Number.parseInt((e.target as HTMLInputElement).value),
+                      batch: Number.parseInt(
+                        (e.target as HTMLInputElement).value,
+                      ),
                     },
                   }))
                 }

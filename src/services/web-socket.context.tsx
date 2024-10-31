@@ -1,4 +1,12 @@
-import { ParentComponent, batch, createContext, createEffect, onCleanup, untrack, useContext } from 'solid-js';
+import {
+  ParentComponent,
+  batch,
+  createContext,
+  createEffect,
+  onCleanup,
+  untrack,
+  useContext,
+} from 'solid-js';
 
 import { log } from '@/sky-utils';
 
@@ -33,15 +41,19 @@ function getProvided() {
 
   // === Functions ===
   function connect() {
-    untrack(() =>
+    untrack(() => {
       batch(() => {
         const $status = status();
-        if ($status === WebSocketStatus.connected || $status === WebSocketStatus.connecting) return;
+        if (
+          $status === WebSocketStatus.connected ||
+          $status === WebSocketStatus.connecting
+        )
+          return;
         log('[WS] connecting');
         status(WebSocketStatus.connecting);
         socket(new WebSocket(`wss://${location.hostname}/ws`));
-      }),
-    );
+      });
+    });
   }
   function onOpen() {
     log('[WS] open');
@@ -55,9 +67,12 @@ function getProvided() {
     if (typeof message.data === 'string') {
       const i = message.data.indexOf(' ');
       const event: [string, string?] =
-        i === -1 ? [message.data] : [message.data.slice(0, i), message.data.slice(i + 1)];
+        i === -1
+          ? [message.data]
+          : [message.data.slice(0, i), message.data.slice(i + 1)];
       if (event[0] === 'error')
         basicStore.notify({
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           title: event[1] || 'Неизвестная ошибка',
           timeout: 5000,
           type: NotificationType.Error,
@@ -88,7 +103,8 @@ function getProvided() {
     untrack(() => {
       const $socket = socket();
       const $status = status();
-      if (!$socket || $status !== WebSocketStatus.connected) throw new Error('[WS] Socket not open');
+      if (!$socket || $status !== WebSocketStatus.connected)
+        throw new Error('[WS] Socket not open');
       let payload = event;
       if (data) payload += ' ' + data;
       $socket.send(payload);
