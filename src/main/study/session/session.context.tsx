@@ -245,7 +245,7 @@ function getProvided() {
     const answers = getAnswers();
     const alt = $question.data.alternateAnswers?.[$answer];
     if (!answers.includes($answer) && alt) return alt;
-    if (answers.length === 0 && answers[0] === 'correct') return '';
+    if (answers.length === 1 && answers[0] === 'correct') return '';
     return getAnswers(true).join(', ');
   });
   // === Effects ===
@@ -435,7 +435,7 @@ function getProvided() {
       const $questionStatus = questionStatus();
       const $consistentQuestions = consistentQuestions();
       const $subjectStats = subjectStats()!;
-      void sendSubjectStatusToServer();
+      void sendAnswerToServer();
       if (stats().progress === 1) {
         clearInterval(timeInterval);
         done(true);
@@ -562,7 +562,7 @@ function getProvided() {
     });
   }
   /** Send subject review update to server. May don't do anything if it thinks it shouldn't */
-  async function sendSubjectStatusToServer() {
+  async function sendAnswerToServer() {
     // eslint-disable-next-line solid/reactivity
     await untrack(async () => {
       const $subjectStats = subjectStats()!;
@@ -573,10 +573,9 @@ function getProvided() {
         ($lessonsMode
           ? // Don't update if answered wrong in lessons mode
             $subjectStats.status === SubjectStatus.Correct
-          : ($previousState.subject === SubjectStatus.Unanswered &&
-              $subjectStats.status === SubjectStatus.Correct) ||
-            ($previousState.subject === SubjectStatus.Wrong &&
-              $subjectStats.status === SubjectStatus.CorrectAfterWrong))
+          : $previousState.subject === SubjectStatus.Unanswered &&
+            ($subjectStats.status === SubjectStatus.Correct ||
+              $subjectStats.status === SubjectStatus.Wrong))
       ) {
         try {
           await new RESTStudyAnswer({

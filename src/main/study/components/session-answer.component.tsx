@@ -142,9 +142,7 @@ export default function SessionAnswer() {
 
       <div class={s.buttons}>
         <Tooltip
-          content={`${
-            shuffleSubjects() ? 'Disable' : 'Enable'
-          } subjects shuffle.\nEffect takes place only after current batch.`}
+          content={`Перемешанные вопросы: ${shuffleSubjects() ? 'включены' : 'выключены'}`}
         >
           <Button
             onClick={() => {
@@ -163,7 +161,7 @@ export default function SessionAnswer() {
           </Button>
         </Tooltip>
         <Tooltip
-          content={`Consistent questions: ${consistentQuestions() ? 'enabled' : 'disabled'}`}
+          content={`Последовательные под-вопросы: ${consistentQuestions() ? 'включены' : 'отключены'}`}
         >
           <Button onClick={() => consistentQuestions((x) => !x)}>
             <Icon
@@ -173,9 +171,7 @@ export default function SessionAnswer() {
             />
           </Button>
         </Tooltip>
-        <Tooltip
-          content={questionAnswered() ? 'Next question' : 'Submit answer'}
-        >
+        <Tooltip content={questionAnswered() ? 'Следующий вопрос' : 'Ответить'}>
           <Button
             onClick={submit}
             disabled={
@@ -195,9 +191,9 @@ export default function SessionAnswer() {
         <Tooltip
           content={
             [
-              'Autoplay audio: disabled',
-              'Autoplay audio: first',
-              'Autoplay audio: all',
+              'Проигрывание аудио: выключено',
+              'Проигрывание аудио: первое',
+              'Проигрывание аудио: все',
             ][autoplayAudio()]
           }
         >

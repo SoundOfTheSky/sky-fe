@@ -36,12 +36,15 @@ export default function SessionQuestion() {
   const progressSpinnerOptions = createMemo(() => {
     let $subjectStage = subjectInfo()?.data.stage ?? 0;
     const $subjectStats = subjectStats();
-    if (
-      $subjectStats?.status === SubjectStatus.Wrong ||
-      $subjectStats?.status === SubjectStatus.CorrectAfterWrong
-    )
-      $subjectStage = $subjectStage === 0 ? 0 : Math.max(1, $subjectStage - 2);
-    else if ($subjectStats?.status === SubjectStatus.Correct) $subjectStage++;
+    if (previousState()?.subject === SubjectStatus.Unanswered) {
+      if (
+        $subjectStats?.status === SubjectStatus.Wrong ||
+        $subjectStats?.status === SubjectStatus.CorrectAfterWrong
+      )
+        $subjectStage =
+          $subjectStage === 0 ? 0 : Math.max(1, $subjectStage - 2);
+      else if ($subjectStats?.status === SubjectStatus.Correct) $subjectStage++;
+    }
     if ($subjectStage > 5)
       return {
         color: '#3d63ff',
