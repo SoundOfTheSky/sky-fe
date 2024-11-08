@@ -1,6 +1,6 @@
 import { batch, createRoot } from 'solid-js';
 
-import { HOUR_MS, noop } from '@/sky-utils';
+import { HOUR_MS, noop } from 'sky-utils';
 
 import basicStore from './basic.store';
 import { RequestError, request } from './fetch';

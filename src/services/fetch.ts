@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'solid-js';
 
 import BasicStore, { NotificationType } from '@/services/basic.store';
-import { findErrorText } from '@/sky-utils';
+import { findErrorText } from 'sky-utils';
 
 export class RequestError<T = unknown> extends Error {
   public constructor(

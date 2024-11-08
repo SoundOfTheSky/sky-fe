@@ -1,23 +1,23 @@
 import {
+  Accessor,
+  createEffect,
+  createRenderEffect,
+  createResource,
+  createSignal,
   InitializedResourceOptions,
   InitializedResourceReturn,
   NoInfer,
-  ResourceOptions,
-  createEffect,
-  createRenderEffect,
-  createSignal,
   onCleanup,
-  Setter,
-  SignalOptions,
-  Accessor,
-  createResource,
+  ResourceFetcher,
+  ResourceOptions,
   ResourceReturn,
   ResourceSource,
-  ResourceFetcher,
+  Setter,
+  SignalOptions,
 } from 'solid-js';
 
 import * as broadcastChannel from '@/services/broadcast-channel';
-import { createDebouncedFunction, deepEquals, log } from '@/sky-utils';
+import { createDebouncedFunction, deepEquals, log } from 'sky-utils';
 
 // === Reactive ===
 export type Atom<in out T> = (setTo?: Parameters<Setter<T>>[0]) => T;

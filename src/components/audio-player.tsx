@@ -17,7 +17,7 @@ import {
 
 import AudioStore from '@/services/audio.store';
 import { atom, useInterval, useTimeout } from '@/services/reactive';
-import { formatTime } from '@/sky-utils';
+import { formatTime } from 'sky-utils';
 
 import Button from './form/button';
 import Icon from './icon';

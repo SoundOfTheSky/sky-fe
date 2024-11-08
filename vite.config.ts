@@ -41,7 +41,10 @@ export default defineConfig({
         ],
       },
     }),
-    compression({ algorithm: 'brotliCompress', exclude: [/\.(br)$/, /\.(gz)$/] }),
+    compression({
+      algorithm: 'brotliCompress',
+      exclude: [/\.(br)$/, /\.(gz)$/],
+    }),
   ],
   css: {
     modules: {

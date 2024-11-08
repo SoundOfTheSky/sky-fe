@@ -17,7 +17,7 @@ import Input from '@/components/form/input';
 import Icon from '@/components/icon';
 import Tooltip from '@/components/tooltip';
 import { atom, useGlobalEvent } from '@/services/reactive';
-import { shuffleArray } from '@/sky-utils';
+import { shuffleArray } from 'sky-utils';
 
 import { SubjectStatus, useSession } from '../session/session.context';
 

@@ -11,7 +11,7 @@ import { CommonRequestOptions, handleError, request } from '@/services/fetch';
 import { atom, persistentAtom, useInterval } from '@/services/reactive';
 import syncStore, { SYNC_STATUS } from '@/services/sync.store';
 import { StudyEnabledTheme, StudyTheme } from '@/sky-shared/study';
-import { DAY_MS, HOUR_MS, MIN_MS, retry, wait } from '@/sky-utils';
+import { DAY_MS, HOUR_MS, MIN_MS, retry, wait } from 'sky-utils';
 
 import { getThemes } from './study.rest';
 

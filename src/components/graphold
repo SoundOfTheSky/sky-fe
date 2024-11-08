@@ -1,6 +1,6 @@
 /* eslint-disable sonarjs/cognitive-complexity */
 import { Component, createEffect, onMount, onCleanup } from 'solid-js';
-import { bezier, binarySearch, createCashedFunction, cutNumber, distance2d } from '@/sky-utils';
+import { bezier, binarySearch, createCashedFunction, cutNumber, distance2d } from 'sky-utils';
 
 export type GraphProperties = {
   data: {

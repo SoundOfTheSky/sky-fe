@@ -8,8 +8,8 @@ import { persistentAtom } from '@/services/reactive';
 import AudioPlayer from './components/audio-player';
 import { WebSocketProvider } from './services/web-socket.context';
 
-import './global.scss';
 import './fonts.scss';
+import './global.scss';
 
 const App: ParentComponent = (properties) => {
   const fontPixelization = persistentAtom('fontPixelization', true);

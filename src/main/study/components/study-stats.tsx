@@ -2,7 +2,7 @@ import { Component, createEffect, createMemo, Index, Show } from 'solid-js';
 
 import Skeleton from '@/components/loading/skeleton';
 import Tooltip from '@/components/tooltip';
-import { DAY_MS } from '@/sky-utils';
+import { DAY_MS } from 'sky-utils';
 
 import { useStudy } from '../services/study.context';
 

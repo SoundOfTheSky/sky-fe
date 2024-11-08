@@ -14,7 +14,7 @@ import {
   StudyUserQuestion,
   StudyUserSubject,
 } from '@/sky-shared/study';
-import { createDelayedFunction } from '@/sky-utils';
+import { createDelayedFunction } from 'sky-utils';
 
 import SubjectRef from '../components/subject-ref';
 import Themes from '../components/themes';

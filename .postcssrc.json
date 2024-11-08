@@ -1,7 +1,0 @@
-{
-  "syntax": "postcss-scss",
-  "map": true,
-  "plugins": {
-    "autoprefixer": {}
-  }
-}

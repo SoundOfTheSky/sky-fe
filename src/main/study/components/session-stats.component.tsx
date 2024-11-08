@@ -4,7 +4,7 @@ import { createMemo, For, Show } from 'solid-js';
 
 import Button from '@/components/form/button';
 import Icon from '@/components/icon';
-import { formatTime } from '@/sky-utils';
+import { formatTime } from 'sky-utils';
 
 import parseHTML from '../services/parseHTML';
 import { SubjectStatus, useSession } from '../session/session.context';

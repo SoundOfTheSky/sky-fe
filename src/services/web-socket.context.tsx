@@ -8,7 +8,7 @@ import {
   useContext,
 } from 'solid-js';
 
-import { log } from '@/sky-utils';
+import { log } from 'sky-utils';
 
 import basicStore, { NotificationType } from './basic.store';
 import { atom } from './reactive';

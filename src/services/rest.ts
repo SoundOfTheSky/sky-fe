@@ -3,14 +3,14 @@ import { TypeCheck } from '@sinclair/typebox/compiler';
 import { untrack } from 'solid-js';
 
 import { TableDefaults } from '@/sky-shared/db';
-import { JSONSerializable, UUID } from '@/sky-utils';
+import { JSONSerializable, UUID } from 'sky-utils';
 
+import { TypeCheckerError } from '@/sky-shared/type-checker';
 import authStore from './auth.store';
 import basicStore from './basic.store';
 import { db, DBOptions } from './db';
 import { CommonRequestOptions, request, RequestError } from './fetch';
 import syncStore, { SYNC_STATUS } from './sync.store';
-import { TypeCheckerError } from '@/sky-shared/type-checker';
 
 export type RESTBody = JSONSerializable & TableDefaults;
 export type RESTItemIDBRequestOptions = CommonRequestOptions & {

@@ -8,7 +8,7 @@ import {
   studyUserQuestionEndpoint,
   studyUserSubjectEndpoint,
 } from '@/main/study/services/study.rest';
-import { HOUR_MS, UUID } from '@/sky-utils';
+import { HOUR_MS, UUID } from 'sky-utils';
 
 import authStore from './auth.store';
 import basicStore from './basic.store';

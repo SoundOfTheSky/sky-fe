@@ -15,7 +15,7 @@ import {
   untrack,
   useContext,
 } from 'solid-js';
-import { isJapanese as wkIsJapanese, toKana } from 'wanakana';
+import { toKana, isJapanese as wkIsJapanese } from 'wanakana';
 
 import basicStore, { NotificationType } from '@/services/basic.store';
 import { handleError } from '@/services/fetch';
@@ -28,7 +28,7 @@ import {
 } from '@/services/reactive';
 import { getDefaultRestFields } from '@/services/rest';
 import syncStore from '@/services/sync.store';
-import { shuffleArray } from '@/sky-utils';
+import { shuffleArray } from 'sky-utils';
 
 import { useStudy } from '../services/study.context';
 import {
