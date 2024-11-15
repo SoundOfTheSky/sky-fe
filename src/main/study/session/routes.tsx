@@ -1,14 +1,14 @@
-import { Route } from '@solidjs/router';
-import { lazy } from 'solid-js';
+import { Route } from '@solidjs/router'
+import { lazy } from 'solid-js'
 
-const Layout = lazy(() => import('./layout'));
-const Session = lazy(() => import('./session'));
+const Layout = lazy(() => import('./layout'))
+const Session = lazy(() => import('./session'))
 
-export default () => {
+export default function routes() {
   return (
-    <Route path='/session' component={Layout}>
-      <Route path='/reviews' component={Session} />
-      <Route path='/lessons' component={Session} />
+    <Route path="/session" component={Layout}>
+      <Route path="/reviews" component={Session} />
+      <Route path="/lessons" component={Session} />
     </Route>
-  );
-};
+  )
+}

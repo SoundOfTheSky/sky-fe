@@ -1,15 +1,15 @@
-import { JSX, ParentComponent, splitProps } from 'solid-js';
+import { JSX, ParentComponent, splitProps } from 'solid-js'
 
-import s from './button.module.scss';
+import s from './button.module.scss'
 
 const Button: ParentComponent<JSX.ButtonHTMLAttributes<HTMLButtonElement>> = (
   properties,
 ) => {
-  const [props, attributes] = splitProps(properties, ['children']);
+  const [properties_, attributes] = splitProps(properties, ['children'])
   return (
     <button {...attributes} class={`${s.button} ${attributes.class ?? ''}`}>
-      {props.children}
+      {properties_.children}
     </button>
-  );
-};
-export default Button;
+  )
+}
+export default Button

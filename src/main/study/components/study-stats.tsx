@@ -1,50 +1,53 @@
-import { Component, createEffect, createMemo, Index, Show } from 'solid-js';
+import { DAY_MS } from '@softsky/utils'
+import { Component, createEffect, createMemo, Index, Show } from 'solid-js'
 
-import Skeleton from '@/components/loading/skeleton';
-import Tooltip from '@/components/tooltip';
-import { DAY_MS } from 'sky-utils';
+import Skeleton from '@/components/loading/skeleton'
+import Tooltip from '@/components/tooltip'
 
-import { useStudy } from '../services/study.context';
+import { useStudy } from '../services/study.context'
 
-import s from './study-stats.module.scss';
+import s from './study-stats.module.scss'
 
 const StudyStats: Component = () => {
   // === Hooks ===
-  const { offlineUnavailable, statsGraph, startDate, today } = useStudy()!;
+  const { offlineUnavailable, statsGraph, startDate, today } = useStudy()!
 
   // === State ===
-  let element: HTMLDivElement | undefined;
+  let element: HTMLDivElement | undefined
 
   // === Memos ===
-  const maxReviewsPerDay = createMemo(() => Math.max(...statsGraph()));
+  const maxReviewsPerDay = createMemo(() => Math.max(...statsGraph()))
 
   // === Effects ===
   // Scroll in view today if possible
   createEffect(() => {
-    if (statsGraph().length && element)
-      element.scrollLeft = element.scrollWidth;
-  });
+    if (statsGraph().length > 0 && element)
+      element.scrollLeft = element.scrollWidth
+  })
 
   return (
     <div class={`card ${s.studyStats}`}>
-      <div class='card-title'>Календарь активности</div>
+      <div class="card-title">Календарь активности</div>
       <Skeleton
-        loading={!statsGraph().length}
+        loading={statsGraph().length === 0}
         offline={offlineUnavailable()}
         class={s.skeleton}
       >
         <div class={s.days} ref={element}>
           <Index each={statsGraph()}>
-            {(reviews, i) => {
-              const date = new Date(startDate().getTime() + i * DAY_MS);
+            {(reviews, index) => {
+              const date = new Date(startDate().getTime() + index * DAY_MS)
               return (
                 <Tooltip
-                  content={
+                  content={(
                     <div class={s.dayInfo}>
                       <div class={s.title}>{date.toLocaleDateString()}</div>
-                      <div>Повторения: {reviews()}</div>
+                      <div>
+                        Повторения:
+                        {reviews()}
+                      </div>
                     </div>
-                  }
+                  )}
                 >
                   <div
                     class={s.day}
@@ -63,12 +66,12 @@ const StudyStats: Component = () => {
                     </Show>
                   </div>
                 </Tooltip>
-              );
+              )
             }}
           </Index>
         </div>
       </Skeleton>
     </div>
-  );
-};
-export default StudyStats;
+  )
+}
+export default StudyStats

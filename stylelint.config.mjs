@@ -2,5 +2,5 @@
 
 /** @type {import("stylelint").Config} */
 export default {
-  extends: ['sky-lint/stylelint.config.mjs'],
+  extends: ['@softsky/configs/stylelint.config.mjs'],
 };

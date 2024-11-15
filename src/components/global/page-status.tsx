@@ -1,21 +1,21 @@
-import { Component, Match, Switch } from 'solid-js';
-import { Transition } from 'solid-transition-group';
+import { Component, Match, Switch } from 'solid-js'
+import { Transition } from 'solid-transition-group'
 
-import BasicStore from '@/services/basic.store';
-import SyncStore, { SYNC_STATUS } from '@/services/sync.store';
-import { createTransitionOptions } from '@/services/transition';
+import BasicStore from '@/services/basic.store'
+import SyncStore, { SYNC_STATUS } from '@/services/sync.store'
+import { createTransitionOptions } from '@/services/transition'
 
-import s from './page-status.module.scss';
+import s from './page-status.module.scss'
 
 const transition = createTransitionOptions(
   {
     maxHeight: ['0px', '24px'],
   },
   200,
-);
+)
 
 const PageStatus: Component = () => {
-  const { loading, online } = BasicStore;
+  const { loading, online } = BasicStore
 
   return (
     <Transition {...transition}>
@@ -28,7 +28,10 @@ const PageStatus: Component = () => {
                 transform: `scaleX(${SyncStore.progress()})`,
               }}
             />
-            Загрузка изменений: {~~(SyncStore.progress() * 100)}%
+            Загрузка изменений:
+            {' '}
+            {~~(SyncStore.progress() * 100)}
+            %
           </div>
         </Match>
         <Match when={SyncStore.status() === SYNC_STATUS.CACHE}>
@@ -39,7 +42,10 @@ const PageStatus: Component = () => {
                 transform: `scaleX(${SyncStore.progress()})`,
               }}
             />
-            Кэширование: {~~(SyncStore.progress() * 100)}%
+            Кэширование:
+            {' '}
+            {~~(SyncStore.progress() * 100)}
+            %
           </div>
         </Match>
         <Match when={SyncStore.status() === SYNC_STATUS.ERRORED}>
@@ -53,6 +59,6 @@ const PageStatus: Component = () => {
         </Match>
       </Switch>
     </Transition>
-  );
-};
-export default PageStatus;
+  )
+}
+export default PageStatus

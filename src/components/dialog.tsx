@@ -1,66 +1,66 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { ParentComponent, untrack, Show, onMount, createMemo } from 'solid-js';
+import { ParentComponent, Show, createMemo, onMount, untrack } from 'solid-js'
 
-import { atom } from '@/services/reactive';
+import { atom } from '@/services/reactive'
 
-import s from './dialog.module.scss';
+import s from './dialog.module.scss'
 
 const Dialog: ParentComponent<{
-  forceFullscreen?: boolean;
-  dark?: boolean;
-  onClose?: () => unknown;
-  width?: string;
+  forceFullscreen?: boolean
+  dark?: boolean
+  onClose?: () => unknown
+  width?: string
 }> = (properties) => {
   // === Hooks ===
   onMount(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        offsetY(0);
-      });
-    });
-  });
+        offsetY(0)
+      })
+    })
+  })
   // === State ===
-  const offsetY = atom(window.innerHeight);
-  const touchStartY = atom<number>();
+  const offsetY = atom(window.innerHeight)
+  const touchStartY = atom<number>()
   // === Memos ===
   const fullscreen = createMemo(
     () => properties.forceFullscreen ?? window.innerHeight > window.innerWidth,
-  );
+  )
   const maxOffset = createMemo(() =>
     fullscreen() ? window.innerHeight * 0.6 : window.innerHeight,
-  );
+  )
   // === Functions ===
-  function touchStart(e: TouchEvent | MouseEvent) {
-    touchStartY('touches' in e ? e.touches[0]!.clientY : e.clientY);
+  function touchStart(event: TouchEvent | MouseEvent) {
+    touchStartY('touches' in event ? event.touches[0]!.clientY : event.clientY)
   }
-  function touchMove(e: TouchEvent | MouseEvent) {
+  function touchMove(event: TouchEvent | MouseEvent) {
     untrack(() => {
-      const $touchStartY = touchStartY();
-      if (!$touchStartY) return;
+      const $touchStartY = touchStartY()
+      if (!$touchStartY) return
       offsetY(
         Math.max(
           0,
-          ('touches' in e ? e.touches[0]!.clientY : e.clientY) - $touchStartY,
+          ('touches' in event ? event.touches[0]!.clientY : event.clientY) - $touchStartY,
         ),
-      );
-    });
+      )
+    })
   }
   function touchEnd() {
     untrack(() => {
-      const $touchStartY = touchStartY();
-      if (!$touchStartY) return;
-      const $offsetY = offsetY();
+      const $touchStartY = touchStartY()
+      if (!$touchStartY) return
+      const $offsetY = offsetY()
       if ($offsetY < 16 || $offsetY / (window.innerHeight - $touchStartY) > 0.2)
-        close();
-      else offsetY(0);
-      touchStartY(undefined);
-    });
+        close()
+      else offsetY(0)
+      touchStartY()
+    })
   }
   function close() {
     untrack(() => {
-      offsetY(maxOffset());
-      setTimeout(properties.onClose!, 500);
-    });
+      offsetY(maxOffset())
+      setTimeout(properties.onClose!, 500)
+    })
   }
   return (
     <div
@@ -98,6 +98,6 @@ const Dialog: ParentComponent<{
         {properties.children}
       </div>
     </div>
-  );
-};
-export default Dialog;
+  )
+}
+export default Dialog

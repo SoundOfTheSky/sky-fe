@@ -1,17 +1,17 @@
-import { Route } from '@solidjs/router';
-import { lazy } from 'solid-js';
+import { Route } from '@solidjs/router'
+import { lazy } from 'solid-js'
 
-import StudyRoutes from './study/routes';
+import StudyRoutes from './study/routes'
 
-export default () => {
+export default function routes() {
   return (
-    <Route path='/' component={lazy(() => import('./layout'))}>
-      <Route path='/' component={lazy(() => import('./pages/default-tab'))} />
+    <Route path="/" component={lazy(() => import('./layout'))}>
+      <Route path="/" component={lazy(() => import('./pages/default-tab'))} />
       <Route
-        path='/profile'
+        path="/profile"
         component={lazy(() => import('./pages/profile'))}
       />
       <StudyRoutes />
     </Route>
-  );
-};
+  )
+}

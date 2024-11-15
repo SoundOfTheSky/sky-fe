@@ -1,68 +1,68 @@
-import { mdiCloseCircle } from '@mdi/js';
-import { Component, For, JSX, splitProps } from 'solid-js';
+import { mdiCloseCircle } from '@mdi/js'
+import { Component, For, JSX, splitProps } from 'solid-js'
 
-import { Atom, atom } from '@/services/reactive';
+import { Atom, atom } from '@/services/reactive'
 
-import Icon from '../icon';
+import Icon from '../icon'
 
-import Button from './button';
-import Input from './input';
+import Button from './button'
+import Input from './input'
 
-import s from './tags.module.scss';
+import s from './tags.module.scss'
 
 const Tags: Component<
   JSX.HTMLAttributes<HTMLDivElement> & {
-    value: Atom<string[]>;
-    placeholder: string;
-    onChange?: (data: string[]) => unknown;
+    value: Atom<string[]>
+    placeholder: string
+    onChange?: (data: string[]) => unknown
   }
 > = (properties) => {
   // === State ===
-  const [props, attributes] = splitProps(properties, [
+  const [properties_, attributes] = splitProps(properties, [
     'value',
     'placeholder',
     'onChange',
-  ]);
-  const inputValue = atom('');
+  ])
+  const inputValue = atom('')
 
   // === Functions ===
-  function onInputChange(e: Event) {
-    const target = e.target as HTMLInputElement;
-    const val = target.value;
-    const curVals = props.value();
-    if (!val || curVals.includes(val)) return;
-    const newVal = [...curVals, val];
-    props.value(newVal);
-    target.value = '';
-    props.onChange?.(newVal);
+  function onInputChange(event: Event) {
+    const target = event.target as HTMLInputElement
+    const value = target.value
+    const currentVals = properties_.value()
+    if (!value || currentVals.includes(value)) return
+    const newValue = [...currentVals, value]
+    properties_.value(newValue)
+    target.value = ''
+    properties_.onChange?.(newValue)
   }
   function deleteTag(tag: string) {
-    const newVal = props.value().filter((t) => t !== tag);
-    props.value(newVal);
-    props.onChange?.(newVal);
+    const newValue = properties_.value().filter(t => t !== tag)
+    properties_.value(newValue)
+    properties_.onChange?.(newValue)
   }
   return (
     <div {...attributes} class={`${s.tagsComponent} ${attributes.class ?? ''}`}>
-      <For each={props.value()}>
-        {(tag) => (
+      <For each={properties_.value()}>
+        {tag => (
           <Button
             class={s.tag}
             onClick={() => {
-              deleteTag(tag);
+              deleteTag(tag)
             }}
           >
             <span>{tag}</span>
-            <Icon path={mdiCloseCircle} inline size='16' />
+            <Icon path={mdiCloseCircle} inline size="16" />
           </Button>
         )}
       </For>
       <Input
         value={inputValue}
         onChange={onInputChange}
-        placeholder={props.placeholder}
-        type='text'
+        placeholder={properties_.placeholder}
+        type="text"
       />
     </div>
-  );
-};
-export default Tags;
+  )
+}
+export default Tags

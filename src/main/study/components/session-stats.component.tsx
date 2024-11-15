@@ -1,43 +1,43 @@
-import { mdiCheckBold, mdiClose, mdiCloseThick, mdiUndoVariant } from '@mdi/js';
-import { A } from '@solidjs/router';
-import { createMemo, For, Show } from 'solid-js';
+import { mdiCheckBold, mdiClose, mdiCloseThick, mdiUndoVariant } from '@mdi/js'
+import { formatTime } from '@softsky/utils'
+import { A } from '@solidjs/router'
+import { createMemo, For, Show } from 'solid-js'
 
-import Button from '@/components/form/button';
-import Icon from '@/components/icon';
-import { formatTime } from 'sky-utils';
+import Button from '@/components/form/button'
+import Icon from '@/components/icon'
 
-import parseHTML from '../services/parseHTML';
-import { SubjectStatus, useSession } from '../session/session.context';
+import parseHTML from '../services/parse-html'
+import { SubjectStatus, useSession } from '../session/session.context'
 
-import SubjectRef from './subject-ref';
+import SubjectReference from './subject-reference'
 
-import s from './session-stats.module.scss';
+import s from './session-stats.module.scss'
 
 export default function SessionStats() {
   // === Hooks ===
-  const { timePassed, subjectIds, startTime, stats, subjectsStats } =
-    useSession()!;
+  const { timePassed, subjectIds, startTime, stats, subjectsStats }
+    = useSession()!
 
   const statsArray = createMemo(
     () =>
       [...subjectsStats.entries()] as [
         number,
         {
-          title: string;
-          status: SubjectStatus;
-          time: number;
-          answers: string[];
-          undo: boolean;
+          title: string
+          status: SubjectStatus
+          time: number
+          answers: string[]
+          undo: boolean
         },
       ][],
-  );
+  )
   return (
     <div class={`card ${s.stats}`}>
-      <div class='card-title'>
+      <div class="card-title">
         Review stats
         <Button class={s.finish}>
-          <A href='../..'>
-            <Icon path={mdiClose} size='32' />
+          <A href="../..">
+            <Icon path={mdiClose} size="32" />
           </A>
         </Button>
       </div>
@@ -56,13 +56,17 @@ export default function SessionStats() {
             <td>{subjectIds().length}</td>
             <td>
               {~~(
-                (3_600_000 / (Date.now() - startTime)) *
-                subjectIds().length *
-                100
-              ) / 100}{' '}
+                (3_600_000 / (Date.now() - startTime))
+                * subjectIds().length
+                * 100
+              ) / 100}
+              {' '}
               S/H
             </td>
-            <td>{~~(stats().correctPercent * 100)}%</td>
+            <td>
+              {~~(stats().correctPercent * 100)}
+              %
+            </td>
           </tr>
         </tbody>
       </table>
@@ -80,12 +84,12 @@ export default function SessionStats() {
             {([id, stats]) => (
               <tr>
                 <td>
-                  <SubjectRef id={id}>{parseHTML(stats.title)}</SubjectRef>
+                  <SubjectReference id={id}>{parseHTML(stats.title)}</SubjectReference>
                 </td>
                 <td>{formatTime(stats.time * 1000)}</td>
                 <td>
                   <Show when={stats.undo}>
-                    <Icon inline path={mdiUndoVariant} size='24' />
+                    <Icon inline path={mdiUndoVariant} size="24" />
                   </Show>
                 </td>
                 <td>
@@ -96,7 +100,7 @@ export default function SessionStats() {
                         ? mdiCheckBold
                         : mdiCloseThick
                     }
-                    size='24'
+                    size="24"
                   />
                 </td>
               </tr>
@@ -105,5 +109,5 @@ export default function SessionStats() {
         </tbody>
       </table>
     </div>
-  );
+  )
 }

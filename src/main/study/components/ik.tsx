@@ -1,33 +1,31 @@
-import { mdiVolumeHigh } from '@mdi/js';
-import { For, ParentComponent, createResource } from 'solid-js';
+import { mdiVolumeHigh } from '@mdi/js'
+import { For, ParentComponent, createResource } from 'solid-js'
 
-import Button from '@/components/form/button';
-import Icon from '@/components/icon';
-import Skeleton from '@/components/loading/skeleton';
-import { onMounted } from '@/services/reactive';
+import Button from '@/components/form/button'
+import Icon from '@/components/icon'
+import Skeleton from '@/components/loading/skeleton'
+import { onMounted } from '@/services/reactive'
 
-import { useStudy } from '../services/study.context';
+import { getImmersionKitExamples } from '../services/study.context'
 
-import s from './ik.module.scss';
+import s from './ik.module.scss'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-onMounted;
+onMounted
 
 const IK: ParentComponent = (properties) => {
-  const { getImmersionKitExamples } = useStudy()!;
-
   const [examples] = createResource(
     () => [properties.children as string] as const,
     ([query]) => getImmersionKitExamples(query),
-  );
+  )
 
   return (
     <div class={s.immersionKitComponent}>
       <Skeleton loading={!examples()}>
         <For each={examples()!.data}>
-          {(d) => (
+          {d => (
             <For each={d.examples}>
-              {(example) => (
+              {example => (
                 <div class={s.example}>
                   <Button
                     onClick={() => void new Audio(example.sound_url).play()}
@@ -36,7 +34,7 @@ const IK: ParentComponent = (properties) => {
                     }}
                   >
                     <div class={s.overlay}>
-                      <Icon path={mdiVolumeHigh} size='64' />
+                      <Icon path={mdiVolumeHigh} size="64" />
                     </div>
                     <div class={s.name}>{example.deck_name}</div>
                   </Button>
@@ -68,6 +66,6 @@ const IK: ParentComponent = (properties) => {
         </For>
       </Skeleton>
     </div>
-  );
-};
-export default IK;
+  )
+}
+export default IK

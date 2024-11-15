@@ -1,9 +1,9 @@
-import { Router } from '@solidjs/router';
-import { render } from 'solid-js/web';
+import { Router } from '@solidjs/router'
+import { render } from 'solid-js/web'
 
-import App from '@/app';
+import App from '@/app'
 
-import Routes from './main/routes';
+import Routes from './main/routes'
 
 render(
   () => (
@@ -12,7 +12,7 @@ render(
     </Router>
   ),
   document.querySelector('#root')!,
-);
+)
 
 // TODO: Offline mode
 // TODO: Make all vocab/kanji as <subject>
@@ -22,14 +22,14 @@ render(
 // TODO: Preload content in subjects (images, audio)
 
 declare global {
-  function setTimeout<TArgs extends unknown[]>(
-    callback: (...args: TArgs) => void,
+  function setTimeout<TArguments extends unknown[]>(
+    callback: (...arguments_: TArguments) => void,
     ms?: number,
-    ...args: TArgs
-  ): number;
-  function setInterval<TArgs extends unknown[]>(
-    callback: (...args: TArgs) => void,
+    ...arguments_: TArguments
+  ): number
+  function setInterval<TArguments extends unknown[]>(
+    callback: (...arguments_: TArguments) => void,
     ms?: number,
-    ...args: TArgs
-  ): number;
+    ...arguments_: TArguments
+  ): number
 }

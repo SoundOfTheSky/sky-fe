@@ -4,28 +4,28 @@ import {
   ParentComponent,
   children as createChildren,
   createEffect,
-} from 'solid-js';
+} from 'solid-js'
 
-import { atom } from '@/services/reactive';
+import { atom } from '@/services/reactive'
 
-import s from './tabs.module.scss';
+import s from './tabs.module.scss'
 
 const Tabs: ParentComponent = (properties) => {
-  let component: HTMLDivElement | undefined;
-  const children = createChildren(() => properties.children);
+  let component: HTMLDivElement | undefined
+  const children = createChildren(() => properties.children)
   const tabs = createMemo(() =>
     children
       .toArray()
       .filter(Boolean)
-      .map((child) => (child as HTMLElement).dataset.tab!),
-  );
-  const activeTabI = atom(0);
-  const activeTabContent = createMemo(() => children.toArray()[activeTabI()]);
+      .map(child => (child as HTMLElement).dataset.tab!),
+  )
+  const activeTabI = atom(0)
+  const activeTabContent = createMemo(() => children.toArray()[activeTabI()])
   createEffect(() => {
-    tabs();
-    activeTabI(0);
-    if (component) component.scrollTop = 0;
-  });
+    tabs()
+    activeTabI(0)
+    if (component) component.scrollTop = 0
+  })
   return (
     <div class={s.tabsComponent} ref={component}>
       <div class={s.titles}>
@@ -42,6 +42,6 @@ const Tabs: ParentComponent = (properties) => {
       </div>
       <div class={s.content}>{activeTabContent()}</div>
     </div>
-  );
-};
-export default Tabs;
+  )
+}
+export default Tabs

@@ -1,18 +1,18 @@
-import { Show, createMemo, Index } from 'solid-js';
+import { createMemo, Index, Show } from 'solid-js'
 
-import Skeleton from '@/components/loading/skeleton';
-import Tooltip from '@/components/tooltip';
-import { resizeTextToFit } from '@/services/reactive';
-import { srs } from '@/sky-shared/study';
+import Skeleton from '@/components/loading/skeleton'
+import Tooltip from '@/components/tooltip'
+import { resizeTextToFit } from '@/services/reactive'
+import { srs } from '@/sky-shared/study'
 
-import parseHTML from '../services/parseHTML';
-import { useStudy } from '../services/study.context';
-import { SubjectStatus, useSession } from '../session/session.context';
+import parseHTML from '../services/parse-html'
+import { useStudy } from '../services/study.context'
+import { SubjectStatus, useSession } from '../session/session.context'
 
-import s from './session-question.module.scss';
+import s from './session-question.module.scss'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-resizeTextToFit;
+resizeTextToFit
 
 export default function SessionQuestion() {
   const {
@@ -29,21 +29,21 @@ export default function SessionQuestion() {
     subjectInfo,
     autoplayAudio,
     currentSubjectQuestionsStatuses,
-  } = useSession()!;
-  const { offlineUnavailable } = useStudy()!;
+  } = useSession()!
+  const { offlineUnavailable } = useStudy()!
 
   /** Current subject progress percent. From 0 to 1 untill unlock, from 1 to 2 utill burned */
   const progressSpinnerOptions = createMemo(() => {
-    let $subjectStage = subjectInfo()?.data.stage ?? 0;
-    const $subjectStats = subjectStats();
+    let $subjectStage = subjectInfo()?.data.stage ?? 0
+    const $subjectStats = subjectStats()
     if (previousState()?.subject === SubjectStatus.Unanswered) {
       if (
-        $subjectStats?.status === SubjectStatus.Wrong ||
-        $subjectStats?.status === SubjectStatus.CorrectAfterWrong
+        $subjectStats?.status === SubjectStatus.Wrong
+        || $subjectStats?.status === SubjectStatus.CorrectAfterWrong
       )
-        $subjectStage =
-          $subjectStage === 0 ? 0 : Math.max(1, $subjectStage - 2);
-      else if ($subjectStats?.status === SubjectStatus.Correct) $subjectStage++;
+        $subjectStage
+          = $subjectStage === 0 ? 0 : Math.max(1, $subjectStage - 2)
+      else if ($subjectStats?.status === SubjectStatus.Correct) $subjectStage++
     }
     if ($subjectStage > 5)
       return {
@@ -51,14 +51,14 @@ export default function SessionQuestion() {
         bgColor: '#6785fd',
         progress: ($subjectStage - 5) / (srs.length + 1 - 5),
         stage: $subjectStage,
-      };
+      }
     return {
       color: '#6785fd',
       bgColor: '#192039',
       progress: $subjectStage / 5,
       stage: $subjectStage,
-    };
-  });
+    }
+  })
 
   return (
     <div class={`card ${s.question}`}>
@@ -85,7 +85,7 @@ export default function SessionQuestion() {
               progressSpinnerOptions().progress > 0.5
                 ? progressSpinnerOptions().color
                 : progressSpinnerOptions().bgColor,
-            transform: `rotate(${
+            'transform': `rotate(${
               progressSpinnerOptions().progress > 0.5
                 ? (progressSpinnerOptions().progress - 0.5) * 360
                 : (1 - progressSpinnerOptions().progress) * -360
@@ -95,19 +95,28 @@ export default function SessionQuestion() {
         <span>{progressSpinnerOptions().stage}</span>
       </div>
       <div class={s.stats}>
-        <Tooltip content='Пройдено/Всего вопросов'>
+        <Tooltip content="Пройдено/Всего вопросов">
           <div>
-            {stats().passed}/{subjectIds().length}
+            {stats().passed}
+            /
+            {subjectIds().length}
           </div>
-        </Tooltip>{' '}
-        <Tooltip content='Процент правильных овтетов'>
-          <div>{~~(stats().correctPercent * 100)}%</div>
         </Tooltip>
-        <Tooltip content='Времени прошло'>
+        {' '}
+        <Tooltip content="Процент правильных ответов">
+          <div>
+            {~~(stats().correctPercent * 100)}
+            %
+          </div>
+        </Tooltip>
+        <Tooltip content="Времени прошло">
           <div>{timePassed()}</div>
         </Tooltip>
-        <Tooltip content='Приблизительно осталось'>
-          <div>{eta()}мин.</div>
+        <Tooltip content="Приблизительно осталось">
+          <div>
+            {eta()}
+            мин.
+          </div>
         </Tooltip>
       </div>
       <div
@@ -118,10 +127,10 @@ export default function SessionQuestion() {
           <div class={s.title}>
             <Show
               when={
-                (previousState() ??
-                  subjectStats()?.status === SubjectStatus.Unlearned) &&
-                !question()!.data.question.includes(subject()!.data.title) &&
-                !hint().includes(subject()!.data.title)
+                (previousState()
+                  ?? subjectStats()?.status === SubjectStatus.Unlearned)
+                && !question()!.data.question.includes(subject()!.data.title)
+                && !hint().includes(subject()!.data.title)
               }
             >
               <b>{parseHTML(subject()!.data.title, autoplayAudio())}</b>
@@ -151,5 +160,5 @@ export default function SessionQuestion() {
         </Index>
       </div>
     </div>
-  );
+  )
 }

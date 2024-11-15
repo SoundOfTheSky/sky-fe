@@ -1,4 +1,4 @@
-type KeyframesTransitionOption = Record<string, string[] | number[]>;
+type KeyframesTransitionOption = Record<string, string[] | number[]>
 /**
  * Simpler transition options generator.
  * Delay is the delay before animation.
@@ -9,12 +9,12 @@ export function createTransitionOptions(
   duration: number,
   delay?: number | true,
 ) {
-  const keyframeEntries = Object.entries(keyframes);
+  const keyframeEntries = Object.entries(keyframes)
   const transition: {
-    onBeforeEnter?: (element?: Element) => unknown;
-    onEnter: (element: Element, done: () => void) => unknown;
-    onAfterEnter?: (element: Element) => unknown;
-    onExit: (element: Element, done: () => void) => unknown;
+    onBeforeEnter?: (element?: Element) => unknown
+    onEnter: (element: Element, done: () => void) => unknown
+    onAfterEnter?: (element: Element) => unknown
+    onExit: (element: Element, done: () => void) => unknown
   } = {
     onEnter: async (element, done) =>
       element
@@ -34,56 +34,56 @@ export function createTransitionOptions(
           },
         )
         .finished.then(done),
-  };
+  }
   if (delay) {
-    let origStyles = '';
+    let origStyles = ''
     transition.onBeforeEnter = (element) => {
-      origStyles = element?.getAttribute('style') ?? '';
+      origStyles = element?.getAttribute('style') ?? ''
       element?.setAttribute(
         'style',
-        origStyles +
-          '; ' +
-          keyframeEntries.map(([k, v]) => `${kebabize(k)}: ${v[0]}`).join('; '),
-      );
-    };
+        origStyles
+        + '; '
+        + keyframeEntries.map(([k, v]) => `${kebabize(k)}: ${v[0]}`).join('; '),
+      )
+    }
     transition.onAfterEnter = (element) => {
-      element.setAttribute('style', origStyles);
-    };
+      element.setAttribute('style', origStyles)
+    }
   }
 
-  return transition;
+  return transition
 }
 
 const kebabize = (string_: string) =>
   string_.replaceAll(
     /[A-Z]+(?![a-z])|[A-Z]/g,
     ($, ofs) => (ofs ? '-' : '') + $.toLowerCase(),
-  );
+  )
 export const opacityTransitionImmediate = createTransitionOptions(
   {
     opacity: [0, 1],
   },
   200,
-);
+)
 export const opacityTransition = createTransitionOptions(
   {
     opacity: [0, 1],
   },
   200,
   true,
-);
+)
 export const slideInTransition = createTransitionOptions(
   {
     transform: ['translateX(200%)', 'translateX(0)'],
   },
   500,
-);
+)
 export const slideDownTransition = createTransitionOptions(
   {
     transform: ['translateY(200%)', 'translateY(0)'],
   },
   500,
-);
+)
 
 export function changeNumberSmooth(
   start: number,
@@ -91,18 +91,19 @@ export function changeNumberSmooth(
   time: number,
   callback: (number: number) => void,
 ) {
-  const startTime = performance.now();
-  const delta = end - start;
-  let frame = requestAnimationFrame(tick);
+  const startTime = performance.now()
+  const delta = end - start
+  let frame = requestAnimationFrame(tick)
   function tick() {
-    const timePassed = performance.now() - startTime;
+    const timePassed = performance.now() - startTime
     if (timePassed >= time) {
-      callback(end);
-    } else {
-      callback((timePassed / time) * delta + start);
-      frame = requestAnimationFrame(tick);
+      callback(end)
+    }
+    else {
+      callback((timePassed / time) * delta + start)
+      frame = requestAnimationFrame(tick)
     }
   }
 
-  return frame;
+  return frame
 }

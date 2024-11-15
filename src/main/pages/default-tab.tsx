@@ -1,3 +1,7 @@
+import { useNavigate } from '@solidjs/router'
+
 export default function DefaultTab() {
-  return <div class='card-container'>ммм)</div>;
+  const nav = useNavigate()
+  nav('/study')
+  return <div class="card-container" />
 }

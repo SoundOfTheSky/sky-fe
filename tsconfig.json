@@ -1,10 +1,8 @@
 {
-  "extends": "sky-lint/tsconfig.json",
+  "extends": "@softsky/configs/tsconfig.json",
   "compilerOptions": {
+    "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "types": ["vite/client", "vite-plugin-pwa/client"],
-    "paths": {
-      "@/*": ["${configDir}/src/*"]
-    },
   }
 }
