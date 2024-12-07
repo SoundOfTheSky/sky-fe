@@ -77,7 +77,7 @@ function getProvided() {
     ),
   )
   const offlineUnavailable = createMemo(
-    () => themes() && syncStore.status() === SYNC_STATUS.ERRORED,
+    () => !basicStore.online() && (syncStore.status() === SYNC_STATUS.ERRORED || syncStore.status() === SYNC_STATUS.IDLE),
   )
   const ready = createMemo(
     () =>
@@ -123,7 +123,7 @@ function getProvided() {
 
   async function update() {
     try {
-      themes()
+      themes(undefined)
       themes(await retry(() => getThemes(), 6, 5000))
     }
     catch (error) {

@@ -6,4 +6,9 @@ import solid from "eslint-plugin-solid/configs/typescript";
 export default [
   ...skyEslintConfig,
   solid,
+  {
+    rules: {
+      'unicorn/no-useless-undefined': 0
+    }
+  }
 ];

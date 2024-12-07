@@ -5,7 +5,6 @@ import { createEffect, Show } from 'solid-js'
 import Button from '@/components/form/button'
 import Icon from '@/components/icon'
 import Skeleton from '@/components/loading/skeleton'
-import FatalError from '@/main/pages/fatal-error'
 import { atom } from '@/services/reactive'
 import syncStore, { SYNC_STATUS } from '@/services/sync.store'
 
@@ -48,189 +47,187 @@ export default function StudyTab() {
   })
 
   return (
-    <Show when={!offlineUnavailable()} fallback={<FatalError />}>
-      <div class="card-container">
-        <Themes />
-        <A
-          class={`card ${s.special}`}
-          classList={{
-            [s.disabled!]: lessons().length === 0,
-          }}
-          href={
-            showLessonsSettings() || lessons().length === 0
-              ? ''
-              : './session/lessons'
-          }
-          draggable={false}
+    <div class="card-container">
+      <Themes />
+      <A
+        class={`card ${s.special}`}
+        classList={{
+          [s.disabled!]: lessons().length === 0 && ready(),
+        }}
+        href={
+          showLessonsSettings() || lessons().length === 0
+            ? ''
+            : './session/lessons'
+        }
+        draggable={false}
+      >
+        <Show
+          when={showLessonsSettings()}
+          fallback={(
+            <>
+              <h1>Уроки</h1>
+              <Skeleton
+                loading={!ready()}
+                class={s.reviewsAmount}
+                offline={offlineUnavailable()}
+              >
+                <h2>{lessons().length}</h2>
+              </Skeleton>
+            </>
+          )}
         >
-          <Show
-            when={showLessonsSettings()}
-            fallback={(
-              <>
-                <h1>Уроки</h1>
-                <Skeleton
-                  loading={!ready()}
-                  class={s.reviewsAmount}
-                  offline={offlineUnavailable()}
-                >
-                  <h2>{lessons().length}</h2>
-                </Skeleton>
-              </>
-            )}
-          >
-            <div title="Количество уроков за одну сессию">
-              <div>
-                Количество:
-                {settings().lessons.amount}
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="50"
-                aria-label="Количество"
-                value={settings().lessons.amount}
-                onInput={event =>
-                  settings(x => ({
-                    reviews: x.reviews,
-                    disabledThemeIds: x.disabledThemeIds,
-                    lessons: {
-                      ...x.lessons,
-                      amount: Number.parseInt(
-                        (event.target as HTMLInputElement).value,
-                      ),
-                    },
-                  }))}
-              />
+          <div title="Количество уроков за одну сессию">
+            <div>
+              Количество:
+              {settings().lessons.amount}
             </div>
-            <div title="Размер группы уроков">
-              <div>
-                Группировать по:
-                {' '}
-                {settings().lessons.batch === 50
-                  ? 'everything'
-                  : settings().lessons.batch}
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="50"
-                value={settings().lessons.batch}
-                aria-label="Группировать по"
-                onInput={event =>
-                  settings(x => ({
-                    reviews: x.reviews,
-                    disabledThemeIds: x.disabledThemeIds,
-                    lessons: {
-                      ...x.lessons,
-                      batch: Number.parseInt(
-                        (event.target as HTMLInputElement).value,
-                      ),
-                    },
-                  }))}
-              />
+            <input
+              type="range"
+              min="1"
+              max="50"
+              aria-label="Количество"
+              value={settings().lessons.amount}
+              onInput={event =>
+                settings(x => ({
+                  reviews: x.reviews,
+                  disabledThemeIds: x.disabledThemeIds,
+                  lessons: {
+                    ...x.lessons,
+                    amount: Number.parseInt(
+                      (event.target as HTMLInputElement).value,
+                    ),
+                  },
+                }))}
+            />
+          </div>
+          <div title="Размер группы уроков">
+            <div>
+              Группировать по:
+              {' '}
+              {settings().lessons.batch === 50
+                ? 'everything'
+                : settings().lessons.batch}
             </div>
-          </Show>
+            <input
+              type="range"
+              min="1"
+              max="50"
+              value={settings().lessons.batch}
+              aria-label="Группировать по"
+              onInput={event =>
+                settings(x => ({
+                  reviews: x.reviews,
+                  disabledThemeIds: x.disabledThemeIds,
+                  lessons: {
+                    ...x.lessons,
+                    batch: Number.parseInt(
+                      (event.target as HTMLInputElement).value,
+                    ),
+                  },
+                }))}
+            />
+          </div>
+        </Show>
 
-          <Button
-            onClick={(event) => {
-              event.preventDefault()
-              showLessonsSettings(x => !x)
-            }}
-            class={s.settingsBtn}
-          >
-            <Icon path={showLessonsSettings() ? mdiCogOff : mdiCog} size="24" />
-          </Button>
-        </A>
-        <A
-          class={`card ${s.special}`}
-          classList={{
-            [s.disabled!]: reviews().length === 0,
+        <Button
+          onClick={(event) => {
+            event.preventDefault()
+            showLessonsSettings(x => !x)
           }}
-          href={
-            reviews().length === 0 || showReviewsSettings()
-              ? ''
-              : './session/reviews'
-          }
-          draggable={false}
+          class={s.settingsBtn}
         >
-          <Show
-            when={showReviewsSettings()}
-            fallback={(
-              <>
-                <h1>Повторения</h1>
-                <Skeleton
-                  loading={!ready()}
-                  class={s.reviewsAmount}
-                  offline={offlineUnavailable()}
-                >
-                  <h2>{reviews().length}</h2>
-                </Skeleton>
-              </>
-            )}
-          >
-            <div title="Количество повторений за одну сессию">
-              <div>
-                Количество:
-                {settings().reviews.amount}
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="200"
-                value={settings().reviews.amount}
-                aria-label="Количество"
-                onInput={event =>
-                  settings(x => ({
-                    lessons: x.lessons,
-                    disabledThemeIds: x.disabledThemeIds,
-                    reviews: {
-                      ...x.reviews,
-                      amount: Number.parseInt(
-                        (event.target as HTMLInputElement).value,
-                      ),
-                    },
-                  }))}
-              />
+          <Icon path={showLessonsSettings() ? mdiCogOff : mdiCog} size="24" />
+        </Button>
+      </A>
+      <A
+        class={`card ${s.special}`}
+        classList={{
+          [s.disabled!]: reviews().length === 0 && ready(),
+        }}
+        href={
+          reviews().length === 0 || showReviewsSettings()
+            ? ''
+            : './session/reviews'
+        }
+        draggable={false}
+      >
+        <Show
+          when={showReviewsSettings()}
+          fallback={(
+            <>
+              <h1>Повторения</h1>
+              <Skeleton
+                loading={!ready()}
+                class={s.reviewsAmount}
+                offline={offlineUnavailable()}
+              >
+                <h2>{reviews().length}</h2>
+              </Skeleton>
+            </>
+          )}
+        >
+          <div title="Количество повторений за одну сессию">
+            <div>
+              Количество:
+              {settings().reviews.amount}
             </div>
-            <div title="Размер группы повторений">
-              <div>
-                Группировать по:
-                {settings().reviews.batch}
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="200"
-                value={settings().reviews.batch}
-                aria-label="Группировать по"
-                onInput={event =>
-                  settings(x => ({
-                    lessons: x.lessons,
-                    disabledThemeIds: x.disabledThemeIds,
-                    reviews: {
-                      ...x.reviews,
-                      batch: Number.parseInt(
-                        (event.target as HTMLInputElement).value,
-                      ),
-                    },
-                  }))}
-              />
+            <input
+              type="range"
+              min="1"
+              max="200"
+              value={settings().reviews.amount}
+              aria-label="Количество"
+              onInput={event =>
+                settings(x => ({
+                  lessons: x.lessons,
+                  disabledThemeIds: x.disabledThemeIds,
+                  reviews: {
+                    ...x.reviews,
+                    amount: Number.parseInt(
+                      (event.target as HTMLInputElement).value,
+                    ),
+                  },
+                }))}
+            />
+          </div>
+          <div title="Размер группы повторений">
+            <div>
+              Группировать по:
+              {settings().reviews.batch}
             </div>
-          </Show>
-          <Button
-            onClick={(event) => {
-              event.preventDefault()
-              showReviewsSettings(x => !x)
-            }}
-            class={s.settingsBtn}
-          >
-            <Icon path={showReviewsSettings() ? mdiCogOff : mdiCog} size="24" />
-          </Button>
-        </A>
-        <StudyActivity />
-        <StudyReviewForecast />
-        <StudyStats />
-      </div>
-    </Show>
+            <input
+              type="range"
+              min="1"
+              max="200"
+              value={settings().reviews.batch}
+              aria-label="Группировать по"
+              onInput={event =>
+                settings(x => ({
+                  lessons: x.lessons,
+                  disabledThemeIds: x.disabledThemeIds,
+                  reviews: {
+                    ...x.reviews,
+                    batch: Number.parseInt(
+                      (event.target as HTMLInputElement).value,
+                    ),
+                  },
+                }))}
+            />
+          </div>
+        </Show>
+        <Button
+          onClick={(event) => {
+            event.preventDefault()
+            showReviewsSettings(x => !x)
+          }}
+          class={s.settingsBtn}
+        >
+          <Icon path={showReviewsSettings() ? mdiCogOff : mdiCog} size="24" />
+        </Button>
+      </A>
+      <StudyActivity />
+      <StudyReviewForecast />
+      <StudyStats />
+    </div>
   )
 }

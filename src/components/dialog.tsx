@@ -53,7 +53,7 @@ const Dialog: ParentComponent<{
       if ($offsetY < 16 || $offsetY / (window.innerHeight - $touchStartY) > 0.2)
         close()
       else offsetY(0)
-      touchStartY()
+      touchStartY(undefined)
     })
   }
   function close() {

@@ -8,13 +8,10 @@ import {
 } from 'solid-js'
 import { Transition } from 'solid-transition-group'
 
-import { atom, onOutside, useGlobalEvent } from '@/services/reactive'
+import { atom, useGlobalEvent } from '@/services/reactive'
 import { opacityTransitionImmediate } from '@/services/transition'
 
 import s from './tooltip.module.scss'
-
-// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-onOutside
 
 const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (
   properties,
@@ -56,7 +53,7 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (
     const box = $c.getBoundingClientRect()
     const top = (box.y + box.height) * 2 > window.innerHeight
     pos({
-      x: box.x + box.width / 2,
+      x: Math.min(window.innerWidth - 160, Math.max(box.x + box.width / 2, 160)),
       y: top ? box.y - 8 : box.y + box.height + 8,
       top,
     })
@@ -78,10 +75,12 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (
         <Show when={isOpen()}>
           <div
             class={s.tooltip}
+            classList={{
+              [s.top!]: pos().top,
+            }}
             style={{
               left: pos().x + 'px',
               top: pos().y + 'px',
-              transform: pos().top ? `translate(-50%, -100%)` : undefined,
             }}
             ref={tooltipElement}
           >

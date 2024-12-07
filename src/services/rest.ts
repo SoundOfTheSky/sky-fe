@@ -147,6 +147,11 @@ export class RESTEndpointIDB<
       )
     options.onProgress(1)
   }
+
+  public async clearIDB() {
+    await database.clear(this.idb)
+    await database.delete('keyval', `lastUpdate_${this.idb}`)
+  }
 }
 
 export class RESTItem<T extends RESTBody> {

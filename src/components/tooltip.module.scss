@@ -4,14 +4,20 @@
   position: fixed;
   z-index: 10;
   transform: translateX(-50%);
-}
 
-.tooltip-content {
-  padding: 4px;
-  border-radius: 4px;
-  background-color: $color-background;
-  color: #fff;
-  box-shadow: 0 0 4px 4px rgb(0 0 0 / 20%);
-  font-size: 16px;
-  text-align: center;
+  .tooltip-content {
+    width: max-content;
+    max-width: $min-width;
+    padding: 4px;
+    border-radius: 4px;
+    background-color: $color-background;
+    color: #fff;
+    box-shadow: 0 0 4px 4px rgb(0 0 0 / 20%);
+    font-size: 16px;
+    text-align: center;
+  }
+
+  &.top {
+    transform: translate(-50%, -100%);
+  }
 }

@@ -126,7 +126,7 @@ const Subject: Component<{ id?: number }> = (properties) => {
       $questionInfo.data.synonyms = $synonyms.length > 0 ? $synonyms : undefined
       $questionInfo.data.note = $note.length > 0 ? $note : undefined
       if (!$questionInfo.data.synonyms && !$questionInfo.data.note) {
-        mutateQuestionInfo()
+        mutateQuestionInfo(undefined)
         await $questionInfo.delete()
       }
       else if (wasEmpty) {

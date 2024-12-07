@@ -41,7 +41,7 @@ export default createRoot(() => {
     }
     catch (error) {
       if (error instanceof RequestError) {
-        if (error.code >= 400 && error.code < 500) me()
+        if (error.code >= 400 && error.code < 500) me(undefined)
         else {
           basicStore.online(false)
           throw error

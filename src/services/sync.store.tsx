@@ -11,7 +11,7 @@ import {
 } from '@/main/study/services/study.rest'
 
 import authStore from './auth.store'
-import basicStore from './basic.store'
+import basicStore, { NotificationType } from './basic.store'
 import { database } from './database'
 import { handleError, RequestError } from './fetch'
 import { atom, persistentAtom, useInterval } from './reactive'
@@ -78,6 +78,16 @@ async function syncOfflineTaskQueue(options: {
   }
 }
 
+async function deleteUserDependentStores() {
+  const endpoints = [
+    studyUserSubjectEndpoint,
+    studyUserQuestionEndpoint,
+    studyAnswerEndpoint,
+  ]
+  for (const endpoint of endpoints)
+    await endpoint.clearIDB()
+}
+
 async function syncStudy(options: {
   checkIfAborted: () => void
   onProgress: (p: number) => unknown
@@ -107,6 +117,7 @@ export default createRoot(() => {
 
   // === State ===
   const cached = persistentAtom('cached', false)
+  const lastUserId = persistentAtom<number | undefined>('lastUserId')
   const progress = atom(0)
   const status = atom(SYNC_STATUS.IDLE)
   let syncId = 0
@@ -114,23 +125,54 @@ export default createRoot(() => {
   // === Effects ===
   createEffect(() => {
     basicStore.online()
-    if (!authStore.loading() && authStore.me()) void sync()
+    if (!authStore.loading() && authStore.ready() && authStore.me()) void sync()
   })
 
   // === Functions ===
-  async function sync() {
-    if (!untrack(basicStore.online)) {
-      status(cached() ? SYNC_STATUS.SYNCHED : SYNC_STATUS.ERRORED)
-      return
+  async function askForPersistentStorageAccess() {
+    if (!await navigator.storage.persisted()) {
+      if (localStorage.getItem('declinedOffline') === 'true') {
+        status(SYNC_STATUS.IDLE)
+        return false
+      }
+      basicStore.notify({
+        title: 'Разрешите доступ к хранилищу, чтобы получить доступ к сайту оффлайн.',
+        id: 'persistentStorage',
+      })
+      if (!await navigator.storage.persist()) {
+        basicStore.notifications(notifications => notifications.filter(notification => notification.id !== 'persistentStorage'))
+        basicStore.notify({
+          title: 'Запрещен доступ к хранилищу, доступ к сайту оффлайн невозможен.',
+          timeout: 5000,
+          type: NotificationType.Error,
+        })
+        localStorage.setItem('declinedOffline', 'true')
+        status(SYNC_STATUS.IDLE)
+        return false
+      }
+      basicStore.notifications(notifications => notifications.filter(notification => notification.id !== 'persistentStorage'))
+      localStorage.removeItem('declinedOffline')
     }
+    return true
+  }
+  async function sync() {
     try {
+      const me = untrack(authStore.me)
+      if (!untrack(basicStore.online) || !me) {
+        status(cached() ? SYNC_STATUS.SYNCHED : SYNC_STATUS.IDLE)
+        return
+      }
+      if (!await askForPersistentStorageAccess()) return
       syncId = UUID()
       const currentSyncId = syncId
       const stopIfAborted = () => {
         if (currentSyncId !== syncId) throw new Error('STOP')
       }
       status(SYNC_STATUS.ACTIONS)
-      cached(false)
+      if (me.id !== untrack(lastUserId)) {
+        await deleteUserDependentStores()
+        lastUserId(me.id)
+      }
       await syncOfflineTaskQueue({
         checkIfAborted: stopIfAborted,
         onProgress: progress,

@@ -339,10 +339,10 @@ function getProvided() {
   function onQuestionChange() {
     untrack(() => {
       batch(() => {
-        previousState()
+        previousState(undefined)
         answer('')
         clearTimeout(cooldownUndo())
-        cooldownUndo()
+        cooldownUndo(undefined)
       })
     })
   }
@@ -426,8 +426,8 @@ function getProvided() {
           if (!lessonsMode()) subjectStats()!.answers.push(answer)
           updateQuestionStatus(SubjectStatus.Wrong)
           runWithOwner(owner, () => {
-            cooldownUndo(useTimeout(() => cooldownUndo(), 20_000))
-            cooldownNext(useTimeout(() => cooldownNext(), 2000))
+            cooldownUndo(useTimeout(() => cooldownUndo(undefined), 20_000))
+            cooldownNext(useTimeout(() => cooldownNext(undefined), 2000))
           })
         }
       })
@@ -632,7 +632,7 @@ function getProvided() {
       $questionInfo.data.synonyms = $synonyms.length > 0 ? $synonyms : undefined
       $questionInfo.data.note = $note.length > 0 ? $note : undefined
       if (!$questionInfo.data.synonyms && !$questionInfo.data.note) {
-        mutateQuestionInfo()
+        mutateQuestionInfo(undefined)
         await $questionInfo.delete()
       }
       else if (wasEmpty) {

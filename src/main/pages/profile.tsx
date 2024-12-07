@@ -15,7 +15,7 @@ import s from './profile.module.scss'
 
 export default (() => {
   // === State ===
-  let avatarElement: HTMLImageElement
+  let avatarElement!: HTMLImageElement
   const avatar = atomize(
     createWritableMemo(() => AuthStore.me()?.avatar ?? ''),
   )
@@ -56,7 +56,7 @@ export default (() => {
             class={s.avatar}
             src={imageURL() || '/avatar.webp'}
             alt="My avatar"
-            ref={avatarElement!}
+            ref={avatarElement}
           />
         </div>
         <div class={`card ${s.info}`}>

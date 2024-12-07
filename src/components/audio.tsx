@@ -88,7 +88,7 @@ const Audio: Component<{ src: string, title: string, autoplay?: boolean }> = (
           currentI(0)
         }
         queue(x => x.filter(track => track.src !== $source))
-        source()
+        source(undefined)
       })
     })
   }
