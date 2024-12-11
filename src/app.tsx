@@ -1,12 +1,13 @@
 import { MetaProvider } from '@solidjs/meta'
 import { ParentComponent } from 'solid-js'
 
-import Notifications from '@/components/global/notifications'
+import Modals from '@/components/global/modals'
 import PageStatus from '@/components/global/page-status'
 
 import AudioPlayer from './components/audio-player'
 import { WebSocketProvider } from './services/web-socket.context'
 
+import './classes.scss'
 import './fonts.scss'
 import './global.scss'
 
@@ -28,7 +29,7 @@ const App: ParentComponent = (properties) => {
     <MetaProvider>
       <WebSocketProvider>
         <PageStatus />
-        <Notifications />
+        <Modals />
         {properties.children}
         <AudioPlayer />
       </WebSocketProvider>

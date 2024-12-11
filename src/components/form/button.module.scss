@@ -2,10 +2,8 @@
 
 .button {
   @include hover;
+  @include center;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
   padding: 0;
   border: none;
   background-color: $color-content-background;

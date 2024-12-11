@@ -7,8 +7,8 @@ import Button from '@/components/form/button'
 import Input from '@/components/form/input'
 import Icon from '@/components/icon'
 import AuthStore from '@/services/auth.store'
-import BasicStore, { NotificationType } from '@/services/basic.store'
 import { handleError } from '@/services/fetch'
+import { modalsStore, Severity } from '@/services/modals.store'
 import { atomize } from '@/services/reactive'
 
 import s from './profile.module.scss'
@@ -29,9 +29,9 @@ export default (() => {
   // === Functions ===
   async function userDataChange() {
     if (!avatarElement.complete || avatarElement.naturalHeight === 0) {
-      BasicStore.notify({
+      modalsStore.notify({
         title: 'Не удалось загрузить URL аватара',
-        type: NotificationType.Error,
+        severity: Severity.ERROR,
         timeout: 5000,
       })
       return

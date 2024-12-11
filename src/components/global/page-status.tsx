@@ -1,9 +1,13 @@
+import { mdiInformation } from '@mdi/js'
 import { Component, Match, Switch } from 'solid-js'
 import { Transition } from 'solid-transition-group'
 
 import BasicStore from '@/services/basic.store'
 import SyncStore, { SYNC_STATUS } from '@/services/sync.store'
 import { createTransitionOptions } from '@/services/transition'
+
+import Icon from '../icon'
+import Tooltip from '../tooltip'
 
 import s from './page-status.module.scss'
 
@@ -46,6 +50,9 @@ const PageStatus: Component = () => {
             {' '}
             {~~(SyncStore.progress() * 100)}
             %
+            <Tooltip content="Вы можете не дожидаться окончания синхронизации. При закрытии прогресс сохраняется. Синхронизация нужна только для оффлайн доступа к сайту.">
+              <Icon path={mdiInformation} class="ml-1" />
+            </Tooltip>
           </div>
         </Match>
         <Match when={SyncStore.status() === SYNC_STATUS.ERRORED}>

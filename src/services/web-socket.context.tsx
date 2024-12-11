@@ -1,15 +1,16 @@
 import { log } from '@softsky/utils'
 import {
-  ParentComponent,
   batch,
   createContext,
   createEffect,
   onCleanup,
+  ParentComponent,
   untrack,
   useContext,
 } from 'solid-js'
 
-import basicStore, { NotificationType } from './basic.store'
+import basicStore from './basic.store'
+import { modalsStore, Severity } from './modals.store'
 import { atom } from './reactive'
 
 export enum WebSocketStatus {
@@ -75,11 +76,11 @@ function getProvided() {
           ? [message.data]
           : [message.data.slice(0, index), message.data.slice(index + 1)]
       if (event[0] === 'error')
-        basicStore.notify({
+        modalsStore.notify({
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           title: event[1] || 'Неизвестная ошибка',
           timeout: 5000,
-          type: NotificationType.Error,
+          severity: Severity.ERROR,
         })
       lastEvent(event)
     }

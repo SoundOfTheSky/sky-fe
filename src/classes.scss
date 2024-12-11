@@ -1,0 +1,71 @@
+@use 'vars' as *;
+
+@for $i from 1 to 8 {
+  .m-#{$i} {
+    margin: $i * $s;
+  }
+
+  .mt-#{$i} {
+    margin-top: $i * $s;
+  }
+
+  .mb-#{$i} {
+    margin-bottom: $i * $s;
+  }
+
+  .mr-#{$i} {
+    margin-right: $i * $s;
+  }
+
+  .ml-#{$i} {
+    margin-left: $i * $s;
+  }
+
+  .p-#{$i} {
+    padding: $i * $s;
+  }
+
+  .pt-#{$i} {
+    padding-top: $i * $s;
+  }
+
+  .pb-#{$i} {
+    padding-bottom: $i * $s;
+  }
+
+  .pr-#{$i} {
+    padding-right: $i * $s;
+  }
+
+  .pl-#{$i} {
+    padding-left: $i * $s;
+  }
+
+  .w-#{$i} {
+    width: $i * $s;
+  }
+
+  .h-#{$i} {
+    height: $i * $s;
+  }
+
+  .l-#{$i} {
+    left: $i * $s;
+  }
+
+  .r-#{$i} {
+    right: $i * $s;
+  }
+
+  .t-#{$i} {
+    top: $i * $s;
+  }
+
+  .b-#{$i} {
+    bottom: $i * $s;
+  }
+}
+
+.center {
+  @include center;
+}

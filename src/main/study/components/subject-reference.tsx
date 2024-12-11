@@ -1,7 +1,7 @@
 import { Component, JSX, Show } from 'solid-js'
 
-import Dialog from '@/components/dialog'
 import Button from '@/components/form/button'
+import Modal from '@/components/modal'
 import { atom } from '@/services/reactive'
 
 import Subject from '../pages/subject'
@@ -19,9 +19,9 @@ const SubjectReference: Component<{ id: number, children: JSX.Element | string }
         {properties.children}
       </Button>
       <Show when={dialogShown()}>
-        <Dialog dark onClose={() => dialogShown(false)}>
+        <Modal dark onClose={() => dialogShown(false)}>
           <Subject id={properties.id} />
-        </Dialog>
+        </Modal>
       </Show>
     </span>
   )

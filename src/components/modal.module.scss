@@ -1,18 +1,18 @@
 @use '@/vars' as *;
 
-.dialog-backdrop {
+.modal-backdrop {
+  @include center;
+
   position: fixed;
   top: 0;
   left: 0;
   z-index: 2;
-  display: grid;
-  place-items: center;
   width: 100vw;
   height: 100vh;
   transition: 500ms opacity;
   backdrop-filter: blur(4px) brightness(0.4);
 
-  .dialog {
+  .modal {
     position: relative;
     overflow: hidden;
     width: 60%;

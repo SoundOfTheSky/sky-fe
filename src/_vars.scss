@@ -17,6 +17,7 @@ $color-info: #0087d7;
 
 // Sizes
 $min-width: 320px;
+$s: 4px;
 
 // Other
 $transition-time: 0.2s;
@@ -32,4 +33,10 @@ $transition-time: 0.2s;
   &:hover {
     background-color: $to;
   }
+}
+
+@mixin center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

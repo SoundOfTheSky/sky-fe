@@ -5,8 +5,8 @@ import { createEffect, createMemo, For, onMount, Show } from 'solid-js'
 import Button from '@/components/form/button'
 import Input from '@/components/form/input'
 import Icon from '@/components/icon'
-import basicStore, { NotificationType } from '@/services/basic.store'
 import { database } from '@/services/database'
+import { modalsStore, Severity } from '@/services/modals.store'
 import { atom } from '@/services/reactive'
 import syncStore from '@/services/sync.store'
 import {
@@ -72,9 +72,9 @@ export default function Subjects() {
       void search(themeIds(), query())
     }
     else {
-      basicStore.notify({
+      modalsStore.notify({
         title: 'Поиск начнется только после полной синхронизации.',
-        type: NotificationType.Warning,
+        severity: Severity.WARNING,
         timeout: 10_000,
       })
     }

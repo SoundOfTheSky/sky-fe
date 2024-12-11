@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HOUR_MS, UUID } from '@softsky/utils'
 import { createEffect, createRoot, untrack } from 'solid-js'
 
@@ -11,9 +12,10 @@ import {
 } from '@/main/study/services/study.rest'
 
 import authStore from './auth.store'
-import basicStore, { NotificationType } from './basic.store'
+import basicStore from './basic.store'
 import { database } from './database'
 import { handleError, RequestError } from './fetch'
+import { modalsStore, Severity } from './modals.store'
 import { atom, persistentAtom, useInterval } from './reactive'
 
 export enum SYNC_STATUS {
@@ -40,19 +42,17 @@ async function syncOfflineTaskQueue(options: {
     const key = keys[index]!
     options.checkIfAborted()
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const request = (await database.get('offlineTasksQueue', key)) as any
       const [, idb, action] = key.split('_') as [string, string, string]
       const endpoint = endpointsMap.get(idb)
       if (endpoint) {
         switch (action) {
           case 'create': {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await new endpoint.builder(request).create()
             break
           }
           case 'update': {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await new endpoint.builder(request).update()
             break
           }
@@ -135,22 +135,22 @@ export default createRoot(() => {
         status(SYNC_STATUS.IDLE)
         return false
       }
-      basicStore.notify({
+      modalsStore.notify({
         title: 'Разрешите доступ к хранилищу, чтобы получить доступ к сайту оффлайн.',
         id: 'persistentStorage',
       })
       if (!await navigator.storage.persist()) {
-        basicStore.notifications(notifications => notifications.filter(notification => notification.id !== 'persistentStorage'))
-        basicStore.notify({
+        modalsStore.removeNotification('persistentStorage')
+        modalsStore.notify({
           title: 'Запрещен доступ к хранилищу, доступ к сайту оффлайн невозможен.',
           timeout: 5000,
-          type: NotificationType.Error,
+          severity: Severity.ERROR,
         })
         localStorage.setItem('declinedOffline', 'true')
         status(SYNC_STATUS.IDLE)
         return false
       }
-      basicStore.notifications(notifications => notifications.filter(notification => notification.id !== 'persistentStorage'))
+      modalsStore.removeNotification('persistentStorage')
       localStorage.removeItem('declinedOffline')
     }
     return true

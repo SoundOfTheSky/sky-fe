@@ -1,4 +1,4 @@
-import BasicStore, { NotificationType } from '@/services/basic.store'
+import { modalsStore, Severity } from './modals.store'
 
 const channel = new BroadcastChannel('softsky')
 channel.addEventListener('message', onMessage)
@@ -33,10 +33,10 @@ function onMessage(packet: MessageEvent<unknown>) {
   const event = packet.data.slice(0, splitter)
   const data = packet.data.slice(splitter + 1)
   if (event === 'error')
-    BasicStore.notify({
+    modalsStore.notify({
       title: data || 'Неизвестная ошибка',
       timeout: 5000,
-      type: NotificationType.Error,
+      severity: Severity.ERROR,
     })
   const listeners = eventListenerMap.get(event)
   if (listeners) for (const listener of listeners) listener(data)

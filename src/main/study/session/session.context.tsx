@@ -18,8 +18,8 @@ import {
 } from 'solid-js'
 import { toKana, isJapanese as wkIsJapanese } from 'wanakana'
 
-import basicStore, { NotificationType } from '@/services/basic.store'
 import { handleError } from '@/services/fetch'
+import { modalsStore, Severity } from '@/services/modals.store'
 import {
   atom,
   atomize,
@@ -52,7 +52,6 @@ function getProvided() {
   // === Hooks ===
   const { settings, ready, lessons, reviews, update } = useStudy()!
   const location = useLocation()
-  const { notify } = basicStore
   const timeInterval = useInterval(updateTime, 1000)
   const owner = getOwner()
   onMount(update)
@@ -602,11 +601,11 @@ function getProvided() {
           }).create()
         }
         catch (error) {
-          notify({
+          modalsStore.notify({
             title:
               'Ответ не был сохранен! Возможно придется повторить этот вопрос.',
             timeout: 10_000,
-            type: NotificationType.Error,
+            severity: Severity.ERROR,
           })
           handleError(error)
         }
@@ -645,10 +644,10 @@ function getProvided() {
       }
     }
     catch (error) {
-      notify({
+      modalsStore.notify({
         title: 'Изменения не сохранены. Возможна потеря данных!',
         timeout: 10_000,
-        type: NotificationType.Error,
+        severity: Severity.ERROR,
       })
       handleError(error)
     }

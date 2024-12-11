@@ -14,8 +14,8 @@ import {
 import Input from '@/components/form/input'
 import Tags from '@/components/form/tags'
 import Skeleton from '@/components/loading/skeleton'
-import basicStore, { NotificationType } from '@/services/basic.store'
 import { handleError } from '@/services/fetch'
+import { modalsStore, Severity } from '@/services/modals.store'
 import { atom, resizeTextToFit } from '@/services/reactive'
 import { getDefaultRestFields } from '@/services/rest'
 import { srs } from '@/sky-shared/study'
@@ -139,10 +139,10 @@ const Subject: Component<{ id?: number }> = (properties) => {
       }
     }
     catch (error) {
-      basicStore.notify({
+      modalsStore.notify({
         title: 'Изменения не сохранены! Возможна потеря данных!',
         timeout: 10_000,
-        type: NotificationType.Error,
+        severity: Severity.ERROR,
       })
       handleError(error)
     }

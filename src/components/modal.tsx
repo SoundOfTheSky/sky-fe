@@ -3,9 +3,9 @@ import { ParentComponent, Show, createMemo, onMount, untrack } from 'solid-js'
 
 import { atom } from '@/services/reactive'
 
-import s from './dialog.module.scss'
+import s from './modal.module.scss'
 
-const Dialog: ParentComponent<{
+const Modal: ParentComponent<{
   forceFullscreen?: boolean
   dark?: boolean
   onClose?: () => unknown
@@ -64,7 +64,7 @@ const Dialog: ParentComponent<{
   }
   return (
     <div
-      class={s.dialogBackdrop}
+      class={s.modalBackdrop}
       style={{
         opacity: 1 - offsetY() / maxOffset(),
         transition: touchStartY() ? 'none' : undefined,
@@ -75,7 +75,7 @@ const Dialog: ParentComponent<{
       onMouseUp={touchEnd}
     >
       <div
-        class={s.dialog}
+        class={s.modal}
         classList={{
           [s.fullscreen!]: fullscreen(),
           [s.dark!]: properties.dark,
@@ -100,4 +100,4 @@ const Dialog: ParentComponent<{
     </div>
   )
 }
-export default Dialog
+export default Modal

@@ -1,7 +1,9 @@
 import { findErrorText } from '@softsky/utils'
 import { createContext, useContext } from 'solid-js'
 
-import BasicStore, { NotificationType } from '@/services/basic.store'
+import BasicStore from '@/services/basic.store'
+
+import { modalsStore, Severity } from './modals.store'
 
 export class RequestError<T = unknown> extends Error {
   public constructor(
@@ -101,9 +103,9 @@ export function handleError(error: unknown) {
     title = error.body ? findErrorText(error.body) ?? title : error.message
   }
   else title = findErrorText(error) ?? title
-  BasicStore.notify({
+  modalsStore.notify({
     title,
-    type: NotificationType.Error,
+    severity: Severity.ERROR,
     timeout: 10_000,
   })
   console.error(error)

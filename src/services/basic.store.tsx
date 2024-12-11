@@ -1,32 +1,13 @@
 import { mdiReload } from '@mdi/js'
-import { createEffect, createRoot, createUniqueId, JSX } from 'solid-js'
+import { createEffect, createRoot } from 'solid-js'
 // eslint-disable-next-line import-x/no-unresolved
 import { useRegisterSW } from 'virtual:pwa-register/solid'
 
 import Button from '@/components/form/button'
 import Icon from '@/components/icon'
 
+import { modalsStore, Severity } from './modals.store'
 import { atom } from './reactive'
-
-export enum NotificationType {
-  Info,
-  Success,
-  Warning,
-  Error,
-}
-export type Notification = {
-  id: string
-  title: JSX.Element | string
-  type: NotificationType
-  onClick?: () => unknown
-  timeout?: number
-}
-export type Word = {
-  created: string
-  updated: string
-  id: number
-  word: string
-}
 
 export default createRoot(() => {
   // === Hooks ===
@@ -50,14 +31,14 @@ export default createRoot(() => {
     },
     onRegisterError(error) {
       console.error('[SW] Register error', error)
-      notify({
+      modalsStore.notify({
         title: `Не удалось зарегистрировать приложение...\n${(error as Error).toString()}`,
         timeout: 5000,
-        type: NotificationType.Error,
+        severity: Severity.ERROR,
       })
     },
     onNeedRefresh() {
-      notify({
+      modalsStore.notify({
         id: 'updateSW',
         title: (
           <div>
@@ -75,7 +56,6 @@ export default createRoot(() => {
 
   // === State ===
   const online = atom(true)
-  const notifications = atom<Notification[]>([])
   const activeRequests = atom(0)
   const loading = atom(false)
   let loadingTimeout: number
@@ -87,33 +67,8 @@ export default createRoot(() => {
     loadingTimeout = setTimeout(() => loading(!!$activeRequests), 500)
   })
 
-  // === Functions ===
-  function notify(
-    notification: Omit<Notification, 'id' | 'type'> & {
-      id?: string
-      type?: NotificationType
-    },
-  ) {
-    if (notification.id === undefined) notification.id = createUniqueId()
-    if (notification.type === undefined)
-      notification.type = NotificationType.Info
-    if (notification.timeout)
-      setTimeout(
-        () => notifications(n => n.filter(x => x !== notification)),
-        notification.timeout,
-      )
-    notifications(n => [...n, notification as Notification])
-    return notification.id
-  }
-
-  function removeNotification(id: string) {
-    notifications(n => n.filter(x => x.id !== id))
-  }
-
   return {
-    notify,
-    notifications,
-    removeNotification,
+
     activeRequests,
     loading,
     online,

@@ -2,9 +2,8 @@
 
 .subjects {
   @include hover;
+  @include center;
 
-  display: grid;
-  place-items: center;
   min-width: 64px;
   height: 64px;
   padding: 0;
