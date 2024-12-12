@@ -25,114 +25,15 @@ body {
 }
 
 button {
+  @include center;
+  @include hover;
+
   padding: 0;
   border: none;
-  background-color: transparent;
-}
-
-.em {
-  height: 1em;
-}
-
-// === Card ===
-.card-container {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  overflow-y: auto;
-  width: 100%;
-  padding: 8px;
-}
-
-.card {
-  flex-grow: 1;
-  overflow: hidden;
-  min-width: 240px;
-  margin: 8px;
-  padding: 16px;
-  border-radius: 16px;
   background-color: $color-content-background;
-  box-shadow: 0 0 4px 2px rgb(0 0 0 / 20%);
-}
 
-.card-title {
-  width: 100%;
-  margin-bottom: 16px;
-  font-weight: bold;
-  font-size: 24px;
-}
-
-// === Study ===
-.stroke-order {
-  display: block;
-  width: 128px;
-  height: 128px;
-  margin: 0 auto;
-}
-
-.subject {
-  @include hover($color-main-light);
-
-  display: inline-block;
-  margin: 2px;
-  padding: 0 2px;
-  border-radius: 2px;
-  background-color: $color-main;
-  text-decoration: none;
-
-  img {
-    height: 1em;
-  }
-}
-
-.accent {
-  display: inline-block;
-  margin: 2px;
-  padding: 2px;
-  border-radius: 2px;
-  background-color: $color-main;
-}
-
-// === Skeleton ===
-
-$shine-width: 40px;
-
-.full {
-  width: 100%;
-  height: 100%;
-}
-
-.skeleton,
-.skeleton-main {
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-  background-color: $color-content-background-light;
-  background-image: linear-gradient(
-    90deg,
-    rgba($color-hover, 0),
-    rgba($color-hover, 0.5),
-    rgba($color-hover, 0)
-  );
-  background-position: left (-$shine-width) top 0;
-  background-size: $shine-width 100%;
-  background-repeat: no-repeat;
-  color: transparent;
-  animation: shine 1s ease infinite;
-}
-
-.skeleton-main {
-  background-color: $color-main-light;
-  background-image: linear-gradient(
-    90deg,
-    rgba($color-main, 0),
-    rgba($color-main, 0.5),
-    rgba($color-main, 0)
-  );
-}
-
-@keyframes shine {
-  to {
-    background-position: right (-$shine-width) top 0;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }

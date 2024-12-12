@@ -19,7 +19,6 @@ import {
 import AudioStore from '@/services/audio.store'
 import { atom, useInterval, useTimeout } from '@/services/reactive'
 
-import Button from './form/button'
 import Icon from './icon'
 
 import s from './audio-player.module.scss'
@@ -116,21 +115,21 @@ const AudioPlayer: Component = () => {
       />
       <Show when={shown()}>
         <div class={s.audioPlayer}>
-          <Button
+          <button
             disabled={currentI() < 1}
             onClick={() => currentI(x => x - 1)}
           >
             <Icon path={mdiSkipPrevious} size="32" />
-          </Button>
-          <Button onClick={() => playing(x => !x)}>
+          </button>
+          <button onClick={() => playing(x => !x)}>
             <Icon path={playing() ? mdiPause : mdiPlay} size="32" />
-          </Button>
-          <Button
+          </button>
+          <button
             disabled={currentI() >= queue().length - 1}
             onClick={() => currentI(x => x + 1)}
           >
             <Icon path={mdiSkipNext} size="32" />
-          </Button>
+          </button>
           <div class={s.progress} onClick={onProgressClick} aria-hidden>
             <div>
               {formatTime(time() * 1000)}
@@ -147,9 +146,9 @@ const AudioPlayer: Component = () => {
               }}
             />
           </div>
-          <Button onClick={() => queue([])}>
+          <button onClick={() => queue([])}>
             <Icon path={mdiClose} size="32" />
-          </Button>
+          </button>
         </div>
       </Show>
     </>

@@ -28,6 +28,12 @@ export type Dialog = {
   id: string
   title: JSX.Element | string
   loading: Atom<boolean>
+  closed: Atom<boolean>
+  onClose?: () => Promise<{
+    resolve: boolean
+    data: unknown
+  }>
+  width?: string
   buttons: {
     title: JSX.Element | string
     severity?: Severity
@@ -57,20 +63,40 @@ export const modalsStore = createRoot(() => {
     return notification.id
   }
 
-  async function dialog(dialog: Optional<Dialog, 'id' | 'loading'>) {
+  async function dialog(dialog: Omit<Optional<Dialog, 'id' | 'loading' | 'buttons'>, 'closed'>) {
     dialog.id ??= UUID().toString()
-    dialog.loading = atom(false)
+    dialog.loading = atom(false);
+    (dialog as Dialog).closed = atom(false)
+    dialog.onClose ??= () => Promise.resolve({
+      resolve: true,
+      data: false,
+    })
+    dialog.buttons ??= [{
+      title: 'Отмена',
+      severity: Severity.ERROR,
+      onClick: () => Promise.resolve({
+        resolve: true,
+        data: false,
+      }),
+    }, {
+      title: 'Ок',
+      severity: Severity.INFO,
+      onClick: () => Promise.resolve({
+        resolve: true,
+        data: true,
+      }),
+    }]
     const promise = new ImmediatePromise<unknown>()
     dialogPromises.set(dialog as Dialog, promise)
+    dialogs(x => [...x, dialog as Dialog])
     return await promise
   }
 
-  async function clickDialogButton(dialog: Dialog, index: number) {
+  async function clickDialogButton(dialog: Dialog, index?: number) {
     const promise = dialogPromises.get(dialog)!
     try {
-      const button = dialog.buttons[index]!
       dialog.loading(true)
-      const data = await button.onClick()
+      const data = await (index === undefined ? dialog.onClose!() : dialog.buttons[index]!.onClick())
       if (data.resolve) {
         removeDialog(dialog.id)
         promise.resolve(data.data)
@@ -89,7 +115,8 @@ export const modalsStore = createRoot(() => {
   }
 
   function removeDialog(id: string) {
-    dialogs(n => n.filter(x => x.id !== id))
+    dialogs().find(x => x.id === id)!.closed(true)
+    setTimeout(() => dialogs(n => n.filter(x => x.id !== id)), 500)
   }
 
   return {

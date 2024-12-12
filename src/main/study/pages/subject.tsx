@@ -14,7 +14,6 @@ import {
 import Input from '@/components/form/input'
 import Tags from '@/components/form/tags'
 import Skeleton from '@/components/loading/skeleton'
-import { handleError } from '@/services/fetch'
 import { modalsStore, Severity } from '@/services/modals.store'
 import { atom, resizeTextToFit } from '@/services/reactive'
 import { getDefaultRestFields } from '@/services/rest'
@@ -138,13 +137,12 @@ const Subject: Component<{ id?: number }> = (properties) => {
         await $questionInfo.update()
       }
     }
-    catch (error) {
+    catch {
       modalsStore.notify({
         title: 'Изменения не сохранены! Возможна потеря данных!',
         timeout: 10_000,
         severity: Severity.ERROR,
       })
-      handleError(error)
     }
   }
 

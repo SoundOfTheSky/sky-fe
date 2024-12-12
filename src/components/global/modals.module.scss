@@ -49,21 +49,22 @@
       transform-origin: left;
       backdrop-filter: saturate(3);
     }
+  }
+}
 
-    &.info {
-      background-color: $color-info;
-    }
+.dialog {
+  .buttons {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: flex;
+    justify-content: end;
 
-    &.success {
-      background-color: $color-success;
-    }
-
-    &.warning {
-      background-color: $color-warning;
-    }
-
-    &.error {
-      background-color: $color-error;
+    .button {
+      margin: 0 4px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 24px;
     }
   }
 }

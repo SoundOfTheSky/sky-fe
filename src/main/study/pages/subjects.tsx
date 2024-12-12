@@ -2,7 +2,6 @@ import { mdiTranslate } from '@mdi/js'
 import { createDelayedFunction } from '@softsky/utils'
 import { createEffect, createMemo, For, onMount, Show } from 'solid-js'
 
-import Button from '@/components/form/button'
 import Input from '@/components/form/input'
 import Icon from '@/components/icon'
 import { database } from '@/services/database'
@@ -159,14 +158,14 @@ export default function Subjects() {
         >
           <Input japanese value={query} placeholder="検索" />
         </Show>
-        <Button
+        <button
           onClick={() => {
             query('')
             isJapanese(x => !x)
           }}
         >
           <Icon path={mdiTranslate} size="32" />
-        </Button>
+        </button>
       </div>
       <div class={`card ${s.results}`}>
         <Show when={isLoading()}>

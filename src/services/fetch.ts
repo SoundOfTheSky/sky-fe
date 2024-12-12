@@ -1,4 +1,4 @@
-import { findErrorText } from '@softsky/utils'
+import { findErrorText, retry } from '@softsky/utils'
 import { createContext, useContext } from 'solid-js'
 
 import BasicStore from '@/services/basic.store'
@@ -22,6 +22,9 @@ export type RequestOptions = Omit<RequestInit, 'body'> & {
   query?: Record<string, string>
   useCache?: Map<string, unknown>
   timeout?: number
+  retries?: number
+  retryInterval?: number
+  disableHandler?: boolean
 }
 export type CommonRequestOptions = Omit<RequestOptions, 'raw'>
 
@@ -60,23 +63,26 @@ export async function request<T>(
       const value = options.useCache.get(key) as T | undefined
       if (value) return value
     }
-    const controller = new AbortController()
-    options.signal = controller.signal
-    const timeout = setTimeout(() => {
-      controller.abort('Request timeout')
-    }, options.timeout ?? 10_000)
-    const response = await fetch(url, options as RequestInit)
-    clearTimeout(timeout)
-    if (options.raw) {
-      if (options.useCache) options.useCache.set(key!, response)
-      return response
-    }
-    const body = await getBody<T>(response)
-    if (!response.ok) throw new RequestError(response.status, body)
-    if (options.useCache) options.useCache.set(key!, body)
-    return body
+    return await retry(async () => {
+      const controller = new AbortController()
+      options.signal = controller.signal
+      const timeout = setTimeout(() => {
+        controller.abort('Request timeout')
+      }, options.timeout ?? 10_000)
+      const response = await fetch(url, options as RequestInit)
+      clearTimeout(timeout)
+      if (options.raw) {
+        if (options.useCache) options.useCache.set(key!, response)
+        return response
+      }
+      const body = await getBody<T>(response)
+      if (!response.ok) throw new RequestError(response.status, body)
+      if (options.useCache) options.useCache.set(key!, body)
+      return body
+    }, options.retries ?? 6, options.retryInterval ?? 1000)
   }
   catch (error) {
+    if (!options.disableHandler) handleError(error)
     if (error instanceof RequestError) throw error
     if (error instanceof Error) throw new RequestError(0, error.message)
     throw new RequestError(0)

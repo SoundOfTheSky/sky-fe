@@ -24,7 +24,7 @@ const Sidebar: Component = () => {
   ])
   return (
     <div class={s.sidebarComponent}>
-      <h1>МИРЭА</h1>
+      <h1>Обучение</h1>
       <div class={s.menu}>
         <Index each={items()}>
           {item => (

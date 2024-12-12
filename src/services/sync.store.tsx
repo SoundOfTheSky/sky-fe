@@ -66,7 +66,7 @@ async function syncOfflineTaskQueue(options: {
       }
     }
     catch (error) {
-      if (!(error instanceof RequestError) || error.code === 0) {
+      if (!(error instanceof RequestError) || error.code === 0 || error.code.toString().startsWith('4')) {
         handleError(error)
         throw error
       }

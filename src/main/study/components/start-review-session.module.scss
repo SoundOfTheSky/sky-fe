@@ -1,49 +1,25 @@
 @use '@/vars' as *;
 
-.subjects {
-  @include hover;
-  @include center;
-
-  min-width: 64px;
-  height: 64px;
-  padding: 0;
-}
-
-.special {
+.start-review-session {
   position: relative;
   width: calc(50% - 16px);
   height: 200px;
+  padding: 0;
   background: linear-gradient(to bottom, transparent, $color-main-light);
   background-color: $color-main;
   text-align: left;
   text-decoration: none;
-  transition: background-color $transition-time;
+  transition:
+    background-color $transition-time,
+    transform $transition-time;
 
-  &:hover {
-    background-color: $color-main-light;
+  .wrapper {
+    padding: 16px;
   }
 
-  &.disabled {
-    background: unset;
-    background-color: $color-border;
-    cursor: no-drop;
-  }
-
-  input {
-    width: 100%;
-  }
-
-  /* stylelint-disable-next-line selector-pseudo-class-no-unknown */
-  :global {
-    .skeleton {
-      background-color: $color-main-light;
-      background-image: linear-gradient(
-        90deg,
-        rgba($color-main, 0),
-        rgba($color-main, 0.5),
-        rgba($color-main, 0)
-      );
-    }
+  .settings-wrapper {
+    padding: 16px;
+    transform: rotateY(-180deg);
   }
 
   .reviews-amount {
@@ -60,6 +36,43 @@
 
     &:hover {
       background-color: $color-main;
+    }
+  }
+
+  &:hover {
+    background-color: $color-main-light;
+    transform: translateY(-4px);
+  }
+
+  &.disabled {
+    background: unset;
+    background-color: $color-border;
+    cursor: no-drop;
+    transform: none;
+
+    .settings-btn:hover {
+      background-color: $color-hover;
+    }
+  }
+
+  &.settings {
+    transform: rotateY(180deg);
+  }
+
+  input {
+    width: 100%;
+  }
+
+  /* stylelint-disable-next-line selector-pseudo-class-no-unknown */
+  :global {
+    .skeleton {
+      background-color: $color-main-light;
+      background-image: linear-gradient(
+        90deg,
+        rgba($color-main, 0),
+        rgba($color-main, 0.5),
+        rgba($color-main, 0)
+      );
     }
   }
 }

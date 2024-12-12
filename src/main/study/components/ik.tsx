@@ -1,7 +1,6 @@
 import { mdiVolumeHigh } from '@mdi/js'
 import { For, ParentComponent, createResource } from 'solid-js'
 
-import Button from '@/components/form/button'
 import Icon from '@/components/icon'
 import Skeleton from '@/components/loading/skeleton'
 import { onMounted } from '@/services/reactive'
@@ -27,7 +26,7 @@ const IK: ParentComponent = (properties) => {
             <For each={d.examples}>
               {example => (
                 <div class={s.example}>
-                  <Button
+                  <button
                     onClick={() => void new Audio(example.sound_url).play()}
                     style={{
                       'background-image': `url(${example.image_url})`,
@@ -37,7 +36,7 @@ const IK: ParentComponent = (properties) => {
                       <Icon path={mdiVolumeHigh} size="64" />
                     </div>
                     <div class={s.name}>{example.deck_name}</div>
-                  </Button>
+                  </button>
                   <div class={s.text}>
                     <div class={s.ja}>
                       <For

@@ -13,7 +13,6 @@ import {
 import { shuffleArray } from '@softsky/utils'
 import { For, Match, Switch, createEffect, createMemo } from 'solid-js'
 
-import Button from '@/components/form/button'
 import Input from '@/components/form/input'
 import Icon from '@/components/icon'
 import Tooltip from '@/components/tooltip'
@@ -109,7 +108,7 @@ export default function SessionAnswer() {
           <div class={s.answerButtons}>
             <For each={answerButtons()}>
               {x => (
-                <Button
+                <button
                   disabled={inputDisabled()}
                   onClick={() => {
                     answer(x)
@@ -117,7 +116,7 @@ export default function SessionAnswer() {
                   }}
                 >
                   {x}
-                </Button>
+                </button>
               )}
             </For>
           </div>
@@ -144,7 +143,7 @@ export default function SessionAnswer() {
         <Tooltip
           content={`Перемешанные вопросы: ${shuffleSubjects() ? 'включены' : 'выключены'}`}
         >
-          <Button
+          <button
             onClick={() => {
               shuffle(shuffleSubjects(x => !x))
             }}
@@ -158,21 +157,21 @@ export default function SessionAnswer() {
               size="32"
               inline
             />
-          </Button>
+          </button>
         </Tooltip>
         <Tooltip
           content={`Последовательные под-вопросы: ${consistentQuestions() ? 'включены' : 'отключены'}`}
         >
-          <Button onClick={() => consistentQuestions(x => !x)}>
+          <button onClick={() => consistentQuestions(x => !x)}>
             <Icon
               path={consistentQuestions() ? mdiShuffleDisabled : mdiShuffle}
               size="32"
               inline
             />
-          </Button>
+          </button>
         </Tooltip>
         <Tooltip content={questionAnswered() ? 'Следующий вопрос' : 'Ответить'}>
-          <Button
+          <button
             onClick={submit}
             disabled={
               isLoading()
@@ -186,7 +185,7 @@ export default function SessionAnswer() {
               size="32"
               inline
             />
-          </Button>
+          </button>
         </Tooltip>
         <Tooltip
           content={
@@ -197,7 +196,7 @@ export default function SessionAnswer() {
             ][autoplayAudio()]
           }
         >
-          <Button onClick={() => autoplayAudio(x => (x + 1) % 3)}>
+          <button onClick={() => autoplayAudio(x => (x + 1) % 3)}>
             <Icon
               path={
                 [mdiHeadphonesOff, mdiHeadphones, mdiHeadphonesSettings][
@@ -207,16 +206,16 @@ export default function SessionAnswer() {
               size="32"
               inline
             />
-          </Button>
+          </button>
         </Tooltip>
         <Tooltip content="Исправить">
-          <Button
+          <button
             onClick={undo}
             disabled={!previousState() || cooldownUndo() !== undefined}
             classList={{ [s.cooldownUndo!]: cooldownUndo() !== undefined }}
           >
             <Icon path={mdiUndoVariant} size="32" inline />
-          </Button>
+          </button>
         </Tooltip>
       </div>
     </div>

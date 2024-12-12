@@ -37,11 +37,12 @@ export function atom<T>(value?: T, options: SignalOptions<T> = {}): Atom<T> {
 }
 const tabSynchedAtomMap = new Map<string, Atom<unknown>>()
 export function tabSynchedAtom<T>(key: string): Atom<T | undefined>
-export function tabSynchedAtom<T>(key: string, initialValue: T): Atom<T>
-export function tabSynchedAtom<T>(key: string, initialValue?: T): Atom<T> {
+export function tabSynchedAtom<T>(key: string, initialValue: T, options?: SignalOptions<T>): Atom<T>
+export function tabSynchedAtom<T>(key: string, initialValue?: T, options: SignalOptions<T> = {}): Atom<T> {
   if (tabSynchedAtomMap.has(key)) return tabSynchedAtomMap.get(key) as Atom<T>
   const [state, setState] = createSignal<T>(initialValue as T, {
     equals: deepEquals,
+    ...options,
   })
   broadcastChannel.send(`queryAtom_${key}`)
   // eslint-disable-next-line solid/reactivity
@@ -65,13 +66,14 @@ export function tabSynchedAtom<T>(key: string, initialValue?: T): Atom<T> {
   tabSynchedAtomMap.set(key, atom as Atom<unknown>)
   return atom
 }
-export function persistentAtom<T>(key: string, initialValue?: T): Atom<T> {
+export function persistentAtom<T>(key: string, initialValue?: T, options?: SignalOptions<T>): Atom<T> {
   const rawData = localStorage.getItem(key)
   const state = tabSynchedAtom<T>(
     key,
     (!rawData || rawData === 'undefined'
       ? initialValue
       : (JSON.parse(rawData))) as T,
+    options,
   )
   createEffect(() => {
     localStorage.setItem(key, JSON.stringify(state()))

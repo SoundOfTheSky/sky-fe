@@ -1,4 +1,4 @@
-import { DAY_MS, HOUR_MS, MIN_MS, retry, wait } from '@softsky/utils'
+import { DAY_MS, HOUR_MS, MIN_MS, wait } from '@softsky/utils'
 import {
   ParentComponent,
   createContext,
@@ -8,7 +8,7 @@ import {
 
 import basicStore from '@/services/basic.store'
 import { database } from '@/services/database'
-import { CommonRequestOptions, handleError, request } from '@/services/fetch'
+import { CommonRequestOptions, request } from '@/services/fetch'
 import { atom, persistentAtom, useInterval } from '@/services/reactive'
 import syncStore, { SYNC_STATUS } from '@/services/sync.store'
 import { StudyEnabledTheme, StudyTheme } from '@/sky-shared/study'
@@ -53,6 +53,10 @@ function getProvided() {
       batch: 5,
     },
     disabledThemeIds: [] as number[],
+  }, {
+    equals() {
+      return false
+    },
   })
   const now = atom(~~(Date.now() / HOUR_MS))
   const themes = atom<StudyTheme[]>()
@@ -122,14 +126,8 @@ function getProvided() {
   }
 
   async function update() {
-    try {
-      themes(undefined)
-      themes(await retry(() => getThemes(), 6, 5000))
-    }
-    catch (error) {
-      handleError(error)
-      throw error
-    }
+    themes(undefined)
+    themes(await getThemes())
   }
 
   return {

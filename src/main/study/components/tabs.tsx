@@ -1,9 +1,9 @@
 import {
+  children as createChildren,
+  createEffect,
   createMemo,
   Index,
   ParentComponent,
-  children as createChildren,
-  createEffect,
 } from 'solid-js'
 
 import { atom } from '@/services/reactive'

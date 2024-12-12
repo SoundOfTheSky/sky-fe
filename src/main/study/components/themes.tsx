@@ -1,10 +1,10 @@
 import { mdiTrashCan } from '@mdi/js'
-import { createMemo, For, Show, Component, untrack } from 'solid-js'
+import { Component, createMemo, For, Show } from 'solid-js'
 
-import Button from '@/components/form/button'
 import Icon from '@/components/icon'
 import Skeleton from '@/components/loading/skeleton'
 import basicStore from '@/services/basic.store'
+import { modalsStore } from '@/services/modals.store'
 import { atom } from '@/services/reactive'
 import syncStore from '@/services/sync.store'
 
@@ -42,49 +42,54 @@ const Themes: Component = () => {
   // === Functions ===
   function onClickThemeCard(theme: {
     id: number
+    title: string
     isAdded: boolean
     disabled: boolean
   }) {
-    untrack(() => {
-      if (disabledUpdating()) return
-      if (theme.isAdded) {
-        if (theme.disabled)
-          settings(x => ({
-            ...x,
-            disabledThemeIds: x.disabledThemeIds.filter(x => x !== theme.id),
-          }))
-        else
-          settings(x => ({
-            ...x,
-            disabledThemeIds: [...x.disabledThemeIds, theme.id],
-          }))
-      }
-      else {
-        disabledUpdating(true)
-        void addTheme(theme.id)
-          .then((items) => {
-            themes(items)
-            void sync()
-          })
-          .finally(() => {
-            disabledUpdating(false)
-          })
-      }
-    })
-  }
-
-  function onClickRemove(id: number) {
-    untrack(() => {
-      if (disabledUpdating()) return
+    if (disabledUpdating()) return
+    if (theme.isAdded) {
+      if (theme.disabled)
+        settings(x => ({
+          ...x,
+          disabledThemeIds: x.disabledThemeIds.filter(x => x !== theme.id),
+        }))
+      else
+        settings(x => ({
+          ...x,
+          disabledThemeIds: [...x.disabledThemeIds, theme.id],
+        }))
+    }
+    else {
       disabledUpdating(true)
-
-      void removeTheme(id)
+      void addTheme(theme.id)
         .then((items) => {
           themes(items)
           void sync()
         })
-        .finally(() => disabledUpdating(false))
-    })
+        .finally(() => {
+          disabledUpdating(false)
+        })
+    }
+  }
+
+  async function onClickRemove(theme: {
+    id: number
+    title: string
+    isAdded: boolean
+    disabled: boolean
+  }) {
+    if (disabledUpdating() || !await modalsStore.dialog({
+      title: `Вы уверены, что желаете удалить тему "${theme.title}", а так же весь прогресс по ней?`,
+    })) return
+    disabledUpdating(true)
+    try {
+      const items = await removeTheme(theme.id)
+      themes(items)
+      void sync()
+    }
+    finally {
+      disabledUpdating(false)
+    }
   }
 
   return (
@@ -100,19 +105,19 @@ const Themes: Component = () => {
               class={s.theme}
               classList={{ [s.added!]: theme.isAdded && !theme.disabled }}
             >
-              <Button
+              <button
                 disabled={disabledUpdating()}
                 onClick={[onClickThemeCard, theme]}
               >
                 {theme.title}
-              </Button>
+              </button>
               <Show when={theme.isAdded && online()}>
-                <Button
+                <button
                   disabled={disabledUpdating()}
-                  onClick={[onClickRemove, theme.id]}
+                  onClick={() => onClickRemove(theme)}
                 >
                   <Icon path={mdiTrashCan} size="14" />
-                </Button>
+                </button>
               </Show>
             </div>
           )}

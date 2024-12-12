@@ -3,7 +3,6 @@ import { createEffect, createRoot } from 'solid-js'
 // eslint-disable-next-line import-x/no-unresolved
 import { useRegisterSW } from 'virtual:pwa-register/solid'
 
-import Button from '@/components/form/button'
 import Icon from '@/components/icon'
 
 import { modalsStore, Severity } from './modals.store'
@@ -43,10 +42,10 @@ export default createRoot(() => {
         title: (
           <div>
             <div>Please refresh application for update to install!</div>
-            <Button onClick={() => updateServiceWorker(true)}>
+            <button onClick={() => updateServiceWorker(true)}>
               <Icon path={mdiReload} size="24" inline />
               <b>Reload application</b>
-            </Button>
+            </button>
           </div>
         ),
         timeout: 30_000,

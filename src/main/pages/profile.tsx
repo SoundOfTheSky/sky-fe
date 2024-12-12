@@ -3,11 +3,9 @@ import { createWritableMemo } from '@solid-primitives/memo'
 import { Component } from 'solid-js'
 
 import Auth from '@/components/auth'
-import Button from '@/components/form/button'
 import Input from '@/components/form/input'
 import Icon from '@/components/icon'
 import AuthStore from '@/services/auth.store'
-import { handleError } from '@/services/fetch'
 import { modalsStore, Severity } from '@/services/modals.store'
 import { atomize } from '@/services/reactive'
 
@@ -36,15 +34,10 @@ export default (() => {
       })
       return
     }
-    try {
-      await AuthStore.updateData({
-        avatar: avatar(),
-        username: username(),
-      })
-    }
-    catch (error) {
-      handleError(error)
-    }
+    await AuthStore.updateData({
+      avatar: avatar(),
+      username: username(),
+    })
   }
 
   return (
@@ -74,10 +67,10 @@ export default (() => {
             <Input value={avatar} placeholder="URL" onChange={userDataChange} />
           </div>
         </div>
-        <Button class={`card ${s.logout}`} onClick={() => AuthStore.logout()}>
+        <button class={`card ${s.logout}`} onClick={() => AuthStore.logout()}>
           <div>Выйти</div>
           <Icon path={mdiExitRun} size="48" />
-        </Button>
+        </button>
       </div>
     </Auth>
   )

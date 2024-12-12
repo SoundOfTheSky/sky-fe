@@ -25,7 +25,7 @@ const Notifications: Component = () => {
           <For each={modalsStore.notifications()}>
             {notification => (
               <button
-                class={`${s.notification} ${[s.info, s.success, s.warning, s.error][notification.severity ?? 0]}`}
+                class={`${s.notification} ${['info', 'success', 'warning', 'error'][notification.severity ?? 0]}`}
                 onClick={() => {
                   clickNotification(notification)
                 }}
@@ -46,27 +46,35 @@ const Notifications: Component = () => {
           </For>
         </TransitionGroup>
       </div>
-      <div class={s.dialogs}>
-        <For each={modalsStore.dialogs()}>
-          {dialog => (
-            <Modal>
-              <h2>{dialog.title}</h2>
-              <div class={s.buttons}>
-                <For each={dialog.buttons}>
-                  {(button, index) => (
-                    <button
-                      onClick={() => modalsStore.clickDialogButton(dialog, index())}
-                      class={`${s.button} ${[s.info, s.success, s.warning, s.error][button.severity ?? 0]}`}
-                    >
-                      {button.title}
-                    </button>
-                  )}
-                </For>
-              </div>
-            </Modal>
-          )}
-        </For>
-      </div>
+      <For each={modalsStore.dialogs()}>
+        {dialog => (
+          <Modal
+            class={s.dialog}
+            width={dialog.width}
+            closed={dialog.closed()}
+            onClose={
+              dialog.onClose
+                ? () => modalsStore.clickDialogButton(dialog)
+                : undefined
+            }
+          >
+            <h2>{dialog.title}</h2>
+            <div class={s.buttons}>
+              <For each={dialog.buttons}>
+                {(button, index) => (
+                  <button
+                    onClick={() =>
+                      modalsStore.clickDialogButton(dialog, index())}
+                    class={`${s.button} ${['info', 'success', 'warning', 'error'][button.severity ?? 0]}`}
+                  >
+                    {button.title}
+                  </button>
+                )}
+              </For>
+            </div>
+          </Modal>
+        )}
+      </For>
     </>
   )
 }

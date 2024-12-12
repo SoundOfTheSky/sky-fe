@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Colors
 $color-main: #3d63ff;
 $color-main-light: #6785fd;
@@ -7,13 +9,17 @@ $color-content-background: #1f2646;
 $color-content-background-light: #262f56;
 $color-text: #fff;
 $color-text-not-intrusive: #6c6c6c;
-$color-hover: #343d58;
 $color-border: #3a405b;
 $color-focus: $color-main;
 $color-success: #33a769;
 $color-error: #ff3737;
 $color-warning: #ffbc00;
 $color-info: #0087d7;
+$color-hover: #343d58;
+$color-success-hover: color.adjust($color-success, $lightness: 10%);
+$color-error-hover: color.adjust($color-error, $lightness: 10%);
+$color-warning-hover: color.adjust($color-warning, $lightness: 10%);
+$color-info-hover: color.adjust($color-info, $lightness: 10%);
 
 // Sizes
 $min-width: 320px;
@@ -32,6 +38,22 @@ $transition-time: 0.2s;
 
   &:hover {
     background-color: $to;
+  }
+
+  &.info:hover {
+    background-color: $color-info-hover;
+  }
+
+  &.success:hover {
+    background-color: $color-success-hover;
+  }
+
+  &.warning:hover {
+    background-color: $color-warning-hover;
+  }
+
+  &.error:hover {
+    background-color: $color-error-hover;
   }
 }
 

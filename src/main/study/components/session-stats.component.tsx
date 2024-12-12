@@ -3,7 +3,6 @@ import { formatTime } from '@softsky/utils'
 import { A } from '@solidjs/router'
 import { createMemo, For, Show } from 'solid-js'
 
-import Button from '@/components/form/button'
 import Icon from '@/components/icon'
 
 import parseHTML from '../services/parse-html'
@@ -35,11 +34,11 @@ export default function SessionStats() {
     <div class={`card ${s.stats}`}>
       <div class="card-title">
         Review stats
-        <Button class={s.finish}>
+        <button class={s.finish}>
           <A href="../..">
             <Icon path={mdiClose} size="32" />
           </A>
-        </Button>
+        </button>
       </div>
       <table>
         <thead>

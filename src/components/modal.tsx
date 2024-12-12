@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { ParentComponent, Show, createMemo, onMount, untrack } from 'solid-js'
+import { JSX, ParentComponent, Show, createEffect, createMemo, onMount, splitProps, untrack } from 'solid-js'
 
 import { atom } from '@/services/reactive'
 
@@ -10,18 +10,30 @@ const Modal: ParentComponent<{
   dark?: boolean
   onClose?: () => unknown
   width?: string
-}> = (properties) => {
+  closed?: boolean
+} & JSX.HTMLAttributes<HTMLDivElement>> = (properties_) => {
   // === Hooks ===
+  const [properties, attributes] = splitProps(properties_, [
+    'forceFullscreen',
+    'dark',
+    'onClose',
+    'width',
+    'closed',
+    'children',
+  ])
   onMount(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        offsetY(0)
-      })
-    })
+    open()
   })
   // === State ===
   const offsetY = atom(window.innerHeight)
   const touchStartY = atom<number>()
+  // === Effects ===
+  createEffect(() => {
+    if (properties.closed === true)
+      close()
+    else if (properties.closed === false)
+      open()
+  })
   // === Memos ===
   const fullscreen = createMemo(
     () => properties.forceFullscreen ?? window.innerHeight > window.innerWidth,
@@ -62,9 +74,17 @@ const Modal: ParentComponent<{
       setTimeout(properties.onClose!, 500)
     })
   }
+  function open() {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        offsetY(0)
+      })
+    })
+  }
   return (
     <div
-      class={s.modalBackdrop}
+      {...attributes}
+      class={`${s.modalBackdrop} ${attributes.class ?? ''}`}
       style={{
         opacity: 1 - offsetY() / maxOffset(),
         transition: touchStartY() ? 'none' : undefined,

@@ -5,7 +5,6 @@ import { Atom, atom } from '@/services/reactive'
 
 import Icon from '../icon'
 
-import Button from './button'
 import Input from './input'
 
 import s from './tags.module.scss'
@@ -45,7 +44,7 @@ const Tags: Component<
     <div {...attributes} class={`${s.tagsComponent} ${attributes.class ?? ''}`}>
       <For each={properties_.value()}>
         {tag => (
-          <Button
+          <button
             class={s.tag}
             onClick={() => {
               deleteTag(tag)
@@ -53,7 +52,7 @@ const Tags: Component<
           >
             <span>{tag}</span>
             <Icon path={mdiCloseCircle} inline size="16" />
-          </Button>
+          </button>
         )}
       </For>
       <Input

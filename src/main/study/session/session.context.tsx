@@ -18,7 +18,6 @@ import {
 } from 'solid-js'
 import { toKana, isJapanese as wkIsJapanese } from 'wanakana'
 
-import { handleError } from '@/services/fetch'
 import { modalsStore, Severity } from '@/services/modals.store'
 import {
   atom,
@@ -104,10 +103,7 @@ function getProvided() {
   /** Is shuffle enabled */
   const shuffleSubjects = persistentAtom('study-shuffle-subjects', false)
   /** Is consistent question enabled. If enabled each time you answer question, subject will change */
-  const consistentQuestions = persistentAtom(
-    'study-consistent-questions',
-    true,
-  )
+  const consistentQuestions = persistentAtom('study-consistent-questions', true)
   /** Is autoplay audio enabled. If enabled all <Audio> will automatically play on render */
   const autoplayAudio = persistentAtom('study-audio-autoplay', 0)
   /** State to return to if undo is pressed */
@@ -160,9 +156,7 @@ function getProvided() {
       subject()?.data.questionIds.map((id) => {
         let s = questionsStatuses.get(id)
         if (s === undefined) {
-          s = lessonsMode()
-            ? SubjectStatus.Unlearned
-            : SubjectStatus.Unanswered
+          s = lessonsMode() ? SubjectStatus.Unlearned : SubjectStatus.Unanswered
           questionsStatuses.set(id, s)
         }
         return s
@@ -237,24 +231,24 @@ function getProvided() {
     const $previousState = previousState()
     const $answer = answer().toLowerCase().trim()
     const $question = question()
-    if (
-      question.loading
-      || !$question
-      || $questionStatus === undefined
-      || (!$previousState && $questionStatus !== SubjectStatus.Unlearned)
-    )
+
+    if (question.loading || !$question || $questionStatus === undefined)
       return ''
     const answers = getAnswers()
     const alt = $question.data.alternateAnswers?.[$answer]
     if (!answers.includes($answer) && alt) return alt
-    if (answers.length === 1 && answers[0] === 'correct') return ''
+    if (
+      (!$previousState && $questionStatus !== SubjectStatus.Unlearned)
+      || (answers.length === 1 && answers[0] === 'correct')
+    )
+      return ''
     return getAnswers(true).join(', ')
   })
   // === Effects ===
   // Set page title
   createEffect(() => {
     document.title
-      = (lessonsMode() ? 'МИРЭА | Уроки ' : 'МИРЭА | Повторения ')
+      = (lessonsMode() ? 'Обучение | Уроки ' : 'Обучение | Повторения ')
       + stats().unpassed
   })
   // On themes ONCE
@@ -577,8 +571,8 @@ function getProvided() {
       if (
         $previousState
         && ($lessonsMode
-          // Don't update if answered wrong in lessons mode
-          ? $subjectStats.status === SubjectStatus.Correct
+          ? // Don't update if answered wrong in lessons mode
+          $subjectStats.status === SubjectStatus.Correct
           : $previousState.subject === SubjectStatus.Unanswered
             && ($subjectStats.status === SubjectStatus.Correct
               || $subjectStats.status === SubjectStatus.Wrong))
@@ -600,14 +594,13 @@ function getProvided() {
             themeId: subject()!.data.themeId,
           }).create()
         }
-        catch (error) {
+        catch {
           modalsStore.notify({
             title:
               'Ответ не был сохранен! Возможно придется повторить этот вопрос.',
             timeout: 10_000,
             severity: Severity.ERROR,
           })
-          handleError(error)
         }
       }
     })
@@ -643,13 +636,12 @@ function getProvided() {
         await $questionInfo.update()
       }
     }
-    catch (error) {
+    catch {
       modalsStore.notify({
         title: 'Изменения не сохранены. Возможна потеря данных!',
         timeout: 10_000,
         severity: Severity.ERROR,
       })
-      handleError(error)
     }
   }
 
@@ -696,6 +688,8 @@ function getProvided() {
 const Context = createContext<ReturnType<typeof getProvided>>()
 export const SessionProvider: ParentComponent = (properties) => {
   const provided = getProvided()
-  return <Context.Provider value={provided}>{properties.children}</Context.Provider>
+  return (
+    <Context.Provider value={provided}>{properties.children}</Context.Provider>
+  )
 }
 export const useSession = () => useContext(Context)
