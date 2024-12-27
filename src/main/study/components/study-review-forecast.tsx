@@ -5,9 +5,11 @@ import Icon from '@/components/icon'
 import Skeleton from '@/components/loading/skeleton'
 import Tooltip from '@/components/tooltip'
 import { useStudy } from '@/main/study/services/study.context'
+import basicStore from '@/services/basic.store'
 
 import s from './study-review-forecast.module.scss'
 
+const { t } = basicStore
 const StudyReviewForecast: Component = () => {
   const { turnedOnThemes, now, reviews, ready, offlineUnavailable }
     = useStudy()!
@@ -44,7 +46,7 @@ const StudyReviewForecast: Component = () => {
 
   return (
     <div class={`card ${s.reviewForecast}`}>
-      <div class="card-title">График повторений</div>
+      <div class="card-title">{t('STUDY.FORECAST')}</div>
       <Skeleton
         loading={!ready()}
         offline={offlineUnavailable()}
@@ -53,7 +55,7 @@ const StudyReviewForecast: Component = () => {
         <Show
           when={data().length}
           fallback={(
-            <Tooltip content="В будущем повторений не предвидится">
+            <Tooltip content={t('STUDY.NO_FORECAST')}>
               <div class={s.skeleton}>
                 <Icon path={mdiClockRemove} size="48" />
               </div>

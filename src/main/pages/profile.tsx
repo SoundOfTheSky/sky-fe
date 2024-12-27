@@ -6,10 +6,13 @@ import Auth from '@/components/auth'
 import Input from '@/components/form/input'
 import Icon from '@/components/icon'
 import AuthStore from '@/services/auth.store'
+import basicStore from '@/services/basic.store'
 import { modalsStore, Severity } from '@/services/modals.store'
 import { atomize } from '@/services/reactive'
 
 import s from './profile.module.scss'
+
+const { t } = basicStore
 
 export default (() => {
   // === State ===
@@ -28,7 +31,7 @@ export default (() => {
   async function userDataChange() {
     if (!avatarElement.complete || avatarElement.naturalHeight === 0) {
       modalsStore.notify({
-        title: 'Не удалось загрузить URL аватара',
+        title: t('AUTH.AVATAR_LOAD_ERROR'),
         severity: Severity.ERROR,
         timeout: 5000,
       })
@@ -44,31 +47,38 @@ export default (() => {
     <Auth>
       <div class="card-container">
         <div class="card">
-          <div class="card-title">Предпросмотр аватара</div>
+          <div class="card-title">{t('AUTH.AVATAR')}</div>
           <img
             class={s.avatar}
             src={imageURL() || '/avatar.webp'}
-            alt="My avatar"
+            alt={t('AUTH.AVATAR')}
             ref={avatarElement}
           />
         </div>
         <div class={`card ${s.info}`}>
-          <div class="card-title">Редактировать профиль</div>
+          <div class="card-title">{t('AUTH.EDIT_PROFILE')}</div>
           <div class={s.field}>
-            <div>Имя пользователя:</div>
+            <div>
+              {t('AUTH.USERNAME')}
+              :
+            </div>
             <Input
               value={username}
-              placeholder="Имя пользователя"
+              placeholder={t('AUTH.USERNAME')}
               onChange={userDataChange}
             />
           </div>
           <div class={s.field}>
-            <div>Аватар (URL):</div>
+            <div>
+              {t('AUTH.AVATAR')}
+              {' '}
+              (URL):
+            </div>
             <Input value={avatar} placeholder="URL" onChange={userDataChange} />
           </div>
         </div>
         <button class={`card ${s.logout}`} onClick={() => AuthStore.logout()}>
-          <div>Выйти</div>
+          <div>{t('AUTH.LOGOUT')}</div>
           <Icon path={mdiExitRun} size="48" />
         </button>
       </div>

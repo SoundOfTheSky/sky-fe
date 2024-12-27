@@ -1,6 +1,7 @@
 import { ParentComponent, Show } from 'solid-js'
 
 import AuthStore from '@/services/auth.store'
+import basicStore from '@/services/basic.store'
 import { atom, useGlobalEvent } from '@/services/reactive'
 
 import Input from './form/input'
@@ -9,6 +10,7 @@ import s from './auth.module.scss'
 
 export default ((properties) => {
   // === Hooks ===
+  const { t } = basicStore
   useGlobalEvent('keypress', (event) => {
     if (AuthStore.me() || AuthStore.loading()) return
     if (event.code === 'Enter') void login()
@@ -54,24 +56,24 @@ export default ((properties) => {
         <div class={s.authComponent}>
           <div class={s.card}>
             <div class={s.content}>
-              <div class={s.welcome}>Авторизация</div>
+              <div class={s.welcome}>{t('AUTH.TITLE')}</div>
               <Input
                 value={username}
                 name="username"
-                placeholder="Имя пользователя"
+                placeholder={t('AUTH.USERNAME')}
                 autocomplete="on"
                 autofocus
               />
               <Input
                 value={password}
                 name="password"
-                placeholder="Пароль"
+                placeholder={t('AUTH.PASSWORD')}
                 type="password"
               />
             </div>
             <div class={s.buttons}>
-              <button onClick={login}>Войти</button>
-              <button onClick={register}>Регистрация</button>
+              <button onClick={login}>{t('AUTH.LOGIN')}</button>
+              <button onClick={register}>{t('AUTH.REGISTER')}</button>
             </div>
           </div>
         </div>

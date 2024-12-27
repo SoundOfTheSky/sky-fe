@@ -3,10 +3,13 @@ import { Component, createEffect, createMemo, Index, Show } from 'solid-js'
 
 import Skeleton from '@/components/loading/skeleton'
 import Tooltip from '@/components/tooltip'
+import basicStore from '@/services/basic.store'
 
 import { useStudy } from '../services/study.context'
 
 import s from './study-stats.module.scss'
+
+const { t } = basicStore
 
 const StudyStats: Component = () => {
   // === Hooks ===
@@ -27,7 +30,7 @@ const StudyStats: Component = () => {
 
   return (
     <div class={`card ${s.studyStats}`}>
-      <div class="card-title">Календарь активности</div>
+      <div class="card-title">{t('STUDY.ACTIVITY_CALENDAR')}</div>
       <Skeleton
         loading={statsGraph().length === 0}
         offline={offlineUnavailable()}
@@ -43,7 +46,8 @@ const StudyStats: Component = () => {
                     <div class={s.dayInfo}>
                       <div class={s.title}>{date.toLocaleDateString()}</div>
                       <div>
-                        Повторения:
+                        {t('STUDY.REVIEWS')}
+                        :
                         {reviews()}
                       </div>
                     </div>

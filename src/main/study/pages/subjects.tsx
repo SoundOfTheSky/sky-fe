@@ -4,6 +4,7 @@ import { createEffect, createMemo, For, onMount, Show } from 'solid-js'
 
 import Input from '@/components/form/input'
 import Icon from '@/components/icon'
+import basicStore from '@/services/basic.store'
 import { database } from '@/services/database'
 import { modalsStore, Severity } from '@/services/modals.store'
 import { atom } from '@/services/reactive'
@@ -21,6 +22,8 @@ import parseHTML from '../services/parse-html'
 import { useStudy } from '../services/study.context'
 
 import s from './subjects.module.scss'
+
+const { t } = basicStore
 
 type SearchResult = {
   subject: StudySubject
@@ -72,7 +75,7 @@ export default function Subjects() {
     }
     else {
       modalsStore.notify({
-        title: 'Поиск начнется только после полной синхронизации.',
+        title: t('STUDY.SEARCH_NEED_SYNC'),
         severity: Severity.WARNING,
         timeout: 10_000,
       })
@@ -154,7 +157,7 @@ export default function Subjects() {
       <div class={`card ${s.search}`}>
         <Show
           when={isJapanese()}
-          fallback={<Input value={query} placeholder="Поиск..." />}
+          fallback={<Input value={query} placeholder={t('COMMON.SEARCH')} />}
         >
           <Input japanese value={query} placeholder="検索" />
         </Show>
@@ -169,7 +172,7 @@ export default function Subjects() {
       </div>
       <div class={`card ${s.results}`}>
         <Show when={isLoading()}>
-          <div class={s.loading}>Ищем...</div>
+          <div class={s.loading}>{t('COMMON.LOADING')}</div>
         </Show>
         <For each={results()}>
           {result => (

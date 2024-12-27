@@ -18,6 +18,7 @@ import {
 } from 'solid-js'
 import { toKana, isJapanese as wkIsJapanese } from 'wanakana'
 
+import basicStore from '@/services/basic.store'
 import { modalsStore, Severity } from '@/services/modals.store'
 import {
   atom,
@@ -38,6 +39,8 @@ import {
   studyUserQuestionEndpoint,
   studyUserSubjectEndpoint,
 } from '../services/study.rest'
+
+const { t } = basicStore
 
 export enum SubjectStatus {
   Correct,
@@ -596,8 +599,7 @@ function getProvided() {
         }
         catch {
           modalsStore.notify({
-            title:
-              'Ответ не был сохранен! Возможно придется повторить этот вопрос.',
+            title: t('STUDY.SESSION.CHANGES_NOT_SAVED'),
             timeout: 10_000,
             severity: Severity.ERROR,
           })
@@ -638,7 +640,7 @@ function getProvided() {
     }
     catch {
       modalsStore.notify({
-        title: 'Изменения не сохранены. Возможна потеря данных!',
+        title: t('STUDY.SESSION.CHANGES_NOT_SAVED'),
         timeout: 10_000,
         severity: Severity.ERROR,
       })

@@ -4,11 +4,13 @@ import { Component } from 'solid-js'
 import Icon from '@/components/icon'
 import Skeleton from '@/components/loading/skeleton'
 import Tooltip from '@/components/tooltip'
+import basicStore from '@/services/basic.store'
 
 import { useStudy } from '../services/study.context'
 
 import s from './study-activity.module.scss'
 
+const { t } = basicStore
 const MAX_SCORE = 200
 const StudyActivity: Component = () => {
   const { activity, statsGraph, offlineUnavailable } = useStudy()!
@@ -20,7 +22,7 @@ const StudyActivity: Component = () => {
         offline={offlineUnavailable()}
         class={s.skeleton}
       >
-        <Tooltip content="Активность">
+        <Tooltip content={t('STUDY.TITLE')}>
           <div
             class={`${s.progress} ${activity()[0] < 25 ? s.bad : ''}`}
             style={{
@@ -28,7 +30,7 @@ const StudyActivity: Component = () => {
             }}
           />
         </Tooltip>
-        <Tooltip content="Активность завтра">
+        <Tooltip content={t('STUDY.ACTIVITY.TOMORROW')}>
           <div
             class={`${s.progress} ${s.tomorrow} ${activity()[0] / 4 < 25 ? s.bad : ''}`}
             style={{
@@ -36,16 +38,16 @@ const StudyActivity: Component = () => {
             }}
           />
         </Tooltip>
-        <Tooltip content="Цель, которую надо достичь, для продолжения серии">
+        <Tooltip content={t('STUDY.ACTIVITY.GOAL')}>
           <div class={s.goal} />
         </Tooltip>
-        <Tooltip content="Активность">
+        <Tooltip content={t('STUDY.TITLE')}>
           <span class={s.stat}>
             {activity()[0]}
             <Icon path={mdiFire} size="32" />
           </span>
         </Tooltip>
-        <Tooltip content="Серия (дней)">
+        <Tooltip content={t('STUDY.ACTIVITY.STREAK')}>
           <span class={s.stat}>
             {activity()[1]}
             <Icon path={mdiStar} size="32" />

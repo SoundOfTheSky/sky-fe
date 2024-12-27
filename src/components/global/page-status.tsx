@@ -11,6 +11,8 @@ import Tooltip from '../tooltip'
 
 import s from './page-status.module.scss'
 
+const { loading, online, t } = BasicStore
+
 const transition = createTransitionOptions(
   {
     maxHeight: ['0px', '24px'],
@@ -19,8 +21,6 @@ const transition = createTransitionOptions(
 )
 
 const PageStatus: Component = () => {
-  const { loading, online } = BasicStore
-
   return (
     <Transition {...transition}>
       <Switch>
@@ -32,7 +32,8 @@ const PageStatus: Component = () => {
                 transform: `scaleX(${SyncStore.progress()})`,
               }}
             />
-            Загрузка изменений:
+            {t('PAGE_STATUS.ACTIONS')}
+            :
             {' '}
             {~~(SyncStore.progress() * 100)}
             %
@@ -46,20 +47,21 @@ const PageStatus: Component = () => {
                 transform: `scaleX(${SyncStore.progress()})`,
               }}
             />
-            Кэширование:
+            {t('PAGE_STATUS.CACHING')}
+            :
             {' '}
             {~~(SyncStore.progress() * 100)}
             %
-            <Tooltip content="Вы можете не дожидаться окончания синхронизации. При закрытии прогресс сохраняется. Синхронизация нужна только для оффлайн доступа к сайту.">
+            <Tooltip content={t('PAGE_STATUS.CACHING_INFO')}>
               <Icon path={mdiInformation} class="ml-1" />
             </Tooltip>
           </div>
         </Match>
         <Match when={SyncStore.status() === SYNC_STATUS.ERRORED}>
-          <div class={s.offline}>Ошибка синхронизации</div>
+          <div class={s.offline}>{t('PAGE_STATUS.ERROR')}</div>
         </Match>
         <Match when={!online()}>
-          <div class={s.offline}>Оффлайн</div>
+          <div class={s.offline}>{t('PAGE_STATUS.OFFLINE')}</div>
         </Match>
         <Match when={loading()}>
           <div class={s.loading} />

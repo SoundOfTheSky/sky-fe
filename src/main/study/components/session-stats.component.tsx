@@ -4,6 +4,7 @@ import { A } from '@solidjs/router'
 import { createMemo, For, Show } from 'solid-js'
 
 import Icon from '@/components/icon'
+import basicStore from '@/services/basic.store'
 
 import parseHTML from '../services/parse-html'
 import { SubjectStatus, useSession } from '../session/session.context'
@@ -11,6 +12,8 @@ import { SubjectStatus, useSession } from '../session/session.context'
 import SubjectReference from './subject-reference'
 
 import s from './session-stats.module.scss'
+
+const { t } = basicStore
 
 export default function SessionStats() {
   // === Hooks ===
@@ -43,10 +46,10 @@ export default function SessionStats() {
       <table>
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Subjects</th>
-            <th>Speed</th>
-            <th>Correct</th>
+            <th>{t('STUDY.SESSION.TIME')}</th>
+            <th>{t('STUDY.SUBJECTS')}</th>
+            <th>{t('STUDY.SESSION.SPEED')}</th>
+            <th>{t('STUDY.SESSION.CORRECT')}</th>
           </tr>
         </thead>
         <tbody>
@@ -60,7 +63,7 @@ export default function SessionStats() {
                 * 100
               ) / 100}
               {' '}
-              S/H
+              {t('STUDY.SESSION.SUBJECTS_PER_HOUR')}
             </td>
             <td>
               {~~(stats().correctPercent * 100)}
@@ -72,10 +75,10 @@ export default function SessionStats() {
       <table>
         <thead>
           <tr>
-            <th>Subject</th>
-            <th>Time</th>
-            <th>Undo</th>
-            <th>Correct</th>
+            <th>{t('STUDY.SUBJECT')}</th>
+            <th>{t('STUDY.SESSION.TIME')}</th>
+            <th>{t('STUDY.SESSION.UNDO')}</th>
+            <th>{t('STUDY.SESSION.CORRECT')}</th>
           </tr>
         </thead>
         <tbody>

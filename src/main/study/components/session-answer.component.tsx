@@ -16,11 +16,14 @@ import { For, Match, Switch, createEffect, createMemo } from 'solid-js'
 import Input from '@/components/form/input'
 import Icon from '@/components/icon'
 import Tooltip from '@/components/tooltip'
+import basicStore from '@/services/basic.store'
 import { atom, useGlobalEvent } from '@/services/reactive'
 
 import { SubjectStatus, useSession } from '../session/session.context'
 
 import s from './session-answer.module.scss'
+
+const { t } = basicStore
 
 export default function SessionAnswer() {
   const {
@@ -90,7 +93,7 @@ export default function SessionAnswer() {
       <Switch
         fallback={(
           <Input
-            placeholder="Ответ"
+            placeholder={t('STUDY.SESSION.ANSWER')}
             value={answer}
             type="text"
             disabled={inputDisabled()}
@@ -141,7 +144,7 @@ export default function SessionAnswer() {
 
       <div class={s.buttons}>
         <Tooltip
-          content={`Перемешанные вопросы: ${shuffleSubjects() ? 'включены' : 'выключены'}`}
+          content={t('STUDY.SESSION.SHUFFLED_SUBJECTS') + ': ' + t(shuffleSubjects() ? 'COMMON.ENABLED' : 'COMMON.DISABLED')}
         >
           <button
             onClick={() => {
@@ -160,7 +163,7 @@ export default function SessionAnswer() {
           </button>
         </Tooltip>
         <Tooltip
-          content={`Последовательные под-вопросы: ${consistentQuestions() ? 'включены' : 'отключены'}`}
+          content={t('STUDY.SESSION.CONSISTENT_QUESTIONS') + ': ' + t(shuffleSubjects() ? 'COMMON.ENABLED' : 'COMMON.DISABLED')}
         >
           <button onClick={() => consistentQuestions(x => !x)}>
             <Icon
@@ -170,7 +173,7 @@ export default function SessionAnswer() {
             />
           </button>
         </Tooltip>
-        <Tooltip content={questionAnswered() ? 'Следующий вопрос' : 'Ответить'}>
+        <Tooltip content={t(questionAnswered() ? 'STUDY.SESSION.NEXT_QUESTION' : 'STUDY.SESSION.TO_ANSWER')}>
           <button
             onClick={submit}
             disabled={
@@ -189,11 +192,7 @@ export default function SessionAnswer() {
         </Tooltip>
         <Tooltip
           content={
-            [
-              'Проигрывание аудио: выключено',
-              'Проигрывание аудио: первое',
-              'Проигрывание аудио: все',
-            ][autoplayAudio()]
+            t('STUDY.SESSION.AUTO_AUDIO')![autoplayAudio()]
           }
         >
           <button onClick={() => autoplayAudio(x => (x + 1) % 3)}>
@@ -208,7 +207,7 @@ export default function SessionAnswer() {
             />
           </button>
         </Tooltip>
-        <Tooltip content="Исправить">
+        <Tooltip content={t('STUDY.SESSION.UNDO')}>
           <button
             onClick={undo}
             disabled={!previousState() || cooldownUndo() !== undefined}

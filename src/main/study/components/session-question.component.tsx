@@ -2,6 +2,7 @@ import { createMemo, Index, Show } from 'solid-js'
 
 import Skeleton from '@/components/loading/skeleton'
 import Tooltip from '@/components/tooltip'
+import basicStore from '@/services/basic.store'
 import { resizeTextToFit } from '@/services/reactive'
 import { srs } from '@/sky-shared/study'
 
@@ -13,6 +14,7 @@ import s from './session-question.module.scss'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
 resizeTextToFit
+const { t } = basicStore
 
 export default function SessionQuestion() {
   const {
@@ -95,7 +97,7 @@ export default function SessionQuestion() {
         <span>{progressSpinnerOptions().stage}</span>
       </div>
       <div class={s.stats}>
-        <Tooltip content="Пройдено/Всего вопросов">
+        <Tooltip content={t('STUDY.SESSION.PROGRESS')}>
           <div>
             {stats().passed}
             /
@@ -103,19 +105,18 @@ export default function SessionQuestion() {
           </div>
         </Tooltip>
         {' '}
-        <Tooltip content="Процент правильных ответов">
+        <Tooltip content={t('STUDY.SESSION.CORRECT_PERCENT')}>
           <div>
             {~~(stats().correctPercent * 100)}
             %
           </div>
         </Tooltip>
-        <Tooltip content="Времени прошло">
+        <Tooltip content={t('STUDY.SESSION.TIME_PASSED')}>
           <div>{timePassed()}</div>
         </Tooltip>
-        <Tooltip content="Приблизительно осталось">
+        <Tooltip content={t('STUDY.SESSION.ETA')}>
           <div>
             {eta()}
-            мин.
           </div>
         </Tooltip>
       </div>

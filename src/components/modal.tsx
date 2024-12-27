@@ -1,9 +1,12 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import { JSX, ParentComponent, Show, createEffect, createMemo, onMount, splitProps, untrack } from 'solid-js'
 
+import basicStore from '@/services/basic.store'
 import { atom } from '@/services/reactive'
 
 import s from './modal.module.scss'
+
+const { t } = basicStore
 
 const Modal: ParentComponent<{
   forceFullscreen?: boolean
@@ -112,7 +115,7 @@ const Modal: ParentComponent<{
             onTouchStart={touchStart}
             onMouseDown={touchStart}
           >
-            <span>Hide</span>
+            <span>{t('COMMON.CLOSE')}</span>
           </button>
         </Show>
         {properties.children}

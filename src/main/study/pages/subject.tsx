@@ -14,6 +14,7 @@ import {
 import Input from '@/components/form/input'
 import Tags from '@/components/form/tags'
 import Skeleton from '@/components/loading/skeleton'
+import basicStore from '@/services/basic.store'
 import { modalsStore, Severity } from '@/services/modals.store'
 import { atom, resizeTextToFit } from '@/services/reactive'
 import { getDefaultRestFields } from '@/services/rest'
@@ -34,6 +35,7 @@ import s from './subject.module.scss'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
 resizeTextToFit
+const { t } = basicStore
 
 const Subject: Component<{ id?: number }> = (properties) => {
   // === Stores ===
@@ -139,7 +141,7 @@ const Subject: Component<{ id?: number }> = (properties) => {
     }
     catch {
       modalsStore.notify({
-        title: 'Изменения не сохранены! Возможна потеря данных!',
+        title: t('STUDY.SESSION.CHANGES_NOT_SAVED'),
         timeout: 10_000,
         severity: Severity.ERROR,
       })
@@ -210,7 +212,7 @@ const Subject: Component<{ id?: number }> = (properties) => {
             {(_, index) => (
               <button
                 onClick={() => questionI(index())}
-                aria-label="Перейти к вопросу"
+                aria-label={t('STUDY.SESSION.SELECT_QUESTION')}
                 classList={{
                   [s.storyItem!]: true,
                   [s.current!]: index() === questionI(),
@@ -224,21 +226,23 @@ const Subject: Component<{ id?: number }> = (properties) => {
         <Skeleton loading={isLoading()}>
           <Tabs>
             {parseHTML(question()!.data.description)}
-            <div data-tab="Заметки и синонимы">
-              Синонимы:
+            <div data-tab={t('STUDY.SESSION.QUESTION_DATA')}>
+              {t('STUDY.SESSION.SYNONYMS')}
+              :
               <br />
               <Tags
                 value={synonyms}
-                placeholder="Синонимы, которые будут засчитываться, как правильные ответы"
+                placeholder={t('STUDY.SESSION.SYNONYMS_DESC')!}
                 onChange={sendQuestionDataToServer}
               />
               <br />
-              Заметки:
+              {t('STUDY.SESSION.NOTES')}
+              :
               <br />
               <Input
                 value={note}
                 multiline
-                placeholder="Место для ваших заметок"
+                placeholder={t('STUDY.SESSION.NOTES_DESC')}
                 onChange={sendQuestionDataToServer}
               />
             </div>

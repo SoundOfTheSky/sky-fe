@@ -13,6 +13,7 @@ import basicStore from './basic.store'
 import { modalsStore, Severity } from './modals.store'
 import { atom } from './reactive'
 
+const { t } = basicStore
 export enum WebSocketStatus {
   closed,
   connecting,
@@ -78,7 +79,7 @@ function getProvided() {
       if (event[0] === 'error')
         modalsStore.notify({
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          title: event[1] || 'Неизвестная ошибка',
+          title: event[1] || t('COMMON.UNKNOWN_ERROR'),
           timeout: 5000,
           severity: Severity.ERROR,
         })

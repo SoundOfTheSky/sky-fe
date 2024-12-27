@@ -10,12 +10,15 @@ import {
 } from 'solid-js'
 
 import AudioStore from '@/services/audio.store'
+import basicStore from '@/services/basic.store'
 import { atom } from '@/services/reactive'
 
 import Icon from './icon'
 import Tooltip from './tooltip'
 
 import s from './audio.module.scss'
+
+const { t } = basicStore
 
 const Audio: Component<{ src: string, title: string, autoplay?: boolean }> = (
   properties,
@@ -117,7 +120,7 @@ const Audio: Component<{ src: string, title: string, autoplay?: boolean }> = (
         <Icon path={isCurrent() && playing() ? mdiPause : mdiPlay} size="24" />
         {properties.title}
       </button>
-      <Tooltip content="Добавить в очередь">
+      <Tooltip content={t('AUDIO.ADD_TO_QUEUE')}>
         <button onClick={addToQueue} disabled={loading()} class={s.add}>
           <Icon
             path={queueIndex() === -1 ? mdiPlaylistPlus : mdiPlaylistMinus}

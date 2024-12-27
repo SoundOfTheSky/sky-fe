@@ -4,12 +4,14 @@ import { createMemo, Show } from 'solid-js'
 
 import Icon from '@/components/icon'
 import Skeleton from '@/components/loading/skeleton'
+import basicStore from '@/services/basic.store'
 import { atom } from '@/services/reactive'
 
 import { useStudy } from '../services/study.context'
 
 import s from './start-review-session.module.scss'
 
+const { t } = basicStore
 export default function StartReviewSession(properties: {
   lessons?: boolean
 }) {
@@ -47,7 +49,7 @@ export default function StartReviewSession(properties: {
         when={showSettings()}
         fallback={(
           <div class={s.wrapper}>
-            <h1>{properties.lessons ? 'Уроки' : 'Повторения'}</h1>
+            <h1>{t(properties.lessons ? 'STUDY.LESSONS' : 'STUDY.REVIEWS')}</h1>
             <Skeleton
               loading={!ready()}
               class={s.reviewsAmount}
@@ -68,16 +70,17 @@ export default function StartReviewSession(properties: {
         )}
       >
         <div class={s.settingsWrapper}>
-          <div title="Количество вопросов за одну сессию">
+          <div title={t('STUDY.SETTINGS.AMOUNT_DESC')}>
             <div>
-              Количество:
+              {t('STUDY.SETTINGS.AMOUNT')}
+              :
               {settingsScoped().amount}
             </div>
             <input
               type="range"
               min="1"
               max="50"
-              aria-label="Количество"
+              aria-label={t('STUDY.SETTINGS.AMOUNT')}
               value={settingsScoped().amount}
               onInput={(event) => {
                 settingsScoped().amount = Number.parseInt(
@@ -87,9 +90,10 @@ export default function StartReviewSession(properties: {
               }}
             />
           </div>
-          <div title="Размер группы уроков">
+          <div title={t('STUDY.SETTINGS.BATCH_DESC')}>
             <div>
-              Группировать по:
+              {t('STUDY.SETTINGS.BATCH')}
+              :
               {' '}
               {settingsScoped().batch}
             </div>
@@ -98,7 +102,7 @@ export default function StartReviewSession(properties: {
               min="1"
               max="50"
               value={settingsScoped().batch}
-              aria-label="Группировать по"
+              aria-label={t('STUDY.SETTINGS.BATCH')}
               onInput={(event) => {
                 settingsScoped().batch = Number.parseInt(
                   (event.target as HTMLInputElement).value,

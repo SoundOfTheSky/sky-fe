@@ -18,6 +18,7 @@ import { handleError, RequestError } from './fetch'
 import { modalsStore, Severity } from './modals.store'
 import { atom, persistentAtom, useInterval } from './reactive'
 
+const { t } = basicStore
 export enum SYNC_STATUS {
   IDLE,
   ACTIONS,
@@ -136,13 +137,13 @@ export default createRoot(() => {
         return false
       }
       modalsStore.notify({
-        title: 'Разрешите доступ к хранилищу, чтобы получить доступ к сайту оффлайн.',
+        title: t('MAIN.ALLOW_STORAGE'),
         id: 'persistentStorage',
       })
       if (!await navigator.storage.persist()) {
         modalsStore.removeNotification('persistentStorage')
         modalsStore.notify({
-          title: 'Запрещен доступ к хранилищу, доступ к сайту оффлайн невозможен.',
+          title: t('MAIN.STORAGE_PROHIBITED'),
           timeout: 5000,
           severity: Severity.ERROR,
         })
