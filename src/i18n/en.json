@@ -1,28 +1,92 @@
 {
-  "COMMON": {
-    "OK": "OK",
-    "CANCEL": "Cancel",
-    "CLOSE": "Close"
-  },
-  "PAGE_STATUS": {
-    "OFFLINE": "Оффлайн",
-    "ERROR": "Ошибка синхронизации",
-    "CACHING": "Кэширование",
-    "ACTIONS": "Синхронизация",
-    "CACHING_INFO": "Вы можете не дожидаться окончания синхронизации. При закрытии прогресс сохраняется. Синхронизация нужна только для оффлайн доступа к сайту."
+  "AUDIO": {
+    "ADD_TO_QUEUE": "Add to queue"
   },
   "AUTH": {
-    "TITLE": "Авторизация",
-    "USERNAME": "Имя пользователя",
-    "PASSWORD": "Пароль",
-    "LOGIN": "Войти",
-    "REGISTER": "Зарегистрироваться",
-    "ANONYMOUS": "Аноним",
-    "AVATAR": "Аватар",
-    "EDIT_PROFILE": "Редактировать профиль",
-    "LOGOUT": "Выйти"
+    "ANONYMOUS": "Anonymous",
+    "AVATAR": "Avatar",
+    "AVATAR_LOAD_ERROR": "Failed to load avatar URL",
+    "EDIT_PROFILE": "Edit profile",
+    "LOGIN": "Login",
+    "LOGOUT": "Logout",
+    "PASSWORD": "Password",
+    "REGISTER": "Register",
+    "TITLE": "Authorization",
+    "USERNAME": "Username"
+  },
+  "COMMON": {
+    "CANCEL": "Cancel",
+    "CLOSE": "Close",
+    "DISABLED": "Disabled",
+    "ENABLED": "Enabled",
+    "LOADING": "Loading",
+    "OK": "OK",
+    "SEARCH": "Search",
+    "UNKNOWN_ERROR": "Unknown error"
+  },
+  "MAIN": {
+    "ALLOW_STORAGE": "Allow storage access to use the site offline.",
+    "NEED_RELOAD": "Please reload the page to apply the update!",
+    "PWA_ERROR": "Failed to register the application",
+    "RELOAD_APP": "Reload app",
+    "STORAGE_PROHIBITED": "Storage access is prohibited, offline access to the site is unavailable."
+  },
+  "PAGE_STATUS": {
+    "ACTIONS": "Synchronization",
+    "CACHING": "Caching",
+    "CACHING_INFO": "You don’t have to wait for synchronization to finish. Progress will be saved when closed. Synchronization is needed only for offline access to the site.",
+    "ERROR": "Synchronization error",
+    "OFFLINE": "Offline"
   },
   "STUDY": {
-    "TITLE": "Обучение"
+    "ACTIVITY": {
+      "GOAL": "The goal needed to continue the streak",
+      "STREAK": "Streak (days)",
+      "TITLE": "Activity",
+      "TOMORROW": "Tomorrow’s activity"
+    },
+    "ACTIVITY_CALENDAR": "Activity calendar",
+    "FORECAST": "Review schedule",
+    "LESSONS": "Lessons",
+    "NO_FORECAST": "No reviews planned in the future",
+    "REVIEWS": "Reviews",
+    "SEARCH_NEED_SYNC": "Search will begin only after full synchronization",
+    "SESSION": {
+      "ANSWER": "Answer",
+      "AUTO_AUDIO": [
+        "Audio playback: off",
+        "Audio playback: first",
+        "Audio playback: all"
+      ],
+      "CHANGES_NOT_SAVED": "Changes not saved! Data loss is possible!",
+      "CONSISTENT_QUESTIONS": "Consistent questions",
+      "CORRECT": "Correct",
+      "CORRECT_PERCENT": "Correct answer percentage",
+      "ETA": "Estimated time left",
+      "NEXT_QUESTION": "Next question",
+      "NOTES": "Notes",
+      "NOTES_DESC": "A place for your notes",
+      "PROGRESS": "Completed/Total",
+      "QUESTION_DATA": "Notes and synonyms",
+      "SELECT_QUESTION": "Go to question",
+      "SHUFFLED_SUBJECTS": "Shuffled subjects",
+      "SPEED": "Speed",
+      "SUBJECTS_PER_HOUR": "Answers per hour",
+      "SYNONYMS": "Synonyms",
+      "SYNONYMS_DESC": "Synonyms that will be accepted as correct answers",
+      "TIME": "Time",
+      "TIME_PASSED": "Time passed",
+      "TO_ANSWER": "Answer",
+      "UNDO": "Undo"
+    },
+    "SETTINGS": {
+      "AMOUNT": "Amount",
+      "AMOUNT_DESC": "Number of questions per session",
+      "BATCH": "Group by",
+      "BATCH_DESC": "Lesson group size"
+    },
+    "SUBJECT": "Subject",
+    "SUBJECTS": "Subjects",
+    "TITLE": "Study"
   }
 }

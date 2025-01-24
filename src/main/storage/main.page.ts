@@ -2,12 +2,6 @@ import { createEffect } from 'solid-js'
 
 import syncStore, { SYNC_STATUS } from '@/services/sync.store'
 
-import StartReviewSession from '../components/start-review-session'
-import StudyActivity from '../components/study-activity'
-import StudyReviewForecast from '../components/study-review-forecast'
-import StudyStats from '../components/study-stats'
-import Themes from '../components/themes'
-import { useStudy } from '../services/study.context'
 
 export default function StudyTab() {
   // === Hooks ===

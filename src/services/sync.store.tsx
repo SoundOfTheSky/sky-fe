@@ -1,15 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HOUR_MS, UUID } from '@softsky/utils'
 import { createEffect, createRoot, untrack } from 'solid-js'
-
-import {
-  getThemes,
-  studyAnswerEndpoint,
-  studyQuestionEndpoint,
-  studySubjectEndpoint,
-  studyUserQuestionEndpoint,
-  studyUserSubjectEndpoint,
-} from '@/main/study/services/study.rest'
 
 import authStore from './auth.store'
 import basicStore from './basic.store'
@@ -17,6 +7,7 @@ import { database } from './database'
 import { handleError, RequestError } from './fetch'
 import { modalsStore, Severity } from './modals.store'
 import { atom, persistentAtom, useInterval } from './reactive'
+import { RESTBody, RESTEndpointIDB, RESTItemIDB } from './rest'
 
 const { t } = basicStore
 export enum SYNC_STATUS {
@@ -30,13 +21,7 @@ async function syncOfflineTaskQueue(options: {
   checkIfAborted: () => void
   onProgress: (p: number) => unknown
 }) {
-  const endpoints = [
-    studySubjectEndpoint,
-    studyQuestionEndpoint,
-    studyAnswerEndpoint,
-    studyUserSubjectEndpoint,
-    studyUserQuestionEndpoint,
-  ]
+  const endpoints: RESTEndpointIDB<RESTBody, RESTItemIDB<RESTBody>>[] = []
   const endpointsMap = new Map(endpoints.map(x => [x.idb as string, x]))
   const keys = await database.getAllKeys('offlineTasksQueue')
   for (let index = 0; index < keys.length; index++) {
@@ -50,10 +35,12 @@ async function syncOfflineTaskQueue(options: {
       if (endpoint) {
         switch (action) {
           case 'create': {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await new endpoint.builder(request).create()
             break
           }
           case 'update': {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await new endpoint.builder(request).update()
             break
           }
@@ -80,36 +67,9 @@ async function syncOfflineTaskQueue(options: {
 }
 
 async function deleteUserDependentStores() {
-  const endpoints = [
-    studyUserSubjectEndpoint,
-    studyUserQuestionEndpoint,
-    studyAnswerEndpoint,
-  ]
+  const endpoints: RESTEndpointIDB<RESTBody, RESTItemIDB<RESTBody>>[] = []
   for (const endpoint of endpoints)
     await endpoint.clearIDB()
-}
-
-async function syncStudy(options: {
-  checkIfAborted: () => void
-  onProgress: (p: number) => unknown
-}) {
-  // Will cache single query
-  if (!document.location.pathname.startsWith('/study')) await getThemes()
-  const endpoints = [
-    studySubjectEndpoint,
-    studyQuestionEndpoint,
-    studyUserSubjectEndpoint,
-    studyUserQuestionEndpoint,
-    studyAnswerEndpoint,
-  ]
-  let index = 0
-  const onProgress = (p: number) =>
-    options.onProgress((index + p) / endpoints.length)
-  for (; index < endpoints.length; index++)
-    await endpoints[index]!.syncIDB({
-      checkIfAborted: options.checkIfAborted,
-      onProgress,
-    })
 }
 
 export default createRoot(() => {
@@ -180,10 +140,10 @@ export default createRoot(() => {
       })
       status(SYNC_STATUS.CACHE)
       progress(0)
-      await syncStudy({
-        checkIfAborted: stopIfAborted,
-        onProgress: progress,
-      })
+      // await syncStudy({
+      //   checkIfAborted: stopIfAborted,
+      //   onProgress: progress,
+      // })
       cached(true)
       status(SYNC_STATUS.SYNCHED)
     }

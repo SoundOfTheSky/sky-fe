@@ -31,7 +31,9 @@ export default createRoot(() => {
   async function updateCurrentUser() {
     loading(true)
     try {
-      const userData = await request<User>('/api/auth/me')
+      const userData = await request<User>('/api/auth/me', {
+        retries: 0,
+      })
       batch(() => {
         me(userData)
         basicStore.online(true)

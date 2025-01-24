@@ -46,6 +46,9 @@ export default defineConfig({
       exclude: [/\.(br)$/, /\.(gz)$/],
     }),
   ],
+  server: {
+    allowedHosts: true
+  },
   css: {
     modules: {
       localsConvention: 'camelCaseOnly',

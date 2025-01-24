@@ -1,4 +1,3 @@
-import basicStore from './basic.store'
 import { modalsStore, Severity } from './modals.store'
 
 const channel = new BroadcastChannel('softsky')
@@ -35,7 +34,7 @@ function onMessage(packet: MessageEvent<unknown>) {
   const data = packet.data.slice(splitter + 1)
   if (event === 'error')
     modalsStore.notify({
-      title: data || basicStore.t('COMMON.UNKNOWN_ERROR'),
+      title: data,
       timeout: 5000,
       severity: Severity.ERROR,
     })

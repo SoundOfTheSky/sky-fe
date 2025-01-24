@@ -10,7 +10,6 @@ export default [
     rules: {
       'unicorn/no-useless-undefined': 0,
       'unicorn/consistent-function-scoping': 0,
-      '@typescript-eslint/no-explicit-any': 0,
     }
   }
 ];

@@ -5,11 +5,10 @@ import { createEffect, createResource, createRoot } from 'solid-js'
 import { useRegisterSW } from 'virtual:pwa-register/solid'
 
 import Icon from '@/components/icon'
+import type en from '@/i18n/ru.json'
 
 import { modalsStore, Severity } from './modals.store'
 import { atom, persistentAtom } from './reactive'
-
-import type en from '../i18n/ru.json'
 
 export type Locale = 'en' | 'jp' | 'ru'
 export type Dictionary = i18n.Flatten<typeof en>
@@ -67,7 +66,7 @@ export default createRoot(() => {
   const locale = persistentAtom<Locale>('locale', 'en')
 
   // === Resources ===
-  const [dict] = createResource(async () => i18n.flatten(await import(`./${locale()}.json`)) as Dictionary)
+  const [dict] = createResource(async () => i18n.flatten(await import(`@/i18n/${locale()}.json`)) as Dictionary)
   const t = i18n.translator(dict, i18n.resolveTemplate)
 
   // === Effects ===

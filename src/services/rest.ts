@@ -213,7 +213,6 @@ export class RESTItem<T extends RESTBody> {
 
   public toDTO() {
     const dto = structuredClone(this.data) as Record<string, unknown>
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     for (const key of this.endpoint.ignoredDTOFields) delete dto[key]
     return dto
   }
