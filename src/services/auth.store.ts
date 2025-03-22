@@ -33,6 +33,7 @@ export default createRoot(() => {
     try {
       const userData = await request<User>('/api/auth/me', {
         retries: 0,
+        disableHandler: true,
       })
       batch(() => {
         me(userData)
@@ -40,8 +41,7 @@ export default createRoot(() => {
         loading(false)
       })
       return userData
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof RequestError) {
         if (error.code >= 400 && error.code < 500) me(undefined)
         else {
@@ -49,19 +49,18 @@ export default createRoot(() => {
           throw error
         }
       }
-    }
-    finally {
+    } finally {
       loading(false)
     }
   }
-  async function register(body: { username: string, password: string }) {
+  async function register(body: { username: string; password: string }) {
     await request('/api/auth/register', {
       method: 'POST',
       body,
     })
     await updateCurrentUser()
   }
-  async function login(body: { username: string, password: string }) {
+  async function login(body: { username: string; password: string }) {
     await request('/api/auth/login', {
       method: 'POST',
       body,
@@ -72,7 +71,7 @@ export default createRoot(() => {
     await request('/api/auth/logout')
     await updateCurrentUser()
   }
-  async function updateData(data: { avatar?: string, username?: string }) {
+  async function updateData(data: { avatar?: string; username?: string }) {
     me(
       await request<User>('/api/auth/me', {
         method: 'POST',

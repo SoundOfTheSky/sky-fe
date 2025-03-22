@@ -41,9 +41,9 @@ export function createTransitionOptions(
       origStyles = element?.getAttribute('style') ?? ''
       element?.setAttribute(
         'style',
-        origStyles
-        + '; '
-        + keyframeEntries.map(([k, v]) => `${kebabize(k)}: ${v[0]}`).join('; '),
+        origStyles +
+          '; ' +
+          keyframeEntries.map(([k, v]) => `${kebabize(k)}: ${v[0]}`).join('; '),
       )
     }
     transition.onAfterEnter = (element) => {
@@ -98,8 +98,7 @@ export function changeNumberSmooth(
     const timePassed = performance.now() - startTime
     if (timePassed >= time) {
       callback(end)
-    }
-    else {
+    } else {
       callback((timePassed / time) * delta + start)
       frame = requestAnimationFrame(tick)
     }

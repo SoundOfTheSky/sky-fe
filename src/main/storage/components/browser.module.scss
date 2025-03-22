@@ -1,0 +1,47 @@
+@use '@/vars' as *;
+
+.browser {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  width: 100%;
+
+  .buttons {
+    display: flex;
+    justify-content: end;
+    margin-bottom: 8px;
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+
+    td,
+    th {
+      text-align: left;
+    }
+
+    tbody {
+      tr {
+        cursor: pointer;
+        transform: background-color $transition-time;
+
+        &:nth-of-type(odd) {
+          background-color: $color-content-background-light;
+        }
+
+        &:hover {
+          background-color: $color-hover;
+        }
+
+        &.selected {
+          background-color: $color-main;
+
+          &:hover {
+            background-color: $color-main-light;
+          }
+        }
+      }
+    }
+  }
+}

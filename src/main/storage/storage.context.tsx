@@ -1,9 +1,4 @@
-import {
-  Context,
-  ParentComponent,
-  createContext,
-  useContext,
-} from 'solid-js'
+import { ParentComponent, createContext, useContext } from 'solid-js'
 
 import { atom } from '@/services/reactive'
 
@@ -22,12 +17,13 @@ function getProvided() {
     // === Memos ===
 
     // === Functions ===
-
   }
 }
 
-const Context = createContext<ReturnType<typeof getProvided>>()
-export const StudyProvider: ParentComponent = properties => (
-  <Context.Provider value={getProvided()}>{properties.children}</Context.Provider>
+const StorageContext = createContext<ReturnType<typeof getProvided>>()
+export const StorageProvider: ParentComponent = (properties) => (
+  <StorageContext.Provider value={getProvided()}>
+    {properties.children}
+  </StorageContext.Provider>
 )
-export const useStudy = () => useContext(Context)
+export const useStorage = () => useContext(StorageContext)

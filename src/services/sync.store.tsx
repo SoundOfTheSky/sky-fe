@@ -1,13 +1,21 @@
 import { HOUR_MS, UUID } from '@softsky/utils'
 import { createEffect, createRoot, untrack } from 'solid-js'
 
+import {
+  getThemes,
+  studyAnswerEndpoint,
+  studyQuestionEndpoint,
+  studySubjectEndpoint,
+  studyUserQuestionEndpoint,
+  studyUserSubjectEndpoint,
+} from '@/main/study/services/study.rest'
+
 import authStore from './auth.store'
 import basicStore from './basic.store'
 import { database } from './database'
 import { handleError, RequestError } from './fetch'
 import { modalsStore, Severity } from './modals.store'
 import { atom, persistentAtom, useInterval } from './reactive'
-import { RESTBody, RESTEndpointIDB, RESTItemIDB } from './rest'
 
 const { t } = basicStore
 export enum SYNC_STATUS {
@@ -21,8 +29,14 @@ async function syncOfflineTaskQueue(options: {
   checkIfAborted: () => void
   onProgress: (p: number) => unknown
 }) {
-  const endpoints: RESTEndpointIDB<RESTBody, RESTItemIDB<RESTBody>>[] = []
-  const endpointsMap = new Map(endpoints.map(x => [x.idb as string, x]))
+  const endpoints = [
+    studySubjectEndpoint,
+    studyQuestionEndpoint,
+    studyAnswerEndpoint,
+    studyUserSubjectEndpoint,
+    studyUserQuestionEndpoint,
+  ]
+  const endpointsMap = new Map(endpoints.map((x) => [x.idb as string, x]))
   const keys = await database.getAllKeys('offlineTasksQueue')
   for (let index = 0; index < keys.length; index++) {
     const key = keys[index]!
@@ -52,14 +66,16 @@ async function syncOfflineTaskQueue(options: {
           }
         }
       }
-    }
-    catch (error) {
-      if (!(error instanceof RequestError) || error.code === 0 || error.code.toString().startsWith('4')) {
+    } catch (error) {
+      if (
+        !(error instanceof RequestError) ||
+        error.code === 0 ||
+        error.code.toString().startsWith('4')
+      ) {
         handleError(error)
         throw error
       }
-    }
-    finally {
+    } finally {
       await database.delete('offlineTasksQueue', key)
       options.onProgress(index / key.length)
     }
@@ -67,9 +83,35 @@ async function syncOfflineTaskQueue(options: {
 }
 
 async function deleteUserDependentStores() {
-  const endpoints: RESTEndpointIDB<RESTBody, RESTItemIDB<RESTBody>>[] = []
-  for (const endpoint of endpoints)
-    await endpoint.clearIDB()
+  const endpoints = [
+    studyUserSubjectEndpoint,
+    studyUserQuestionEndpoint,
+    studyAnswerEndpoint,
+  ]
+  for (const endpoint of endpoints) await endpoint.clearIDB()
+}
+
+async function syncStudy(options: {
+  checkIfAborted: () => void
+  onProgress: (p: number) => unknown
+}) {
+  // Will cache single query
+  if (!document.location.pathname.startsWith('/study')) await getThemes()
+  const endpoints = [
+    studySubjectEndpoint,
+    studyQuestionEndpoint,
+    studyUserSubjectEndpoint,
+    studyUserQuestionEndpoint,
+    studyAnswerEndpoint,
+  ]
+  let index = 0
+  const onProgress = (p: number) =>
+    options.onProgress((index + p) / endpoints.length)
+  for (; index < endpoints.length; index++)
+    await endpoints[index]!.syncIDB({
+      checkIfAborted: options.checkIfAborted,
+      onProgress,
+    })
 }
 
 export default createRoot(() => {
@@ -91,7 +133,7 @@ export default createRoot(() => {
 
   // === Functions ===
   async function askForPersistentStorageAccess() {
-    if (!await navigator.storage.persisted()) {
+    if (!(await navigator.storage.persisted())) {
       if (localStorage.getItem('declinedOffline') === 'true') {
         status(SYNC_STATUS.IDLE)
         return false
@@ -100,7 +142,7 @@ export default createRoot(() => {
         title: t('MAIN.ALLOW_STORAGE'),
         id: 'persistentStorage',
       })
-      if (!await navigator.storage.persist()) {
+      if (!(await navigator.storage.persist())) {
         modalsStore.removeNotification('persistentStorage')
         modalsStore.notify({
           title: t('MAIN.STORAGE_PROHIBITED'),
@@ -123,7 +165,7 @@ export default createRoot(() => {
         status(cached() ? SYNC_STATUS.SYNCHED : SYNC_STATUS.IDLE)
         return
       }
-      if (!await askForPersistentStorageAccess()) return
+      if (!(await askForPersistentStorageAccess())) return
       syncId = UUID()
       const currentSyncId = syncId
       const stopIfAborted = () => {
@@ -140,14 +182,13 @@ export default createRoot(() => {
       })
       status(SYNC_STATUS.CACHE)
       progress(0)
-      // await syncStudy({
-      //   checkIfAborted: stopIfAborted,
-      //   onProgress: progress,
-      // })
+      await syncStudy({
+        checkIfAborted: stopIfAborted,
+        onProgress: progress,
+      })
       cached(true)
       status(SYNC_STATUS.SYNCHED)
-    }
-    catch (error) {
+    } catch (error) {
       if (!(error instanceof Error) || error.message !== 'STOP') {
         status(SYNC_STATUS.ERRORED)
         console.error(error)

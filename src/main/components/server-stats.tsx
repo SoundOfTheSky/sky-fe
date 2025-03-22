@@ -14,7 +14,8 @@ export default (() => {
   const ws = useWebSocket()!
 
   onCleanup(() => {
-    if (ws.status() === WebSocketStatus.connected) ws.send('unsubscribeServerStats')
+    if (ws.status() === WebSocketStatus.connected)
+      ws.send('unsubscribeServerStats')
   })
 
   // === State ===
@@ -56,14 +57,17 @@ export default (() => {
 
   return (
     <div class={`card ${s.serverStats}`}>
-      <Skeleton loading={loading()} offline={ws.status() === WebSocketStatus.closed}>
-        <div class="card-title">Online stats</div>
+      <Skeleton
+        loading={loading()}
+        offline={ws.status() === WebSocketStatus.closed}
+      >
+        <div class='card-title'>Online stats</div>
         <div class={s.fields}>
           <For each={fields()}>
             {([title, icon, value]) => (
               <Tooltip content={title}>
                 <div class={s.field}>
-                  <Icon path={icon} inline size="24" />
+                  <Icon path={icon} inline size='24' />
                   <span class={s.counter}>
                     <span>{value}</span>
                     <span>888888888</span>

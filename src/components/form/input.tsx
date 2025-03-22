@@ -1,4 +1,11 @@
-import { JSX, Show, createEffect, onCleanup, splitProps } from 'solid-js'
+import {
+  JSX,
+  Show,
+  createEffect,
+  createMemo,
+  onCleanup,
+  splitProps,
+} from 'solid-js'
 import { bind as wkBind, unbind as wkUnbind } from 'wanakana'
 
 import { Atom, atom } from '@/services/reactive'
@@ -6,95 +13,112 @@ import { Atom, atom } from '@/services/reactive'
 import s from './input.module.scss'
 
 type Options = {
-  value: Atom<string>
+  value?: Atom<string> | string
   japanese?: boolean
   onInput?: (value: string) => unknown
   success?: boolean
   error?: boolean
+  badgeCustomText?: (value: number) => string | number
+  multiline?: boolean
 }
 function Input(
-  properties:
-    | (Omit<
-      JSX.InputHTMLAttributes<HTMLInputElement>,
-        'onInput' | 'value' | 'multiline'
-    > & {
-      multiline?: false
-    } & Options)
-    | (Omit<
-      JSX.TextareaHTMLAttributes<HTMLTextAreaElement>,
-        'onInput' | 'value' | 'multiline'
-    > & {
-      multiline: true
-    } & Options),
+  properties_: Omit<JSX.InputHTMLAttributes<HTMLInputElement>, keyof Options> &
+    Options,
 ) {
   // === State ===
-  const [properties_, attributes] = splitProps(properties, [
+  const [properties, attributes] = splitProps(properties_, [
     'value',
-    'multiline',
     'japanese',
     'onInput',
     'success',
     'error',
+    'multiline',
+    'badgeCustomText',
   ])
   const element = atom<HTMLInputElement | HTMLTextAreaElement>()
 
   // === Effects ===
   createEffect(() => {
     const $element = element()
-    if (properties_.japanese) wkBind($element)
+    if (properties.japanese) wkBind($element)
   })
   onCleanup(() => {
     const $element = element()
-    if ($element && properties_.japanese) wkUnbind($element)
+    if ($element && properties.japanese) wkUnbind($element)
   })
+
   // === Memos ===
-  // const textareaHeight = createMemo(() => {
-  //   const $element = element();
-  //   if (!props.multiline || !$element || !props.value()) return 36;
-  //   return $element.scrollHeight;
-  // });
+  const value = createMemo(() => {
+    if (typeof properties.value === 'function') return properties.value()
+    return properties.value
+  })
 
   // === Functions ===
-  function changeHandler(event: { target: HTMLInputElement }) {
-    properties_.value(event.target.value)
-    properties_.onInput?.(event.target.value)
+  function inputHandler(event: {
+    target: HTMLInputElement | HTMLTextAreaElement
+  }) {
+    const value = event.target.value
+    if (typeof properties.value === 'function') properties.value(value)
+    properties.onInput?.(value)
+  }
+  function calcRangeValueBadgeTranslate() {
+    const $value = value()
+    if (!$value) return 0
+    const min = properties_.min ? Number.parseInt(properties_.min as string) : 0
+    const max = properties_.max
+      ? Number.parseInt(properties_.max as string)
+      : 100
+    return (Number.parseInt($value) - min) / (max - min)
   }
 
   return (
     <Show
-      when={properties_.multiline}
-      fallback={(
-        <input
-          {...(attributes as JSX.InputHTMLAttributes<HTMLInputElement>)}
-          class={[
-            s.input,
-            properties_.success && s.success,
-            properties_.error && s.error,
-            attributes.class,
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          onInput={changeHandler}
-          value={properties_.value()}
-          ref={x => element(x)}
-        />
-      )}
+      when={properties.multiline}
+      fallback={
+        <div class={s.inputWrapper}>
+          <Show when={properties_.type === 'range'}>
+            <div
+              class={s.rangeValueBadge}
+              style={{
+                left: `calc(13px + ((100% - 21px) * ${calcRangeValueBadgeTranslate()}))`,
+              }}
+            >
+              {properties.badgeCustomText
+                ? properties.badgeCustomText(Number.parseInt(value()!))
+                : value()}
+            </div>
+          </Show>
+          <input
+            {...(attributes as JSX.InputHTMLAttributes<HTMLInputElement>)}
+            class={[
+              s.input,
+              properties.success && s.success,
+              properties.error && s.error,
+              attributes.class,
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            onInput={inputHandler}
+            value={value()}
+            ref={(x) => element(x)}
+          />
+        </div>
+      }
     >
-      <div class={s.textareaWrap} data-value={properties_.value()}>
+      <div class={s.textareaWrap} data-value={value()}>
         <textarea
           {...(attributes as JSX.TextareaHTMLAttributes<HTMLTextAreaElement>)}
           class={[
             s.input,
-            properties_.success && s.success,
-            properties_.error && s.error,
+            properties.success && s.success,
+            properties.error && s.error,
             attributes.class,
           ]
             .filter(Boolean)
             .join(' ')}
-          onInput={x => properties_.value(x.target.value)}
-          value={properties_.value()}
-          ref={x => element(x)}
-          // style={{ height: textareaHeight() + 'px' }}
+          onInput={inputHandler}
+          value={value()}
+          ref={(x) => element(x)}
         />
       </div>
     </Show>

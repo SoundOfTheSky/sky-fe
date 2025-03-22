@@ -24,7 +24,7 @@ export type Properties<T> = Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
   keyof Options<T>
 > &
-Options<T>
+  Options<T>
 
 function SelectLine<T extends string | number | boolean>(
   properties: Properties<T>,
@@ -44,11 +44,13 @@ function SelectLine<T extends string | number | boolean>(
 
   // === Memos ===
   const value = createMemo(() =>
-    properties_.key && properties_.store ? properties_.store[properties_.key] : properties_.value?.(),
+    properties_.key && properties_.store
+      ? properties_.store[properties_.key]
+      : properties_.value?.(),
   )
   const valueI = createMemo(() => {
     const $value = value()
-    return properties.buttons.findIndex(b => b.value === $value)
+    return properties.buttons.findIndex((b) => b.value === $value)
   })
   const currentOptions = createMemo(() => properties_.buttons[valueI()])
 
@@ -57,8 +59,7 @@ function SelectLine<T extends string | number | boolean>(
     if (properties_.value) {
       properties_.value(value as never)
       properties_.onChange?.(value)
-    }
-    else if (properties_.key && properties_.store) {
+    } else if (properties_.key && properties_.store) {
       properties_.store[properties_.key] = value
       properties_.onChange?.(value)
     }
@@ -82,9 +83,9 @@ function SelectLine<T extends string | number | boolean>(
       <div
         class={s.selector}
         style={{
-          'transform': `translateX(${valueI() * 100}%)`,
-          'width': `${100 / properties_.buttons.length}%`,
-          'opacity': valueI() === -1 ? 0 : 1,
+          transform: `translateX(${valueI() * 100}%)`,
+          width: `${100 / properties_.buttons.length}%`,
+          opacity: valueI() === -1 ? 0 : 1,
           'background-color': currentOptions()?.selectorColor,
         }}
       />
@@ -99,7 +100,7 @@ function SelectLine<T extends string | number | boolean>(
             >
               <Show when={button.title}>{button.title!}</Show>
               <Show when={button.icon}>
-                <Icon path={button.icon!} size="32" />
+                <Icon path={button.icon!} size='32' />
               </Show>
             </button>
           </Tooltip>

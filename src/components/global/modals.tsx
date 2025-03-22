@@ -1,4 +1,4 @@
-import { Component, For, Show } from 'solid-js'
+import { Component, For, Index, Show } from 'solid-js'
 import { TransitionGroup } from 'solid-transition-group'
 
 import { modalsStore, Notification } from '@/services/modals.store'
@@ -22,32 +22,41 @@ const Notifications: Component = () => {
     <>
       <div class={s.notifications}>
         <TransitionGroup {...slideInTransition}>
-          <For each={modalsStore.notifications()}>
-            {notification => (
+          <Index each={modalsStore.notifications()}>
+            {(notification) => (
               <button
-                class={`${s.notification} ${['info', 'success', 'warning', 'error'][notification.severity ?? 0]}`}
+                class={`${s.notification} ${['info', 'success', 'warning', 'error'][notification().severity ?? 0]}`}
                 onClick={() => {
-                  clickNotification(notification)
+                  clickNotification(notification())
                 }}
               >
-                <div class={s.content}>{notification.title}</div>
-                <Show when={notification.timeout}>
+                <div class={s.content}>{notification().title}</div>
+                <Show when={notification().progress}>
                   <div
                     class={s.line}
-                    use:onMounted={element =>
+                    style={{
+                      transform: `scaleX(${notification().progress})`,
+                    }}
+                  />
+                </Show>
+                <Show when={!notification().progress && notification().timeout}>
+                  <div
+                    class={s.line}
+                    use:onMounted={(element) =>
                       element.animate(
                         { transform: ['scaleX(0)', 'scaleX(1)'] },
-                        notification.timeout,
-                      )}
+                        notification().timeout,
+                      )
+                    }
                   />
                 </Show>
               </button>
             )}
-          </For>
+          </Index>
         </TransitionGroup>
       </div>
       <For each={modalsStore.dialogs()}>
-        {dialog => (
+        {(dialog) => (
           <Modal
             class={s.dialog}
             width={dialog.width}
@@ -64,7 +73,8 @@ const Notifications: Component = () => {
                 {(button, index) => (
                   <button
                     onClick={() =>
-                      modalsStore.clickDialogButton(dialog, index())}
+                      modalsStore.clickDialogButton(dialog, index())
+                    }
                     class={`${s.button} ${['info', 'success', 'warning', 'error'][button.severity ?? 0]}`}
                   >
                     {button.title}

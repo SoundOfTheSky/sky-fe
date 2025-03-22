@@ -1,5 +1,14 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { JSX, ParentComponent, Show, createEffect, createMemo, onMount, splitProps, untrack } from 'solid-js'
+import {
+  JSX,
+  ParentComponent,
+  Show,
+  createEffect,
+  createMemo,
+  onMount,
+  splitProps,
+  untrack,
+} from 'solid-js'
 
 import basicStore from '@/services/basic.store'
 import { atom } from '@/services/reactive'
@@ -8,13 +17,15 @@ import s from './modal.module.scss'
 
 const { t } = basicStore
 
-const Modal: ParentComponent<{
-  forceFullscreen?: boolean
-  dark?: boolean
-  onClose?: () => unknown
-  width?: string
-  closed?: boolean
-} & JSX.HTMLAttributes<HTMLDivElement>> = (properties_) => {
+const Modal: ParentComponent<
+  {
+    forceFullscreen?: boolean
+    dark?: boolean
+    onClose?: () => unknown
+    width?: string
+    closed?: boolean
+  } & JSX.HTMLAttributes<HTMLDivElement>
+> = (properties_) => {
   // === Hooks ===
   const [properties, attributes] = splitProps(properties_, [
     'forceFullscreen',
@@ -32,10 +43,8 @@ const Modal: ParentComponent<{
   const touchStartY = atom<number>()
   // === Effects ===
   createEffect(() => {
-    if (properties.closed === true)
-      close()
-    else if (properties.closed === false)
-      open()
+    if (properties.closed === true) close()
+    else if (properties.closed === false) open()
   })
   // === Memos ===
   const fullscreen = createMemo(
@@ -55,7 +64,8 @@ const Modal: ParentComponent<{
       offsetY(
         Math.max(
           0,
-          ('touches' in event ? event.touches[0]!.clientY : event.clientY) - $touchStartY,
+          ('touches' in event ? event.touches[0]!.clientY : event.clientY) -
+            $touchStartY,
         ),
       )
     })

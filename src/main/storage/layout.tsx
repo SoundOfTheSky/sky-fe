@@ -2,12 +2,12 @@ import { ParentComponent } from 'solid-js'
 
 import Auth from '@/components/auth'
 
-import { StudyProvider } from './services/study.context'
+import { StorageProvider } from './storage.context'
 
 const Layout: ParentComponent = (properties) => {
   return (
     <Auth>
-      <StudyProvider>{properties.children}</StudyProvider>
+      <StorageProvider>{properties.children}</StorageProvider>
     </Auth>
   )
 }

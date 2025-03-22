@@ -10,6 +10,8 @@ export default [
     rules: {
       'unicorn/no-useless-undefined': 0,
       'unicorn/consistent-function-scoping': 0,
+      'unicorn/prefer-math-min-max': 0,
+      'unicorn/no-nested-ternary': 0,
     }
   }
 ];

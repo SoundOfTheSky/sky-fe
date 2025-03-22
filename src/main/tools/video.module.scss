@@ -1,0 +1,27 @@
+@use '@/vars' as *;
+@use 'sass:color';
+
+.video-player {
+  flex-flow: column nowrap;
+  width: 100%;
+
+  .settings {
+    display: flex;
+
+    & > * {
+      margin: 0 4px;
+    }
+
+    button {
+      padding: 4px 8px;
+      border: border();
+      border-radius: 4px;
+    }
+  }
+
+  .player {
+    @include center;
+
+    flex-grow: 1;
+  }
+}

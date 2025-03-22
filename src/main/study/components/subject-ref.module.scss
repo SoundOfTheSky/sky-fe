@@ -1,0 +1,17 @@
+@use '@/vars' as *;
+
+.subject-ref-btn {
+  @include hover($color-main-light);
+
+  display: inline-block;
+  margin: 2px;
+  padding: 2px;
+  border-radius: 2px;
+  background-color: $color-main;
+  text-decoration: none;
+
+  & > img,
+  & > svg {
+    height: 1em;
+  }
+}

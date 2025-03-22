@@ -1,5 +1,6 @@
 import { openDB } from 'idb'
 
+import { StorageFile } from '@/sky-shared/storage'
 import {
   StudyAnswer,
   StudyQuestion,
@@ -17,7 +18,10 @@ export type DBOptions = {
     key: string
     value: unknown
   }
-
+  storageFiles: {
+    key: number
+    value: StorageFile
+  }
   studySubjects: {
     key: number
     value: StudySubject
@@ -49,6 +53,7 @@ export const database = await openDB<DBOptions>('skydb', 1, {
     })
 
     for (const name of [
+      'storageFiles',
       'studySubjects',
       'studyQuestions',
       'studyAnswers',

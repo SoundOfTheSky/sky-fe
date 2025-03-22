@@ -102,37 +102,6 @@
   font-size: 24px;
 }
 
-// === Study ===
-.stroke-order {
-  display: block;
-  width: 128px;
-  height: 128px;
-  margin: 0 auto;
-}
-
-.subject {
-  @include hover($color-main-light);
-
-  display: inline-block;
-  margin: 2px;
-  padding: 0 2px;
-  border-radius: 2px;
-  background-color: $color-main;
-  text-decoration: none;
-
-  img {
-    height: 1em;
-  }
-}
-
-.accent {
-  display: inline-block;
-  margin: 2px;
-  padding: 2px;
-  border-radius: 2px;
-  background-color: $color-main;
-}
-
 // === Skeleton ===
 
 $shine-width: 40px;
@@ -211,5 +180,26 @@ $shine-width: 40px;
 
   &.error {
     border: border(2px, $color-error-hover);
+  }
+}
+
+.spin {
+  animation: spin 4s linear infinite;
+}
+
+.button {
+  margin: 0 4px;
+  padding: 4px 8px;
+  border: border();
+  border-radius: 8px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
   }
 }

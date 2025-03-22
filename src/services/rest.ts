@@ -32,8 +32,8 @@ export class RESTEndpoint<T extends RESTBody, B extends RESTItem<T>> {
   }
 
   public getAll(options?: CommonRequestOptions): Promise<B[]> {
-    return request<T[]>(this.url, options).then(items =>
-      items.map(item => new this.builder(item)),
+    return request<T[]>(this.url, options).then((items) =>
+      items.map((item) => new this.builder(item)),
     )
   }
 
@@ -60,8 +60,8 @@ export class RESTEndpointIDB<
   }
 
   public async get(id: number, options?: RESTItemIDBRequestOptions) {
-    const databaseItem
-      = options?.ignoreDB || untrack(syncStore.status) !== SYNC_STATUS.SYNCHED
+    const databaseItem =
+      options?.ignoreDB || untrack(syncStore.status) !== SYNC_STATUS.SYNCHED
         ? undefined
         : ((await database.get(this.idb, id)) as T)
     if (databaseItem) return new this.builder(databaseItem)
@@ -72,14 +72,14 @@ export class RESTEndpointIDB<
 
   public async getAll(options?: RESTItemIDBRequestOptions): Promise<B[]> {
     if (
-      !untrack(basicStore.online)
-      && !options?.ignoreDB
-      && untrack(syncStore.status) === SYNC_STATUS.SYNCHED
+      !untrack(basicStore.online) &&
+      !options?.ignoreDB &&
+      untrack(syncStore.status) === SYNC_STATUS.SYNCHED
     )
       return database
         .getAll(this.idb, options?.dbquery)
-        .then(items => items.map(item => new this.builder(item as T)))
-    return request<T[]>(this.url, options).then(items =>
+        .then((items) => items.map((item) => new this.builder(item as T)))
+    return request<T[]>(this.url, options).then((items) =>
       Promise.all(
         items.map(async (item) => {
           if (!options?.ignoreDB) await database.put(this.idb, item)
@@ -96,11 +96,17 @@ export class RESTEndpointIDB<
         method: 'DELETE',
         ...options,
       })
-    }
-    catch (error) {
-      if (options?.ignoreDB || (error instanceof RequestError && error.code !== 0))
+    } catch (error) {
+      if (
+        options?.ignoreDB ||
+        (error instanceof RequestError && error.code !== 0)
+      )
         throw error
-      await database.add('offlineTasksQueue', id, `${UUID()}_${this.idb}_delete`)
+      await database.add(
+        'offlineTasksQueue',
+        id,
+        `${UUID()}_${this.idb}_delete`,
+      )
     }
     if (!options?.ignoreDB) await database.delete(this.idb, id)
     return this
@@ -113,8 +119,8 @@ export class RESTEndpointIDB<
     required?: Set<number>
   }) {
     const lastUpdateKey = `lastUpdate_${this.idb}`
-    const lastUpdate
-      = ((await database.get('keyval', lastUpdateKey)) as number | undefined) ?? 0
+    const lastUpdate =
+      ((await database.get('keyval', lastUpdateKey)) as number | undefined) ?? 0
     const items = await request<T[]>(this.url, {
       query: {
         'updated>': lastUpdate.toString(),
@@ -219,7 +225,7 @@ export class RESTItem<T extends RESTBody> {
 }
 
 export class RESTItemIDB<T extends RESTBody> extends RESTItem<T> {
-  public declare endpoint: RESTEndpointIDB<T, RESTItemIDB<T>>
+  declare public endpoint: RESTEndpointIDB<T, RESTItemIDB<T>>
 
   public async refresh(options?: RESTItemIDBRequestOptions) {
     this.data = await request<T>(
@@ -248,15 +254,16 @@ export class RESTItemIDB<T extends RESTBody> extends RESTItem<T> {
         if (typeof key !== 'string') continue
         const task = await database.get('offlineTasksQueue', key)
         if (key.endsWith(`_${this.endpoint.idb}_update`)) {
-          (task as RESTBody).id = this.data.id
+          ;(task as RESTBody).id = this.data.id
           await database.put('offlineTasksQueue', this.data, key)
-        }
-        else if (key.endsWith(`_${this.endpoint.idb}_delete`))
+        } else if (key.endsWith(`_${this.endpoint.idb}_delete`))
           await database.put('offlineTasksQueue', this.data.id, key)
       }
-    }
-    catch (error) {
-      if (options?.ignoreDB || (error instanceof RequestError && error.code !== 0))
+    } catch (error) {
+      if (
+        options?.ignoreDB ||
+        (error instanceof RequestError && error.code !== 0)
+      )
         throw error
       this.data.id = -UUID()
       await database.add(
@@ -278,9 +285,11 @@ export class RESTItemIDB<T extends RESTBody> extends RESTItem<T> {
         body: this.toDTO(),
         ...options,
       })
-    }
-    catch (error) {
-      if (options?.ignoreDB || (error instanceof RequestError && error.code !== 0))
+    } catch (error) {
+      if (
+        options?.ignoreDB ||
+        (error instanceof RequestError && error.code !== 0)
+      )
         throw error
       await database.add(
         'offlineTasksQueue',

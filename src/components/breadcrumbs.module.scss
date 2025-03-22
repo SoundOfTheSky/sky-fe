@@ -1,0 +1,32 @@
+@use '@/vars' as *;
+
+.breadcrumbs {
+  display: flex;
+  overflow-x: auto;
+  width: 100%;
+
+  .item {
+    padding: $s * 2;
+    border: border();
+    border-radius: $s * 2;
+    cursor: pointer;
+    transition: background-color $transition-time;
+
+    &:hover {
+      background-color: $color-content-background-light;
+    }
+
+    &:last-child {
+      cursor: default;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+
+  .delimeter {
+    padding: 0 $s;
+    font-size: $s * 8;
+  }
+}

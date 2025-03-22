@@ -22,11 +22,56 @@
     "LOADING": "Loading",
     "OK": "OK",
     "SEARCH": "Search",
+    "TITLE": "Title",
     "UNKNOWN_ERROR": "Unknown error"
+  },
+  "HTTP_ERROR": {
+    "0": "Not available",
+    "400": "Bad Request",
+    "401": "Unauthorized",
+    "402": "Payment Required",
+    "403": "Forbidden",
+    "404": "Not Found",
+    "405": "Method Not Allowed",
+    "406": "Not Acceptable",
+    "407": "Proxy Authentication Required",
+    "408": "Request Timeout",
+    "409": "Conflict",
+    "410": "Gone",
+    "411": "Length Required",
+    "412": "Precondition Failed",
+    "413": "Payload Too Large",
+    "414": "URI Too Long",
+    "415": "Unsupported Media Type",
+    "416": "Range Not Satisfiable",
+    "417": "Expectation Failed",
+    "418": "I'm a teapot",
+    "421": "Misdirected Request",
+    "422": "Unprocessable Entity",
+    "423": "Locked",
+    "424": "Failed Dependency",
+    "425": "Too Early",
+    "426": "Upgrade Required",
+    "428": "Precondition Required",
+    "429": "Too Many Requests",
+    "431": "Request Header Fields Too Large",
+    "451": "Unavailable For Legal Reasons",
+    "500": "Internal Server Error",
+    "501": "Not Implemented",
+    "502": "Bad Gateway",
+    "503": "Service Unavailable",
+    "504": "Gateway Timeout",
+    "505": "HTTP Version Not Supported",
+    "506": "Variant Also Negotiates",
+    "507": "Insufficient Storage",
+    "508": "Loop Detected",
+    "510": "Not Extended",
+    "511": "Network Authentication Required"
   },
   "MAIN": {
     "ALLOW_STORAGE": "Allow storage access to use the site offline.",
     "NEED_RELOAD": "Please reload the page to apply the update!",
+    "NOTIFICATIONS_PROHIBITED": "Notifications are prohibited. You will not get notifications then window is out of focus.",
     "PWA_ERROR": "Failed to register the application",
     "RELOAD_APP": "Reload app",
     "STORAGE_PROHIBITED": "Storage access is prohibited, offline access to the site is unavailable."
@@ -34,9 +79,15 @@
   "PAGE_STATUS": {
     "ACTIONS": "Synchronization",
     "CACHING": "Caching",
-    "CACHING_INFO": "You don’t have to wait for synchronization to finish. Progress will be saved when closed. Synchronization is needed only for offline access to the site.",
+    "CACHING_INFO": "You don't have to wait for synchronization to finish. Progress will be saved when closed. Synchronization is needed only for offline access to the site.",
     "ERROR": "Synchronization error",
     "OFFLINE": "Offline"
+  },
+  "SIDEBAR": {
+    "MAIN": "Main",
+    "STORAGE": "Storage",
+    "TITLE": "Sky",
+    "TOOLS": "Tools"
   },
   "STUDY": {
     "ACTIVITY": {
@@ -88,5 +139,29 @@
     "SUBJECT": "Subject",
     "SUBJECTS": "Subjects",
     "TITLE": "Study"
+  },
+  "TIMER": {
+    "ADD_TASK": "Create new task",
+    "MINUTES": "min",
+    "NEXT": "Next stage",
+    "PAUSE": "Pause",
+    "PREVIOUS": "Previous stage",
+    "REMOVE_TASK": "Delete task",
+    "RESTORE_DEFAULTS": "Restore defaults",
+    "STAGE_LONG_BREAK": "Long break",
+    "STAGE_NOTIFICATION": "[Timer] It's time to {{ stage }}!",
+    "STAGE_SHORT_BREAK": "Short break",
+    "STAGE_WORK": "Work",
+    "START": "Start",
+    "TIMER_START": "Timer started.\nIt works in background.",
+    "TIMER_STOP": "Timer stopped",
+    "TITLE": "Timer"
+  },
+  "VIDEO_PLAYER": {
+    "NO_SUBTITLES": "No subtitles",
+    "NO_VIDEO": "No video",
+    "SELECT_FILES": "Select files (.mp3, .ass)",
+    "TITLE": "Video player",
+    "VIDEO_URL": "Video url"
   }
 }

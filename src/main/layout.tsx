@@ -16,10 +16,10 @@ const Layout: ParentComponent = (properties) => {
     let s = 0
     if (queue().length > 0) s += 32
     if (
-      !online()
-      || $syncStatus === SYNC_STATUS.ACTIONS
-      || $syncStatus === SYNC_STATUS.CACHE
-      || $syncStatus === SYNC_STATUS.ERRORED
+      !online() ||
+      $syncStatus === SYNC_STATUS.ACTIONS ||
+      $syncStatus === SYNC_STATUS.CACHE ||
+      $syncStatus === SYNC_STATUS.ERRORED
     )
       s += 24
     return s

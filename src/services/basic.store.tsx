@@ -5,7 +5,7 @@ import { createEffect, createResource, createRoot } from 'solid-js'
 import { useRegisterSW } from 'virtual:pwa-register/solid'
 
 import Icon from '@/components/icon'
-import type en from '@/i18n/ru.json'
+import type en from '@/i18n/en.json'
 
 import { modalsStore, Severity } from './modals.store'
 import { atom, persistentAtom } from './reactive'
@@ -26,7 +26,7 @@ export default createRoot(() => {
           const resp = await fetch(swScriptUrl, {
             cache: 'no-store',
             headers: {
-              'cache': 'no-store',
+              cache: 'no-store',
               'cache-control': 'no-cache',
             },
           })
@@ -48,7 +48,7 @@ export default createRoot(() => {
           <div>
             <div>{t('MAIN.NEED_RELOAD')}</div>
             <button onClick={() => updateServiceWorker(true)}>
-              <Icon path={mdiReload} size="24" inline />
+              <Icon path={mdiReload} size='24' inline />
               <b>{t('MAIN.RELOAD_APP')}</b>
             </button>
           </div>
@@ -62,11 +62,14 @@ export default createRoot(() => {
   const online = atom(true)
   const activeRequests = atom(0)
   const loading = atom(false)
-  let loadingTimeout: number
+  let loadingTimeout: ReturnType<typeof setTimeout>
   const locale = persistentAtom<Locale>('locale', 'en')
 
   // === Resources ===
-  const [dict] = createResource(async () => i18n.flatten(await import(`@/i18n/${locale()}.json`)) as Dictionary)
+  const [dict] = createResource(
+    async () =>
+      i18n.flatten(await import(`@/i18n/${locale()}.json`)) as Dictionary,
+  )
   const t = i18n.translator(dict, i18n.resolveTemplate)
 
   // === Effects ===

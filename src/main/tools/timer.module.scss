@@ -1,0 +1,105 @@
+@use '@/vars' as *;
+
+.timer {
+  .timer-card {
+    width: 100%;
+    padding: 0;
+
+    .line {
+      width: 100%;
+      height: 16px;
+      transform-origin: left;
+      will-change: transform;
+    }
+
+    .title {
+      font-size: 48px;
+      text-align: center;
+    }
+
+    .timer {
+      font-size: 96px;
+      text-align: center;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+
+      button {
+        margin: 0 8px;
+        border-radius: 16px;
+      }
+    }
+
+    .road {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      padding: 8px 0 16px;
+
+      button {
+        width: 16px;
+        height: 16px;
+        margin: 0 4px;
+        border-radius: 8px;
+
+        &.active {
+          border: border(2px);
+        }
+      }
+    }
+  }
+
+  .settings {
+    width: 100%;
+
+    .tasks {
+      width: 100%;
+      border-collapse: collapse;
+
+      &.dragging tr {
+        transition: transform $transition-time;
+      }
+
+      /* stylelint-disable-next-line no-descending-specificity */
+      tr {
+        height: 40px;
+
+        &.dragging {
+          position: relative;
+          z-index: 1;
+          border-radius: 8px;
+          background-color: $color-content-background-light;
+          transition: none;
+        }
+      }
+
+      .title {
+        width: 256px;
+      }
+
+      .time {
+        padding: 0 8px;
+      }
+
+      .color {
+        width: 32px;
+      }
+
+      .drag {
+        width: 32px;
+        cursor: move;
+      }
+
+      .icon {
+        width: 32px;
+        cursor: pointer;
+      }
+
+      .add {
+        width: 100%;
+      }
+    }
+  }
+}

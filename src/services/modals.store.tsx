@@ -1,9 +1,7 @@
 import { ImmediatePromise, Optional, UUID } from '@softsky/utils'
-import {
-  JSX,
-  createRoot,
-} from 'solid-js'
+import { JSX, createRoot } from 'solid-js'
 
+import basicStore from './basic.store'
 import { Atom, atom, onMounted } from './reactive'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -22,6 +20,7 @@ export type Notification = {
   severity?: Severity
   onClick?: () => unknown
   timeout?: number
+  progress?: number
 }
 
 export type Dialog = {
@@ -51,44 +50,64 @@ export const modalsStore = createRoot(() => {
   const dialogPromises = new WeakMap<Dialog, ImmediatePromise<unknown>>()
 
   // === Functions ===
-  function notify(
-    notification: Optional<Notification, 'id' | 'severity'>,
-  ) {
+  function notify(notification: Optional<Notification, 'id' | 'severity'>) {
+    if (Notification.permission === 'default')
+      void Notification.requestPermission()
     notification.id ??= UUID().toString()
     if (notification.timeout)
       setTimeout(() => {
         removeNotification(notification.id!)
       }, notification.timeout)
-    notifications(n => [...n, notification as Notification])
+    notifications((n) => [...n, notification as Notification])
+    if (
+      !document.hasFocus() &&
+      Notification.permission === 'granted' &&
+      typeof notification.title === 'string'
+    ) {
+      const browserNotification = new Notification(notification.title)
+      if (notification.onClick)
+        browserNotification.addEventListener('click', notification.onClick, {
+          once: true,
+        })
+    }
+
     return notification.id
   }
 
-  async function dialog(dialog: Omit<Optional<Dialog, 'id' | 'loading' | 'buttons'>, 'closed'>) {
+  async function dialog(
+    dialog: Omit<Optional<Dialog, 'id' | 'loading' | 'buttons'>, 'closed'>,
+  ) {
     dialog.id ??= UUID().toString()
-    dialog.loading = atom(false);
-    (dialog as Dialog).closed = atom(false)
-    dialog.onClose ??= () => Promise.resolve({
-      resolve: true,
-      data: false,
-    })
-    dialog.buttons ??= [{
-      title: 'Отмена',
-      severity: Severity.ERROR,
-      onClick: () => Promise.resolve({
+    dialog.loading = atom(false)
+    ;(dialog as Dialog).closed = atom(false)
+    dialog.onClose ??= () =>
+      Promise.resolve({
         resolve: true,
         data: false,
-      }),
-    }, {
-      title: 'Ок',
-      severity: Severity.INFO,
-      onClick: () => Promise.resolve({
-        resolve: true,
-        data: true,
-      }),
-    }]
+      })
+    dialog.buttons ??= [
+      {
+        title: basicStore.t('COMMON.CANCEL'),
+        severity: Severity.ERROR,
+        onClick: () =>
+          Promise.resolve({
+            resolve: true,
+            data: false,
+          }),
+      },
+      {
+        title: basicStore.t('COMMON.OK'),
+        severity: Severity.INFO,
+        onClick: () =>
+          Promise.resolve({
+            resolve: true,
+            data: true,
+          }),
+      },
+    ]
     const promise = new ImmediatePromise<unknown>()
     dialogPromises.set(dialog as Dialog, promise)
-    dialogs(x => [...x, dialog as Dialog])
+    dialogs((x) => [...x, dialog as Dialog])
     return await promise
   }
 
@@ -96,27 +115,29 @@ export const modalsStore = createRoot(() => {
     const promise = dialogPromises.get(dialog)!
     try {
       dialog.loading(true)
-      const data = await (index === undefined ? dialog.onClose!() : dialog.buttons[index]!.onClick())
+      const data = await (index === undefined
+        ? dialog.onClose!()
+        : dialog.buttons[index]!.onClick())
       if (data.resolve) {
         removeDialog(dialog.id)
         promise.resolve(data.data)
       }
-    }
-    catch (error) {
+    } catch (error) {
       promise.reject(error as Error)
-    }
-    finally {
+    } finally {
       dialog.loading(false)
     }
   }
 
   function removeNotification(id: string) {
-    notifications(n => n.filter(x => x.id !== id))
+    notifications((n) => n.filter((x) => x.id !== id))
   }
 
   function removeDialog(id: string) {
-    dialogs().find(x => x.id === id)!.closed(true)
-    setTimeout(() => dialogs(n => n.filter(x => x.id !== id)), 500)
+    dialogs()
+      .find((x) => x.id === id)!
+      .closed(true)
+    setTimeout(() => dialogs((n) => n.filter((x) => x.id !== id)), 500)
   }
 
   return {

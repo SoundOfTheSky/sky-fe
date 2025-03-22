@@ -1,0 +1,107 @@
+@use '@/vars' as *;
+@use 'sass:color';
+
+.video-player {
+  @include center;
+
+  position: relative;
+  height: 80%;
+  aspect-ratio: 16 / 9;
+  background: $color-content-background-light;
+  cursor: none;
+
+  .video {
+    height: 100%;
+  }
+
+  .center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    padding: 8px;
+    border-radius: 50%;
+    background-color: rgba($color-background, 0.4);
+    transform: translate(-50%, -50%);
+  }
+
+  .controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 32px;
+    background-color: rgba($color-background, 0.4);
+    opacity: 0;
+    transition: opacity $transition-time;
+
+    button {
+      @include hover;
+
+      background-color: rgba($color-background, 0.6);
+    }
+
+    .progress-bar {
+      position: relative;
+      display: flex;
+      flex-grow: 1;
+      align-items: center;
+      height: 100%;
+      padding: 0 16px;
+
+      .time {
+        z-index: 3;
+        user-select: none;
+      }
+
+      .progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        height: 100%;
+        background-color: rgba($color-main, 0.8);
+      }
+
+      .buffered {
+        position: absolute;
+        top: 0;
+        z-index: 1;
+        height: 100%;
+        background-color: rgba($color-content-background-light, 0.8);
+      }
+    }
+
+    .progress-tooltip {
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      z-index: 100;
+      overflow: hidden;
+      width: 192px;
+      border-radius: 16px;
+      background-color: rgba($color-background, 0.4);
+      text-align: center;
+      pointer-events: none;
+      transition: opacity $transition-time;
+      transform: translateX(-50%);
+
+      video {
+        width: 100%;
+      }
+
+      .preview-loading {
+        top: calc(50% - 14px);
+      }
+    }
+  }
+
+  &.show-controls {
+    cursor: pointer;
+
+    .controls {
+      opacity: 1;
+    }
+  }
+}

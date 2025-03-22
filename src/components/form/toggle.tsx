@@ -15,7 +15,7 @@ export type Properties = Omit<
   JSX.HTMLAttributes<HTMLButtonElement>,
   keyof Options
 > &
-Options
+  Options
 
 const Toggle: Component<Properties> = (properties) => {
   const [properties_, attributes] = splitProps(properties, [
@@ -27,10 +27,9 @@ const Toggle: Component<Properties> = (properties) => {
   ])
   function handler() {
     if (properties_.value) {
-      const value = properties_.value(x => !x)
+      const value = properties_.value((x) => !x)
       properties_.onChange?.(value)
-    }
-    else if (properties_.key && properties_.store) {
+    } else if (properties_.key && properties_.store) {
       properties_.store[properties_.key] = !properties_.store[properties_.key]
       properties_.onChange?.(properties_.store[properties_.key]!)
     }
@@ -44,7 +43,9 @@ const Toggle: Component<Properties> = (properties) => {
       <div
         class={s.wrapper}
         classList={{
-          [s.enabled!]: properties_.value ? properties_.value() : properties_.store![properties_.key!],
+          [s.enabled!]: properties_.value
+            ? properties_.value()
+            : properties_.store![properties_.key!],
         }}
       >
         <div class={s.circle} />

@@ -37,8 +37,16 @@ export function atom<T>(value?: T, options: SignalOptions<T> = {}): Atom<T> {
 }
 const tabSynchedAtomMap = new Map<string, Atom<unknown>>()
 export function tabSynchedAtom<T>(key: string): Atom<T | undefined>
-export function tabSynchedAtom<T>(key: string, initialValue: T, options?: SignalOptions<T>): Atom<T>
-export function tabSynchedAtom<T>(key: string, initialValue?: T, options: SignalOptions<T> = {}): Atom<T> {
+export function tabSynchedAtom<T>(
+  key: string,
+  initialValue: T,
+  options?: SignalOptions<T>,
+): Atom<T>
+export function tabSynchedAtom<T>(
+  key: string,
+  initialValue?: T,
+  options: SignalOptions<T> = {},
+): Atom<T> {
   if (tabSynchedAtomMap.has(key)) return tabSynchedAtomMap.get(key) as Atom<T>
   const [state, setState] = createSignal<T>(initialValue as T, {
     equals: deepEquals,
@@ -52,8 +60,7 @@ export function tabSynchedAtom<T>(key: string, initialValue?: T, options: Signal
   broadcastChannel.on(`atom_${key}`, (data) => {
     try {
       setState(JSON.parse(data!) as Parameters<Setter<T>>[0])
-    }
-    catch {
+    } catch {
       setState(undefined as Parameters<Setter<T>>[0])
     }
   })
@@ -66,13 +73,17 @@ export function tabSynchedAtom<T>(key: string, initialValue?: T, options: Signal
   tabSynchedAtomMap.set(key, atom as Atom<unknown>)
   return atom
 }
-export function persistentAtom<T>(key: string, initialValue?: T, options?: SignalOptions<T>): Atom<T> {
+export function persistentAtom<T>(
+  key: string,
+  initialValue?: T,
+  options?: SignalOptions<T>,
+): Atom<T> {
   const rawData = localStorage.getItem(key)
   const state = tabSynchedAtom<T>(
     key,
     (!rawData || rawData === 'undefined'
       ? initialValue
-      : (JSON.parse(rawData))) as T,
+      : JSON.parse(rawData)) as T,
     options,
   )
   createEffect(() => {
@@ -113,10 +124,12 @@ export function createLazyResource<T, S, R = unknown>(
   return [
     () => getResource()[0](),
     {
-      mutate: (...arguments_: Parameters<ResourceReturn<T, R>['1']['mutate']>) =>
-        getResource()[1].mutate(...arguments_),
-      refetch: (...arguments_: Parameters<ResourceReturn<T, R>['1']['refetch']>) =>
-        getResource()[1].refetch(...arguments_),
+      mutate: (
+        ...arguments_: Parameters<ResourceReturn<T, R>['1']['mutate']>
+      ) => getResource()[1].mutate(...arguments_),
+      refetch: (
+        ...arguments_: Parameters<ResourceReturn<T, R>['1']['refetch']>
+      ) => getResource()[1].refetch(...arguments_),
     },
   ] as ResourceReturn<T, R>
 }
@@ -132,8 +145,7 @@ export function createDebouncedMemo<T>(
       const newValue = debounced(lastValue)
       memoValue(newValue as Setter<T>)
       return newValue
-    }
-    catch {
+    } catch {
       return lastValue
     }
   })
@@ -154,6 +166,21 @@ export function useTimeout(handler: () => unknown, time: number) {
     clearTimeout(timeout)
   })
   return timeout
+}
+export function useRequestAnimationFrame(handler: () => unknown) {
+  let animationFrame = 0
+  function request() {
+    animationFrame = requestAnimationFrame(() => {
+      handler()
+      request()
+    })
+  }
+  function cleanup() {
+    cancelAnimationFrame(animationFrame)
+  }
+  request()
+  onCleanup(cleanup)
+  return cleanup
 }
 export function useGlobalEvent<K extends keyof DocumentEventMap>(
   type: K,

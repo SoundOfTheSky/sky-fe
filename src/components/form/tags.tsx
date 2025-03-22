@@ -36,14 +36,14 @@ const Tags: Component<
     properties_.onChange?.(newValue)
   }
   function deleteTag(tag: string) {
-    const newValue = properties_.value().filter(t => t !== tag)
+    const newValue = properties_.value().filter((t) => t !== tag)
     properties_.value(newValue)
     properties_.onChange?.(newValue)
   }
   return (
     <div {...attributes} class={`${s.tagsComponent} ${attributes.class ?? ''}`}>
       <For each={properties_.value()}>
-        {tag => (
+        {(tag) => (
           <button
             class={s.tag}
             onClick={() => {
@@ -51,7 +51,7 @@ const Tags: Component<
             }}
           >
             <span>{tag}</span>
-            <Icon path={mdiCloseCircle} inline size="16" />
+            <Icon path={mdiCloseCircle} inline size='16' />
           </button>
         )}
       </For>
@@ -59,7 +59,7 @@ const Tags: Component<
         value={inputValue}
         onChange={onInputChange}
         placeholder={properties_.placeholder}
-        type="text"
+        type='text'
       />
     </div>
   )

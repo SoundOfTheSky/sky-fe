@@ -49,8 +49,8 @@ function getProvided() {
       batch(() => {
         const $status = status()
         if (
-          $status === WebSocketStatus.connected
-          || $status === WebSocketStatus.connecting
+          $status === WebSocketStatus.connected ||
+          $status === WebSocketStatus.connecting
         )
           return
         log('[WS] connecting')
@@ -72,8 +72,8 @@ function getProvided() {
   function onMessage(message: MessageEvent<unknown>) {
     if (typeof message.data === 'string') {
       const index = message.data.indexOf(' ')
-      const event: [string, string?]
-        = index === -1
+      const event: [string, string?] =
+        index === -1
           ? [message.data]
           : [message.data.slice(0, index), message.data.slice(index + 1)]
       if (event[0] === 'error')
@@ -132,7 +132,9 @@ function getProvided() {
 }
 
 const Context = createContext<ReturnType<typeof getProvided>>()
-export const WebSocketProvider: ParentComponent = properties => (
-  <Context.Provider value={getProvided()}>{properties.children}</Context.Provider>
+export const WebSocketProvider: ParentComponent = (properties) => (
+  <Context.Provider value={getProvided()}>
+    {properties.children}
+  </Context.Provider>
 )
 export const useWebSocket = () => useContext(Context)

@@ -32,11 +32,7 @@ const PageStatus: Component = () => {
                 transform: `scaleX(${SyncStore.progress()})`,
               }}
             />
-            {t('PAGE_STATUS.ACTIONS')}
-            :
-            {' '}
-            {~~(SyncStore.progress() * 100)}
-            %
+            {t('PAGE_STATUS.ACTIONS')}: {(SyncStore.progress() * 100) | 0}%
           </div>
         </Match>
         <Match when={SyncStore.status() === SYNC_STATUS.CACHE}>
@@ -47,13 +43,9 @@ const PageStatus: Component = () => {
                 transform: `scaleX(${SyncStore.progress()})`,
               }}
             />
-            {t('PAGE_STATUS.CACHING')}
-            :
-            {' '}
-            {~~(SyncStore.progress() * 100)}
-            %
+            {t('PAGE_STATUS.CACHING')}: {(SyncStore.progress() * 100) | 0}%
             <Tooltip content={t('PAGE_STATUS.CACHING_INFO')}>
-              <Icon path={mdiInformation} class="ml-1" />
+              <Icon path={mdiInformation} class='ml-1' />
             </Tooltip>
           </div>
         </Match>

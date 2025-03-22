@@ -15,7 +15,7 @@ export default ((properties) => {
     <Switch fallback={properties_.children}>
       <Match when={properties_.offline ?? !basicStore.online()}>
         <div {...attributes} class={`full center ${attributes.class ?? ''}`}>
-          <Icon path={mdiCloudOff} size="48" />
+          <Icon path={mdiCloudOff} size='48' />
         </div>
       </Match>
       <Match when={properties_.loading ?? basicStore.loading()}>
@@ -24,5 +24,5 @@ export default ((properties) => {
     </Switch>
   )
 }) as ParentComponent<
-  JSX.HTMLAttributes<HTMLDivElement> & { loading?: boolean, offline?: boolean }
+  JSX.HTMLAttributes<HTMLDivElement> & { loading?: boolean; offline?: boolean }
 >

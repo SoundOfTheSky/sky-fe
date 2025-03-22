@@ -1,0 +1,16 @@
+@use '@/vars' as *;
+
+.spin {
+  border-radius: 50%;
+  background-color: $color-main-light;
+
+  div {
+    border: 12px groove $color-main;
+    border-radius: 50%;
+    /* stylelint-disable-next-line no-unknown-animations */
+  }
+
+  &.groove div {
+    border-style: groove;
+  }
+}

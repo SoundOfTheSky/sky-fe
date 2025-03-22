@@ -30,8 +30,7 @@ export default ((properties) => {
         username: username().trim(),
         password: password().trim(),
       })
-    }
-    finally {
+    } finally {
       sendingCredentials(false)
     }
   }
@@ -43,8 +42,7 @@ export default ((properties) => {
         username: username().trim(),
         password: password().trim(),
       })
-    }
-    finally {
+    } finally {
       sendingCredentials(false)
     }
   }
@@ -52,23 +50,23 @@ export default ((properties) => {
   return (
     <Show
       when={AuthStore.me()}
-      fallback={(
+      fallback={
         <div class={s.authComponent}>
           <div class={s.card}>
             <div class={s.content}>
               <div class={s.welcome}>{t('AUTH.TITLE')}</div>
               <Input
                 value={username}
-                name="username"
+                name='username'
                 placeholder={t('AUTH.USERNAME')}
-                autocomplete="on"
+                autocomplete='on'
                 autofocus
               />
               <Input
                 value={password}
-                name="password"
+                name='password'
                 placeholder={t('AUTH.PASSWORD')}
-                type="password"
+                type='password'
               />
             </div>
             <div class={s.buttons}>
@@ -77,7 +75,7 @@ export default ((properties) => {
             </div>
           </div>
         </div>
-      )}
+      }
     >
       {properties.children}
     </Show>

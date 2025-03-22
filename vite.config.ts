@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 import { compression } from 'vite-plugin-compression2';
 import { VitePWA } from 'vite-plugin-pwa';
 import Solid from 'vite-plugin-solid';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   plugins: [
@@ -41,13 +42,29 @@ export default defineConfig({
         ],
       },
     }),
+    viteStaticCopy({
+      targets: [
+        {
+          src: [
+            './node_modules/@ffmpeg/core-mt/dist/esm/ffmpeg-core.js',
+            './node_modules/@ffmpeg/core-mt/dist/esm/ffmpeg-core.wasm',
+            './node_modules/@ffmpeg/core-mt/dist/esm/ffmpeg-core.worker.js',
+          ],
+          dest: 'ffmpeg'
+        }
+      ]
+    }),
     compression({
       algorithm: 'brotliCompress',
       exclude: [/\.(br)$/, /\.(gz)$/],
     }),
   ],
   server: {
-    allowedHosts: true
+    allowedHosts: true,
+    headers: {
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
+    },
   },
   css: {
     modules: {
@@ -62,4 +79,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('src', import.meta.url)),
     },
   },
+  optimizeDeps: {
+    exclude: ['@ffmpeg/core', '@ffmpeg/ffmpeg', '@ffmpeg/util']
+  }
 });

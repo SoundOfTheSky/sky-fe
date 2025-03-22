@@ -24,8 +24,8 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (
     const $c = c() as HTMLElement | undefined
     if (!$c || !event.target || !tooltipElement) return
     if (
-      !$c.contains(event.target as HTMLElement)
-      && !tooltipElement.contains(event.target as HTMLElement)
+      !$c.contains(event.target as HTMLElement) &&
+      !tooltipElement.contains(event.target as HTMLElement)
     )
       close()
   })
@@ -53,7 +53,10 @@ const Tooltip: ParentComponent<{ content: JSX.Element | string | number }> = (
     const box = $c.getBoundingClientRect()
     const top = (box.y + box.height) * 2 > window.innerHeight
     pos({
-      x: Math.min(window.innerWidth - 160, Math.max(box.x + box.width / 2, 160)),
+      x: Math.min(
+        window.innerWidth - 160,
+        Math.max(box.x + box.width / 2, 160),
+      ),
       y: top ? box.y - 8 : box.y + box.height + 8,
       top,
     })

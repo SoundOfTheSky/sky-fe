@@ -28,8 +28,8 @@ const Icon: Component<JSX.SvgSVGAttributes<SVGSVGElement> & IconOptions> = (
   ])
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+      xmlns='http://www.w3.org/2000/svg'
+      viewBox='0 0 24 24'
       height={properties_.size}
       fill={properties_.color}
       classList={{

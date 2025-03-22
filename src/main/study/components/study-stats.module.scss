@@ -1,0 +1,54 @@
+@use '@/vars' as *;
+
+$size: 24px;
+$margin: 1px;
+$offset: $size + $margin;
+
+.study-stats {
+  width: 50%;
+  height: 250px;
+
+  .skeleton {
+    height: $offset * 7;
+  }
+
+  .days {
+    display: flex;
+    flex-flow: column wrap;
+    overflow-y: auto;
+    height: $offset * 7;
+
+    .day-info {
+      padding: 8px;
+      border-radius: 8px;
+      background-color: $color-background;
+    }
+
+    .day {
+      position: relative;
+      width: $size;
+      height: $size;
+      margin: 0 $margin $margin 0;
+      padding: 0;
+      background-color: $color-border;
+
+      &.today {
+        border: border(2px, $color-main);
+      }
+
+      &.selected {
+        border: border(2px, $color-text-not-intrusive);
+      }
+
+      .brightness {
+        width: 100%;
+        height: 100%;
+        background-color: $color-success;
+      }
+
+      &.future .brightness {
+        background-color: $color-main;
+      }
+    }
+  }
+}

@@ -17,6 +17,12 @@ body {
   margin: 0;
   background: $color-background;
   color: $color-text;
+  font-family: 'Segoe UI', tahoma, geneva, verdana, sans-serif;
+
+  &.dragging {
+    cursor: move;
+    user-select: none;
+  }
 }
 
 /* stylelint-disable-next-line selector-max-id */

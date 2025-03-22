@@ -1,4 +1,12 @@
-import { Component, For, Show, batch, createEffect, onCleanup, untrack } from 'solid-js'
+import {
+  Component,
+  For,
+  Show,
+  batch,
+  createEffect,
+  onCleanup,
+  untrack,
+} from 'solid-js'
 import { Transition } from 'solid-transition-group'
 
 import Input from '@/components/form/input'
@@ -29,7 +37,8 @@ const Chat: Component = () => {
   })
 
   onCleanup(() => {
-    if (ws.status() === WebSocketStatus.connected) ws.send('unsubscribePublicChat')
+    if (ws.status() === WebSocketStatus.connected)
+      ws.send('unsubscribePublicChat')
   })
 
   // === State ===
@@ -72,57 +81,80 @@ const Chat: Component = () => {
           case 'publicChat': {
             const msgs = JSON.parse(data) as ChatMessage[]
             const $credentials = credentials()
-            if (msgs.some(message_ => message_.username === $credentials?.username)) {
+            if (
+              msgs.some(
+                (message_) => message_.username === $credentials?.username,
+              )
+            ) {
               sendingMessage(false)
               message('')
             }
-            messages(x => [...x, ...msgs])
+            messages((x) => [...x, ...msgs])
             break
           }
         }
       })
-    },
-    )
+    })
   })
 
   // === Functions ===
   function sendMessage() {
-    if (sendingMessage() || !message() || ws.status() !== WebSocketStatus.connected) return
+    if (
+      sendingMessage() ||
+      !message() ||
+      ws.status() !== WebSocketStatus.connected
+    )
+      return
     ws.send('publicChat', message())
     sendingMessage(true)
   }
 
   return (
     <div class={`card ${s.chat}`}>
-      <Skeleton loading={!credentials()} offline={ws.status() === WebSocketStatus.closed}>
-        <div class="card-title">CHAT</div>
+      <Skeleton
+        loading={!credentials()}
+        offline={ws.status() === WebSocketStatus.closed}
+      >
+        <div class='card-title'>CHAT</div>
         <Transition {...opacityTransitionImmediate}>
           <Show when={viewAvatar()}>
             <button class={s.avatarView} onClick={() => viewAvatar(undefined)}>
-              <img alt="Avatar" src={viewAvatar()} />
+              <img alt='Avatar' src={viewAvatar()} />
             </button>
           </Show>
         </Transition>
         <div class={s.messages}>
           <div>
             <For each={messages()}>
-              {message => (
+              {(message) => (
                 <div class={s.message}>
-                  <button onClick={() => viewAvatar(message.avatar ?? '/avatar.webp')} class={s.avatar}>
-                    <img alt={message.username} src={message.avatar ?? '/avatar.webp'} />
+                  <button
+                    onClick={() => viewAvatar(message.avatar ?? '/avatar.webp')}
+                    class={s.avatar}
+                  >
+                    <img
+                      alt={message.username}
+                      src={message.avatar ?? '/avatar.webp'}
+                    />
                   </button>
                   <div class={s.line}>
                     <span class={s.username}>{`<${message.username}>`}</span>
                     <span>: </span>
                     <span class={s.text}>{message.text}</span>
                   </div>
-                  <span class={s.time}>{new Date(message.time).toLocaleTimeString()}</span>
+                  <span class={s.time}>
+                    {new Date(message.time).toLocaleTimeString()}
+                  </span>
                 </div>
               )}
             </For>
           </div>
         </div>
-        <Input value={message} placeholder="Введите сообщение" disabled={sendingMessage()} />
+        <Input
+          value={message}
+          placeholder='Введите сообщение'
+          disabled={sendingMessage()}
+        />
       </Skeleton>
     </div>
   )

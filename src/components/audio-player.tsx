@@ -5,7 +5,7 @@ import {
   mdiSkipNext,
   mdiSkipPrevious,
 } from '@mdi/js'
-import { formatTime } from '@softsky/utils'
+import { formatNumber } from '@softsky/utils'
 import {
   Component,
   Show,
@@ -25,14 +25,14 @@ import s from './audio-player.module.scss'
 
 const AudioPlayer: Component = () => {
   // === Hooks ===
-  const { current, maxTime, playing, queue, time, currentI, loading }
-    = AudioStore
+  const { current, maxTime, playing, queue, time, currentI, loading } =
+    AudioStore
 
   // === State ===
   const audioElement = atom<HTMLAudioElement>()
   const shown = atom(false)
-  let timeout: number
-  let updateProgressInterval: number | undefined
+  let timeout: ReturnType<typeof setTimeout>
+  let updateProgressInterval: ReturnType<typeof setTimeout> | undefined
   const owner = getOwner()
 
   // === Effects ===
@@ -57,9 +57,9 @@ const AudioPlayer: Component = () => {
     const $audio = audioElement()
     const $current = current()
     if (
-      $audio
-      && $current
-      && $current.src !== $audio.src.replace(location.origin, '')
+      $audio &&
+      $current &&
+      $current.src !== $audio.src.replace(location.origin, '')
     )
       $audio.src = $current.src
     if ($playing && $audio) {
@@ -68,8 +68,7 @@ const AudioPlayer: Component = () => {
           useInterval(() => time($audio.currentTime), 50),
         )
       if ($audio.paused) void $audio.play()
-    }
-    else {
+    } else {
       if (updateProgressInterval) {
         clearInterval(updateProgressInterval)
         updateProgressInterval = undefined
@@ -94,7 +93,7 @@ const AudioPlayer: Component = () => {
         time(maxTime())
         const $currentI = currentI()
         if ($currentI < queue().length - 1) {
-          currentI(x => x + 1)
+          currentI((x) => x + 1)
           playing(true)
         }
       })
@@ -104,7 +103,7 @@ const AudioPlayer: Component = () => {
   return (
     <>
       <audio
-        ref={element => audioElement(element)}
+        ref={(element) => audioElement(element)}
         class={s.audio}
         onPlay={() => playing(true)}
         onPause={() => playing(false)}
@@ -117,28 +116,27 @@ const AudioPlayer: Component = () => {
         <div class={s.audioPlayer}>
           <button
             disabled={currentI() < 1}
-            onClick={() => currentI(x => x - 1)}
+            onClick={() => currentI((x) => x - 1)}
           >
-            <Icon path={mdiSkipPrevious} size="32" />
+            <Icon path={mdiSkipPrevious} size='32' />
           </button>
-          <button onClick={() => playing(x => !x)}>
-            <Icon path={playing() ? mdiPause : mdiPlay} size="32" />
+          <button onClick={() => playing((x) => !x)}>
+            <Icon path={playing() ? mdiPause : mdiPlay} size='32' />
           </button>
           <button
             disabled={currentI() >= queue().length - 1}
-            onClick={() => currentI(x => x + 1)}
+            onClick={() => currentI((x) => x + 1)}
           >
-            <Icon path={mdiSkipNext} size="32" />
+            <Icon path={mdiSkipNext} size='32' />
           </button>
           <div class={s.progress} onClick={onProgressClick} aria-hidden>
             <div>
-              {formatTime(time() * 1000)}
-              {' '}
+              {formatNumber(time() * 1000)}{' '}
               {queue().length === 1
                 ? ''
                 : `${currentI() + 1} of ${queue().length}`}
             </div>
-            <div>{formatTime(maxTime() * 1000)}</div>
+            <div>{formatNumber(maxTime() * 1000)}</div>
             <div
               class={s.line}
               style={{
@@ -147,7 +145,7 @@ const AudioPlayer: Component = () => {
             />
           </div>
           <button onClick={() => queue([])}>
-            <Icon path={mdiClose} size="32" />
+            <Icon path={mdiClose} size='32' />
           </button>
         </div>
       </Show>

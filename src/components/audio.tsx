@@ -20,7 +20,7 @@ import s from './audio.module.scss'
 
 const { t } = basicStore
 
-const Audio: Component<{ src: string, title: string, autoplay?: boolean }> = (
+const Audio: Component<{ src: string; title: string; autoplay?: boolean }> = (
   properties,
 ) => {
   // === Hooks ===
@@ -37,13 +37,13 @@ const Audio: Component<{ src: string, title: string, autoplay?: boolean }> = (
   // === Memos ===
   const isCurrent = createMemo(() => !!source() && current()?.src === source())
   const queueIndex = createMemo(() =>
-    queue().findIndex(x => x.src === source()),
+    queue().findIndex((x) => x.src === source()),
   )
 
   // === Functions ===
   function play(addToQueue?: boolean) {
     if (isCurrent()) {
-      playing(x => !x)
+      playing((x) => !x)
       return
     }
     if (!source()) source(properties.src)
@@ -76,7 +76,7 @@ const Audio: Component<{ src: string, title: string, autoplay?: boolean }> = (
             playing(false)
             currentI(0)
           }
-          queue($queue => $queue.filter(track => track.src !== $source))
+          queue(($queue) => $queue.filter((track) => track.src !== $source))
         }
       })
     })
@@ -90,7 +90,7 @@ const Audio: Component<{ src: string, title: string, autoplay?: boolean }> = (
           playing(false)
           currentI(0)
         }
-        queue(x => x.filter(track => track.src !== $source))
+        queue((x) => x.filter((track) => track.src !== $source))
         source(undefined)
       })
     })
@@ -117,7 +117,7 @@ const Audio: Component<{ src: string, title: string, autoplay?: boolean }> = (
         class={s.content}
         disabled={loading()}
       >
-        <Icon path={isCurrent() && playing() ? mdiPause : mdiPlay} size="24" />
+        <Icon path={isCurrent() && playing() ? mdiPause : mdiPlay} size='24' />
         {properties.title}
       </button>
       <Tooltip content={t('AUDIO.ADD_TO_QUEUE')}>
@@ -125,7 +125,7 @@ const Audio: Component<{ src: string, title: string, autoplay?: boolean }> = (
           <Icon
             path={queueIndex() === -1 ? mdiPlaylistPlus : mdiPlaylistMinus}
             inline
-            size="24"
+            size='24'
           />
         </button>
       </Tooltip>
