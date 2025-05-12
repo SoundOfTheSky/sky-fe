@@ -1,0 +1,9 @@
+@use '@/vars' as *;
+
+.table-sorting-column {
+  @include hover;
+
+  button {
+    background-color: transparent;
+  }
+}

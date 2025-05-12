@@ -21,6 +21,11 @@ export type DBOptions = {
   storageFiles: {
     key: number
     value: StorageFile
+    indexes: {
+      path_name: [string, string]
+      path: string
+      hash: string
+    }
   }
   studySubjects: {
     key: number
@@ -51,9 +56,7 @@ export const database = await openDB<DBOptions>('skydb', 1, {
     database.createObjectStore('offlineTasksQueue', {
       autoIncrement: true,
     })
-
     for (const name of [
-      'storageFiles',
       'studySubjects',
       'studyQuestions',
       'studyAnswers',
@@ -63,5 +66,13 @@ export const database = await openDB<DBOptions>('skydb', 1, {
       database.createObjectStore(name, {
         keyPath: 'id',
       })
+    const store = database.createObjectStore('storageFiles', {
+      keyPath: 'id',
+    })
+    store.createIndex('path_name', ['path', 'name'], {
+      unique: true,
+    })
+    store.createIndex('path', 'path')
+    store.createIndex('hash', 'hash')
   },
 })

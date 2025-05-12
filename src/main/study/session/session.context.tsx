@@ -3,41 +3,41 @@ import { ReactiveMap } from '@solid-primitives/map'
 import { createWritableMemo } from '@solid-primitives/memo'
 import { useLocation } from '@solidjs/router'
 import {
-  batch,
-  createContext,
-  createEffect,
-  createMemo,
-  createResource,
-  getOwner,
-  onCleanup,
-  onMount,
-  ParentComponent,
-  runWithOwner,
-  untrack,
-  useContext,
+    batch,
+    createContext,
+    createEffect,
+    createMemo,
+    createResource,
+    getOwner,
+    onCleanup,
+    onMount,
+    ParentComponent,
+    runWithOwner,
+    untrack,
+    useContext,
 } from 'solid-js'
 import { toKana, isJapanese as wkIsJapanese } from 'wanakana'
 
 import basicStore from '@/services/basic.store'
 import { modalsStore, Severity } from '@/services/modals.store'
 import {
-  atom,
-  atomize,
-  persistentAtom,
-  useInterval,
-  useTimeout,
+    atom,
+    atomize,
+    persistentAtom,
+    useInterval,
+    useTimeout,
 } from '@/services/reactive'
 import { getDefaultRestFields } from '@/services/rest'
 import syncStore from '@/services/sync.store'
 
 import { useStudy } from '../services/study.context'
 import {
-  RESTStudyAnswer,
-  RESTStudyUserQuestion,
-  studyQuestionEndpoint,
-  studySubjectEndpoint,
-  studyUserQuestionEndpoint,
-  studyUserSubjectEndpoint,
+    RESTStudyAnswer,
+    RESTStudyUserQuestion,
+    studyQuestionEndpoint,
+    studySubjectEndpoint,
+    studyUserQuestionEndpoint,
+    studyUserSubjectEndpoint,
 } from '../services/study.rest'
 
 const { t } = basicStore
@@ -126,7 +126,7 @@ function getProvided() {
   )
   /** Current subject */
   const [subject] = createResource(subjectId, (id) =>
-    studySubjectEndpoint.get(id),
+    studySubjectEndpoint.getById(id),
   )
   /** Current question id */
   const questionId = createMemo<number | undefined>(
@@ -134,12 +134,12 @@ function getProvided() {
   )
   /** Current question */
   const [question] = createResource(questionId, (id) =>
-    studyQuestionEndpoint.get(id),
+    studyQuestionEndpoint.getById(id),
   )
   /** Current subject info */
   const [subjectInfo] = createResource(subject, (subject) =>
     subject.data.userSubjectId
-      ? studyUserSubjectEndpoint.get(subject.data.userSubjectId)
+      ? studyUserSubjectEndpoint.getById(subject.data.userSubjectId)
       : undefined,
   )
   /** Current question info */
@@ -147,7 +147,7 @@ function getProvided() {
     question,
     (question) =>
       question.data.userQuestionId
-        ? studyUserQuestionEndpoint.get(question.data.userQuestionId)
+        ? studyUserQuestionEndpoint.getById(question.data.userQuestionId)
         : undefined,
   )
 

@@ -1,14 +1,14 @@
 import { useParams } from '@solidjs/router'
 import {
-  batch,
-  Component,
-  createEffect,
-  createMemo,
-  createResource,
-  For,
-  Match,
-  Show,
-  Switch,
+    batch,
+    Component,
+    createEffect,
+    createMemo,
+    createResource,
+    For,
+    Match,
+    Show,
+    Switch,
 } from 'solid-js'
 
 import Input from '@/components/form/input'
@@ -24,11 +24,11 @@ import Tabs from '../components/tabs'
 import parseHTML from '../services/parse-html'
 import { useStudy } from '../services/study.context'
 import {
-  RESTStudyUserQuestion,
-  studyQuestionEndpoint,
-  studySubjectEndpoint,
-  studyUserQuestionEndpoint,
-  studyUserSubjectEndpoint,
+    RESTStudyUserQuestion,
+    studyQuestionEndpoint,
+    studySubjectEndpoint,
+    studyUserQuestionEndpoint,
+    studyUserSubjectEndpoint,
 } from '../services/study.rest'
 
 import s from './subject.module.scss'
@@ -50,24 +50,24 @@ const Subject: Component<{ id?: number }> = (properties) => {
   // === Memos ===
   const subjectId = createMemo(() => properties.id ?? +parameters.id)
   const [subject] = createResource(subjectId, (id) =>
-    studySubjectEndpoint.get(id),
+    studySubjectEndpoint.getById(id),
   )
   const questionId = createMemo<number | undefined>(
     () => subject()?.data.questionIds[questionI()],
   )
   const [question] = createResource(questionId, (id) =>
-    studyQuestionEndpoint.get(id),
+    studyQuestionEndpoint.getById(id),
   )
   const [subjectInfo] = createResource(subject, (subject) =>
     subject.data.userSubjectId
-      ? studyUserSubjectEndpoint.get(subject.data.userSubjectId)
+      ? studyUserSubjectEndpoint.getById(subject.data.userSubjectId)
       : undefined,
   )
   const [questionInfo, { mutate: mutateQuestionInfo }] = createResource(
     question,
     (question) =>
       question.data.userQuestionId
-        ? studyUserQuestionEndpoint.get(question.data.userQuestionId)
+        ? studyUserQuestionEndpoint.getById(question.data.userQuestionId)
         : undefined,
   )
   const isLoading = createMemo(

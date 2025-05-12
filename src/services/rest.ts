@@ -15,8 +15,27 @@ import syncStore, { SYNC_STATUS } from './sync.store'
 export type RESTBody = JSONSerializable & TableDefaults
 export type RESTItemIDBRequestOptions = CommonRequestOptions & {
   ignoreDB?: boolean
-  dbquery?: string | number | IDBKeyRange | null | undefined
 }
+// export type RESTItemIDBRequestOptionsWithQuery<T extends keyof DBOptions, INDEX extends keyof DBOptions[T]['indexes']> = RESTItemIDBRequestOptions & {
+//   dbquery?: DBOptions[T]['key'] | (INDEX?{
+//     index: INDEX
+//     value: DBOptions[T]['indexes'][INDEX]
+//   }:undefined)
+// }
+
+export type RESTItemIDBRequestOptionsWithQuery<T extends keyof DBOptions> =
+  RESTItemIDBRequestOptions & {
+    dbquery?:
+      | { index: 'key'; value: DBOptions[T]['key'] | IDBKeyRange }
+      | (DBOptions[T] extends { indexes: infer INDEXES }
+          ? {
+              [K in keyof INDEXES]: {
+                index: K
+                value: INDEXES[K] | IDBKeyRange
+              }
+            }[keyof INDEXES]
+          : never)
+  }
 
 export class RESTEndpoint<T extends RESTBody, B extends RESTItem<T>> {
   public ignoredDTOFields = ['id', 'created', 'updated', 'user_id']
@@ -27,7 +46,7 @@ export class RESTEndpoint<T extends RESTBody, B extends RESTItem<T>> {
     public typeChecker: TypeCheck<TSchema>,
   ) {}
 
-  public async get(id: number, options?: CommonRequestOptions) {
+  public async getById(id: number, options?: CommonRequestOptions) {
     return new this.builder(await request<T>(`${this.url}/${id}`, options))
   }
 
@@ -46,20 +65,30 @@ export class RESTEndpoint<T extends RESTBody, B extends RESTItem<T>> {
   }
 }
 
+/** Rules to create IDB endpoints:
+ * 1. If ignoreDB don't queue and don't save to DB
+ * 2. If `untrack(syncStore.status) !== SYNC_STATUS.SYNCHED` then don't queue DB
+ * 3. Search DB, if found output without query
+ * 4. Request unless third
+ * 5. Save to DB unless first
+ *
+ * For example look at implementation of existing methods
+ */
 export class RESTEndpointIDB<
   T extends RESTBody,
-  B extends RESTItemIDB<T>,
+  B extends RESTItemIDB<T, IDB>,
+  IDB extends keyof DBOptions,
 > extends RESTEndpoint<T, B> {
   public constructor(
     url: string,
     builder: new (data: T) => B,
     typeChecker: TypeCheck<TSchema>,
-    public idb: keyof DBOptions,
+    public idb: IDB,
   ) {
     super(url, builder, typeChecker)
   }
 
-  public async get(id: number, options?: RESTItemIDBRequestOptions) {
+  public async getById(id: number, options?: RESTItemIDBRequestOptions) {
     const databaseItem =
       options?.ignoreDB || untrack(syncStore.status) !== SYNC_STATUS.SYNCHED
         ? undefined
@@ -70,15 +99,28 @@ export class RESTEndpointIDB<
     return new this.builder(item)
   }
 
-  public async getAll(options?: RESTItemIDBRequestOptions): Promise<B[]> {
+  public async getAll(
+    options?: RESTItemIDBRequestOptionsWithQuery<IDB>,
+  ): Promise<B[]> {
     if (
       !untrack(basicStore.online) &&
       !options?.ignoreDB &&
       untrack(syncStore.status) === SYNC_STATUS.SYNCHED
-    )
-      return database
-        .getAll(this.idb, options?.dbquery)
-        .then((items) => items.map((item) => new this.builder(item as T)))
+    ) {
+      const databaseQuery =
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        options?.dbquery && options.dbquery.index !== 'key'
+          ? database.getAllFromIndex(
+              this.idb,
+              options.dbquery.index,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+              options.dbquery.value as any,
+            )
+          : database.getAll(this.idb, options?.dbquery?.value)
+      return databaseQuery.then((items) =>
+        items.map((item) => new this.builder(item as T)),
+      )
+    }
     return request<T[]>(this.url, options).then((items) =>
       Promise.all(
         items.map(async (item) => {
@@ -224,8 +266,11 @@ export class RESTItem<T extends RESTBody> {
   }
 }
 
-export class RESTItemIDB<T extends RESTBody> extends RESTItem<T> {
-  declare public endpoint: RESTEndpointIDB<T, RESTItemIDB<T>>
+export class RESTItemIDB<
+  T extends RESTBody,
+  IDB extends keyof DBOptions,
+> extends RESTItem<T> {
+  declare public endpoint: RESTEndpointIDB<T, RESTItemIDB<T, IDB>, IDB>
 
   public async refresh(options?: RESTItemIDBRequestOptions) {
     this.data = await request<T>(

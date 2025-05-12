@@ -1,33 +1,39 @@
 import {
+  mdiAccountConvert,
+  mdiCopyleft,
+  mdiDelete,
   mdiFile,
+  mdiFileDownloadOutline,
+  mdiFileMove,
   mdiFileUpload,
   mdiFolder,
   mdiFolderPlus,
   mdiFolderUpload,
+  mdiRename,
 } from '@mdi/js'
 import {
-  binarySearch,
   concurrentRun,
   formatBytes,
   formatNumber,
+  noop,
+  retry,
   SpeedCalculator,
 } from '@softsky/utils'
 import { useLocation, useNavigate } from '@solidjs/router'
 import { Component, createMemo, createResource, For } from 'solid-js'
 
 import Icon from '@/components/icon'
-import Tooltip from '@/components/tooltip'
 import { modalsStore, Severity } from '@/services/modals.store'
 import { atom, useGlobalEvent } from '@/services/reactive'
+import { getDefaultRestFields } from '@/services/rest'
 import { StorageFileStatus } from '@/sky-shared/storage'
 
-import {
-  RESTStorageEndpoint,
-  RESTStorageFile,
-  uploadFile,
-} from '../services/storage.rest'
+import { RESTStorageEndpoint, RESTStorageFile } from '../services/storage.rest'
 // eslint-disable-next-line import-x/default
 import StorageWorker from '../services/storage.worker.ts?worker'
+
+import ActionButton from './action-button'
+import TableSortingColumn from './table-sorting-column'
 
 import s from './browser.module.scss'
 
@@ -36,6 +42,18 @@ import s from './browser.module.scss'
  * - /
  * - /asdas dsf/123 sdf.png
  */
+const IGNORED_FILES = new Set(['.DS_Store'])
+export enum ACTIONS {
+  MOVE,
+  COPY,
+  HERE,
+  RENAME,
+  DELETE,
+  CREATEFOLDER,
+  UPLOADFILE,
+  UPLOADDIRECTORY,
+  CONVERT,
+}
 export default (() => {
   // === Hooks ===
   const location = useLocation()
@@ -51,63 +69,102 @@ export default (() => {
       [...items]
         .filter((x) => x.kind === 'file')
         .map((x) => x.getAsFile())
-        .filter(Boolean) as File[],
+        .filter((x) => x && !IGNORED_FILES.has(x.name)) as File[],
     )
   })
+
   // === State ===
-  const [files, { refetch: refetchFiles }] = createResource(() =>
-    RESTStorageEndpoint.getAll({
-      query: {
-        'sort+': 'path',
-      },
-    }),
-  )
   const lastSelectionIndex = atom(0)
-  const selection = atom<number[]>([])
+  const selection = atom<RESTStorageFile[]>([])
+  const sortingField = atom('name')
+  const sortingAsc = atom(true)
+  const bufferFiles = atom<number[]>([])
+  const isCopy = atom(false)
 
   // === Memos ===
   const directoryPath = createMemo(() => location.pathname.slice(9))
-  const directoryContent = createMemo(() => {
-    const $files = files()
-    if (!$files) return []
-    const $directoryPath = directoryPath() || '/'
-    const foundIndex = binarySearch($files.length, (index: number) =>
-      $files[index]!.data.path.localeCompare($directoryPath),
-    )
-    if (foundIndex === -1) return []
-    let minIndex = foundIndex
-    let maxIndex = foundIndex
-    // eslint-disable-next-line no-empty
-    while (--minIndex >= 0 && $files[minIndex]!.data.path === $directoryPath) {}
-    while (
-      ++maxIndex < $files.length &&
-      $files[maxIndex]!.data.path === $directoryPath
-      // eslint-disable-next-line no-empty
-    ) {}
-    minIndex++
-    maxIndex--
+  const [files, { refetch: refetchFiles }] = createResource(
+    directoryPath,
+    (path) =>
+      RESTStorageEndpoint.getInFolder(path, {
+        ignoreDB: true,
+      }),
+    {
+      initialValue: [],
+    },
+  )
+  const filesView = createMemo(() => {
+    const $files = [...files()]
+    const $sortingField = sortingField()
+    switch ($sortingField) {
+      case 'name':
+      case 'path': {
+        $files.sort((a, b) =>
+          a.data[$sortingField].localeCompare(b.data[$sortingField]),
+        )
+        break
+      }
+      case 'created':
+      case 'updated': {
+        $files.sort(
+          (a, b) => a[$sortingField].getTime() - b[$sortingField].getTime(),
+        )
+        break
+      }
+      case 'size': {
+        $files.sort((a, b) => a.data[$sortingField] - b.data[$sortingField])
+        break
+      }
+    }
+    if (sortingAsc()) $files.reverse()
+    // Folders on top
+    $files.sort((a, b) => b.data.status - a.data.status)
     return $files
-      .slice(minIndex, maxIndex + 1)
-      .filter((x) => x.data.status !== StorageFileStatus.NOT_UPLOADED)
   })
+  const actions = createMemo(
+    () => {
+      const $selection = selection()
+      const $bufferFiles = bufferFiles()
+      if ($selection.length === 0)
+        new Set([
+          ACTIONS.UPLOADFILE,
+          ACTIONS.UPLOADDIRECTORY,
+          ACTIONS.CREATEFOLDER,
+        ])
+      const actions = new Set([
+        ACTIONS.DELETE,
+        ACTIONS.COPY,
+        ACTIONS.MOVE,
+        ACTIONS.CONVERT,
+      ])
+      if ($selection.length === 1) actions.add(ACTIONS.RENAME)
+      if ($bufferFiles.length > 0) actions.add(ACTIONS.HERE)
+      return actions
+    },
+    {
+      initialValue: [
+        ACTIONS.UPLOADFILE,
+        ACTIONS.UPLOADDIRECTORY,
+        ACTIONS.CREATEFOLDER,
+      ],
+    },
+  )
+
+  // === Functions ===
 
   function fileClick(event: MouseEvent, index: number) {
     const $lastSelectionIndex = lastSelectionIndex()
+    const file = filesView()[index]!
     if (event.shiftKey)
       // eslint-disable-next-line solid/reactivity
       selection((x) => [
-        ...new Set([
-          ...x,
-          ...directoryContent()
-            .slice($lastSelectionIndex, index)
-            .map((x) => x.id),
-        ]),
+        ...new Set([...x, ...filesView().slice($lastSelectionIndex, index)]),
       ])
     else if (event.ctrlKey || event.metaKey) {
-      const id = directoryContent()[index]!.id
-      if (selection().includes(id)) selection((x) => x.filter((x) => x !== id))
-      else selection((x) => [...x, id])
-    } else selection([directoryContent()[index]!.id])
+      if (selection().includes(file))
+        selection((x) => x.filter((x) => x !== file))
+      else selection((x) => [...x, file])
+    } else selection([file])
     lastSelectionIndex(index)
   }
 
@@ -134,7 +191,7 @@ export default (() => {
       (event) => {
         const files = (event.target as HTMLInputElement).files
         if (!files) return
-        void uploadFiles([...files])
+        void uploadFiles([...files].filter((x) => !IGNORED_FILES.has(x.name)))
       },
       {
         once: true,
@@ -144,14 +201,24 @@ export default (() => {
     fileInput.click()
   }
 
-  function createFolder() {
+  function createFolder(name = 'New folder') {
     let index = 1
-    let name = 'New folder'
     while (true) {
-      if (directoryContent().some((x) => x.data.name === name)) {
+      if (files().some((x) => x.data.name === name)) {
         name = 'New folder ' + index
         index++
       } else break
+    }
+    //     new RESTStorageFile({
+    //           ...getDefaultRestFields(),
+    // name,
+    // path:
+    //     })
+  }
+
+  async function deleteFiles() {
+    for (const file of selection()) {
+      await file.delete()
     }
   }
 
@@ -215,8 +282,47 @@ export default (() => {
       )
       speedCalculator = new SpeedCalculator(combinedSize, 15_000)
       uploading = true
-      for (let index = 0; index < files.length; index++)
-        await uploadFile(files[index]!, hashes[index]!, speedCalculator)
+      for (let index = 0; index < files.length; index++) {
+        const sum = speedCalculator.sum
+        const file = files[index]!
+        try {
+          const storageFile = await new RESTStorageFile({
+            ...getDefaultRestFields(),
+            hash: hashes[index]!,
+            name: file.name,
+            path: file.webkitRelativePath.slice(
+              0,
+              file.webkitRelativePath.lastIndexOf('/'),
+            ),
+            size: file.size,
+            status: StorageFileStatus.NOT_UPLOADED,
+          }).create()
+          if (storageFile.data.status === StorageFileStatus.NOT_UPLOADED) {
+            await retry(
+              async () => {
+                speedCalculator.sum = sum
+                await storageFile.uploadBinary(file, speedCalculator)
+              },
+              6,
+              1000,
+            )
+          } else speedCalculator.push(file.size)
+        } catch (error) {
+          speedCalculator.sum = sum + file.size
+          console.error(error)
+          modalsStore.notify({
+            title: `Couldn't upload ${file.webkitRelativePath}`,
+            severity: Severity.ERROR,
+            timeout: 10_000,
+          })
+        }
+      }
+    } catch (error) {
+      console.error(error)
+      modalsStore.notify({
+        title: `Couldn't calculate hash`,
+        timeout: 10_000,
+      })
     } finally {
       modalsStore.notifications((x) => x.filter((x) => x.id !== notificationId))
       clearInterval(interval)
@@ -228,48 +334,108 @@ export default (() => {
   return (
     <div class={`card ${s.browser}`}>
       <div class={s.buttons}>
-        <Tooltip content='Upload'>
-          <button
-            class='button'
-            onClick={() => {
-              selectFileDialog()
-            }}
-          >
-            <Icon path={mdiFileUpload} size='24' />
-          </button>
-        </Tooltip>
-        <Tooltip content='Upload folder'>
-          <button
-            class='button'
-            onClick={() => {
-              selectFileDialog(true)
-            }}
-          >
-            <Icon path={mdiFolderUpload} size='24' />
-          </button>
-        </Tooltip>
-        <Tooltip content='Create folder'>
-          <button
-            class='button'
-            onClick={() => {
-              createFolder()
-            }}
-          >
-            <Icon path={mdiFolderPlus} size='24' />
-          </button>
-        </Tooltip>
+        <ActionButton
+          action={ACTIONS.UPLOADFILE}
+          icon={mdiFileUpload}
+          onClick={selectFileDialog}
+          tooltip='Upload file'
+          actions={actions()}
+        />
+        <ActionButton
+          action={ACTIONS.UPLOADDIRECTORY}
+          icon={mdiFolderUpload}
+          onClick={() => {
+            selectFileDialog(true)
+          }}
+          tooltip='Upload folder'
+          actions={actions()}
+        />
+        <ActionButton
+          action={ACTIONS.CREATEFOLDER}
+          icon={mdiFolderPlus}
+          onClick={createFolder}
+          tooltip='Create folder'
+          actions={actions()}
+        />
+        <ActionButton
+          action={ACTIONS.RENAME}
+          icon={mdiRename}
+          onClick={noop}
+          tooltip='Rename'
+          actions={actions()}
+        />
+        <ActionButton
+          action={ACTIONS.DELETE}
+          icon={mdiDelete}
+          onClick={deleteFiles}
+          tooltip='Delete'
+          actions={actions()}
+        />
+        <ActionButton
+          action={ACTIONS.MOVE}
+          icon={mdiFileMove}
+          onClick={noop}
+          tooltip='Move'
+          actions={actions()}
+        />
+        <ActionButton
+          action={ACTIONS.COPY}
+          icon={mdiCopyleft}
+          onClick={noop}
+          tooltip='Copy'
+          actions={actions()}
+        />
+        <ActionButton
+          action={ACTIONS.HERE}
+          icon={mdiFileDownloadOutline}
+          onClick={noop}
+          tooltip={isCopy() ? 'Copy here' : 'Move here'}
+          actions={actions()}
+        />
+        <ActionButton
+          action={ACTIONS.CONVERT}
+          icon={mdiAccountConvert}
+          onClick={noop}
+          tooltip='Convert'
+          actions={actions()}
+        />
       </div>
       <table class={s.table}>
         <thead>
           <tr>
             <th>Icon</th>
-            <th>Name</th>
-            <th>Size</th>
-            <th>Created</th>
+            <TableSortingColumn
+              name='name'
+              sortingAsc={sortingAsc}
+              sortingField={sortingField}
+            >
+              Name
+            </TableSortingColumn>
+            <TableSortingColumn
+              name='size'
+              sortingAsc={sortingAsc}
+              sortingField={sortingField}
+            >
+              Size
+            </TableSortingColumn>
+            <TableSortingColumn
+              name='created'
+              sortingAsc={sortingAsc}
+              sortingField={sortingField}
+            >
+              Created
+            </TableSortingColumn>
+            <TableSortingColumn
+              name='updated'
+              sortingAsc={sortingAsc}
+              sortingField={sortingField}
+            >
+              Updated
+            </TableSortingColumn>
           </tr>
         </thead>
         <tbody>
-          <For each={directoryContent()}>
+          <For each={filesView()}>
             {(file, index) => (
               <tr
                 onClick={(event) => {
@@ -279,7 +445,7 @@ export default (() => {
                   fileDblClick(file)
                 }}
                 classList={{
-                  [s.selected!]: selection().includes(file.id),
+                  [s.selected!]: selection().includes(file),
                 }}
               >
                 <td>
@@ -289,15 +455,13 @@ export default (() => {
                         ? mdiFolder
                         : mdiFile
                     }
-                    size={12}
+                    size={24}
                   />
                 </td>
-                <td>
-                  {file.data.path === '/' ? '/' : file.data.path + '/'}
-                  {file.data.name}
-                </td>
+                <td>{file.data.name}</td>
                 <td>{formatBytes(file.data.size)}</td>
                 <td>{file.created.toLocaleString()}</td>
+                <td>{file.updated.toLocaleString()}</td>
               </tr>
             )}
           </For>

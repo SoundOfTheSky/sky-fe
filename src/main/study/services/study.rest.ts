@@ -5,24 +5,24 @@ import basicStore from '@/services/basic.store'
 import { database } from '@/services/database'
 import { request } from '@/services/fetch'
 import {
-  RESTEndpointIDB,
-  RESTItemIDB,
-  RESTItemIDBRequestOptions,
+    RESTEndpointIDB,
+    RESTItemIDB,
+    RESTItemIDBRequestOptions,
 } from '@/services/rest'
 import {
-  srs,
-  StudyAnswer,
-  StudyAnswerT,
-  StudyEnabledTheme,
-  StudyQuestion,
-  StudyQuestionT,
-  StudySubject,
-  StudySubjectT,
-  StudyTheme,
-  StudyUserQuestion,
-  StudyUserQuestionT,
-  StudyUserSubject,
-  StudyUserSubjectT,
+    srs,
+    StudyAnswer,
+    StudyAnswerT,
+    StudyEnabledTheme,
+    StudyQuestion,
+    StudyQuestionT,
+    StudySubject,
+    StudySubjectT,
+    StudyTheme,
+    StudyUserQuestion,
+    StudyUserQuestionT,
+    StudyUserSubject,
+    StudyUserSubjectT,
 } from '@/sky-shared/study'
 
 export class RESTStudySubject extends RESTItemIDB<StudySubject> {
@@ -59,11 +59,11 @@ export class RESTStudyAnswer extends RESTItemIDB<StudyAnswer> {
     await super.create(options)
     if (!options?.ignoreDB) {
       const subject = await studySubjectEndpoint
-        .get(this.data.subjectId)
+        .getById(this.data.subjectId)
         .catch(noop)
       const userSubject = subject?.data.userSubjectId
         ? await studyUserSubjectEndpoint
-            .get(subject.data.userSubjectId)
+            .getById(subject.data.userSubjectId)
             .catch(noop)
         : undefined
       if (userSubject) {

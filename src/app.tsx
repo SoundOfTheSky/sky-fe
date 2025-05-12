@@ -16,9 +16,11 @@ const App: ParentComponent = (properties) => {
   const fontPixelization = persistentAtom('fontPixelization', true)
   const JPFontPixelization = persistentAtom('JPFontPixelization', false)
   createRenderEffect(() => {
-    document.body.classList.remove('pixelated-font')
-    document.body.classList.remove('jp-pixelated-font')
-    document.body.classList.remove('all-pixelated-font')
+    document.body.classList.remove(
+      'pixelated-font',
+      'jp-pixelated-font',
+      'all-pixelated-font',
+    )
     if (fontPixelization() && JPFontPixelization())
       document.body.classList.add('all-pixelated-font')
     else if (fontPixelization()) document.body.classList.add('pixelated-font')

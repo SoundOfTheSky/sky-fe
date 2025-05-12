@@ -10,9 +10,9 @@ export default defineConfig({
   plugins: [
     Solid(),
     VitePWA({
-      injectRegister: null,
+      injectRegister: false,
       workbox: {
-        globPatterns: ['**/*.{html,js,css,mp3,png,jpg,webp,ico,svg,ttf,otf}'],
+        globPatterns: ['**/*.{html,js,css,mp3,png,jpg,webp,ico,svg,ttf,otf,ogg}'],
         navigateFallbackDenylist: [/^\/api/, /^\/static/],
         maximumFileSizeToCacheInBytes: 10485760,
       },

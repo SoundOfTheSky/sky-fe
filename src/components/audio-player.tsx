@@ -63,10 +63,9 @@ const AudioPlayer: Component = () => {
     )
       $audio.src = $current.src
     if ($playing && $audio) {
-      if (!updateProgressInterval)
-        updateProgressInterval = runWithOwner(owner, () =>
-          useInterval(() => time($audio.currentTime), 50),
-        )
+      updateProgressInterval ??= runWithOwner(owner, () =>
+        useInterval(() => time($audio.currentTime), 50),
+      )
       if ($audio.paused) void $audio.play()
     } else {
       if (updateProgressInterval) {

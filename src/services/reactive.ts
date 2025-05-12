@@ -115,10 +115,9 @@ export function createLazyResource<T, S, R = unknown>(
 ): ResourceReturn<T, R> | InitializedResourceReturn<T, R> {
   let resource: ResourceReturn<T, R> | undefined
   const getResource = () => {
-    if (!resource)
-      resource = createResource<T, S, R>(
-        ...(arguments_ as Parameters<typeof createResource<T, S, R>>),
-      )
+    resource ??= createResource<T, S, R>(
+      ...(arguments_ as Parameters<typeof createResource<T, S, R>>),
+    )
     return resource
   }
   return [
@@ -199,13 +198,7 @@ export function debugReactive(data: Record<string, () => unknown>) {
     createEffect(() => {
       const newValue = accessor()
       if (lastValue === initial) log(`[DEBUG] ${title}`, newValue)
-      else
-        log(
-          `[DEBUG] ${title}`,
-          structuredClone(lastValue),
-          '>>>',
-          structuredClone(newValue),
-        )
+      else log(`[DEBUG] ${title}`, lastValue, '>>>', newValue)
       lastValue = newValue
     })
   }

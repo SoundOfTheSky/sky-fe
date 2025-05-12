@@ -1,10 +1,7 @@
 import { findErrorText, retry } from '@softsky/utils'
 import { createContext, useContext } from 'solid-js'
 
-import {
-  default as BasicStore,
-  default as basicStore,
-} from '@/services/basic.store'
+import BasicStore from '@/services/basic.store'
 
 import { modalsStore, Severity } from './modals.store'
 
@@ -126,9 +123,9 @@ export function handleError(error: unknown) {
   if (error instanceof RequestError) {
     if (error.code === 0 || error.code >= 500) BasicStore.online(false)
     title = error.body ? (findErrorText(error.body) ?? title) : error.message
-    title ||= basicStore.t(('HTTP_ERROR.' + error.code) as 'HTTP_ERROR.0')
+    title ??= BasicStore.t(('HTTP_ERROR.' + error.code) as 'HTTP_ERROR.0')
   } else title = findErrorText(error) ?? title
-  title ||= basicStore.t('COMMON.UNKNOWN_ERROR')
+  title ??= BasicStore.t('COMMON.UNKNOWN_ERROR')
   modalsStore.notify({
     title,
     severity: Severity.ERROR,
