@@ -3,7 +3,6 @@ import { ParentComponent, createMemo } from 'solid-js'
 import Sidebar from '@/main/components/sidebar'
 import audioStore from '@/services/audio.store'
 import basicStore from '@/services/basic.store'
-import syncStore, { SYNC_STATUS } from '@/services/sync.store'
 
 import s from './layout.module.scss'
 
@@ -12,16 +11,9 @@ const Layout: ParentComponent = (properties) => {
   const { online } = basicStore
 
   const size = createMemo(() => {
-    const $syncStatus = syncStore.status()
     let s = 0
     if (queue().length > 0) s += 32
-    if (
-      !online() ||
-      $syncStatus === SYNC_STATUS.ACTIONS ||
-      $syncStatus === SYNC_STATUS.CACHE ||
-      $syncStatus === SYNC_STATUS.ERRORED
-    )
-      s += 24
+    if (!online()) s += 24
     return s
   })
 

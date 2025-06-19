@@ -1,10 +1,10 @@
-import { fileURLToPath, URL } from 'node:url';
+import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig } from 'vite';
-import { compression } from 'vite-plugin-compression2';
-import { VitePWA } from 'vite-plugin-pwa';
-import Solid from 'vite-plugin-solid';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { defineConfig } from 'vite'
+import { compression } from 'vite-plugin-compression2'
+import graphqlCodegen from 'vite-plugin-graphql-codegen'
+import { VitePWA } from 'vite-plugin-pwa'
+import Solid from 'vite-plugin-solid'
 
 export default defineConfig({
   plugins: [
@@ -12,7 +12,9 @@ export default defineConfig({
     VitePWA({
       injectRegister: false,
       workbox: {
-        globPatterns: ['**/*.{html,js,css,mp3,png,jpg,webp,ico,svg,ttf,otf,ogg}'],
+        globPatterns: [
+          '**/*.{html,js,css,mp3,png,jpg,webp,ico,svg,ttf,otf,ogg}',
+        ],
         navigateFallbackDenylist: [/^\/api/, /^\/static/],
         maximumFileSizeToCacheInBytes: 10485760,
       },
@@ -42,28 +44,29 @@ export default defineConfig({
         ],
       },
     }),
-    viteStaticCopy({
-      targets: [
-        {
-          src: [
-            './node_modules/@ffmpeg/core-mt/dist/esm/ffmpeg-core.js',
-            './node_modules/@ffmpeg/core-mt/dist/esm/ffmpeg-core.wasm',
-            './node_modules/@ffmpeg/core-mt/dist/esm/ffmpeg-core.worker.js',
-          ],
-          dest: 'ffmpeg'
-        }
-      ]
-    }),
     compression({
       algorithm: 'brotliCompress',
       exclude: [/\.(br)$/, /\.(gz)$/],
+    }),
+    graphqlCodegen({
+      config: {
+        schema: './src/sky-shared/schema.graphql',
+        documents: ['./src/**/*.{ts,tsx}'],
+        ignoreNoDocuments: true,
+        generates: {
+          './src/__generated__/': {
+            preset: 'client'
+          },
+        },
+      },
+
     }),
   ],
   server: {
     allowedHosts: true,
     headers: {
-      "Cross-Origin-Embedder-Policy": "require-corp",
-      "Cross-Origin-Opener-Policy": "same-origin",
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
     },
   },
   css: {
@@ -80,6 +83,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['@ffmpeg/core', '@ffmpeg/ffmpeg', '@ffmpeg/util']
-  }
-});
+    exclude: ['@ffmpeg/core', '@ffmpeg/ffmpeg', '@ffmpeg/util'],
+  },
+})

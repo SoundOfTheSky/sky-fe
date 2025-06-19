@@ -4,5 +4,11 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "types": ["vite/client", "vite-plugin-pwa/client"],
+    "plugins": [
+      {
+        "name": "@0no-co/graphqlsp",
+        "schema": "./src/sky-shared/schema.graphql"
+      }
+    ]
   }
 }

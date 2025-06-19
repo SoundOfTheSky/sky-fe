@@ -8,9 +8,8 @@ import { TypeCheckerError } from '@/sky-shared/type-checker'
 
 import authStore from './auth.store'
 import basicStore from './basic.store'
-import { database, DBOptions } from './database'
+import { database, DBOptions } from './database/local'
 import { CommonRequestOptions, request, RequestError } from './fetch'
-import syncStore, { SYNC_STATUS } from './sync.store'
 
 export type RESTBody = JSONSerializable & TableDefaults
 export type RESTItemIDBRequestOptions = CommonRequestOptions & {
@@ -89,10 +88,9 @@ export class RESTEndpointIDB<
   }
 
   public async getById(id: number, options?: RESTItemIDBRequestOptions) {
-    const databaseItem =
-      options?.ignoreDB || untrack(syncStore.status) !== SYNC_STATUS.SYNCHED
-        ? undefined
-        : ((await database.get(this.idb, id)) as T)
+    const databaseItem = options?.ignoreDB
+      ? undefined
+      : ((await database.get(this.idb, id)) as T)
     if (databaseItem) return new this.builder(databaseItem)
     const item = await request<T>(`${this.url}/${id}`, options)
     if (!options?.ignoreDB) await database.put(this.idb, item)
@@ -102,11 +100,7 @@ export class RESTEndpointIDB<
   public async getAll(
     options?: RESTItemIDBRequestOptionsWithQuery<IDB>,
   ): Promise<B[]> {
-    if (
-      !untrack(basicStore.online) &&
-      !options?.ignoreDB &&
-      untrack(syncStore.status) === SYNC_STATUS.SYNCHED
-    ) {
+    if (!untrack(basicStore.online) && !options?.ignoreDB) {
       const databaseQuery =
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         options?.dbquery && options.dbquery.index !== 'key'

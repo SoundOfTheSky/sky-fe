@@ -2,11 +2,9 @@ import { MetaProvider } from '@solidjs/meta'
 import { createRenderEffect, ParentComponent } from 'solid-js'
 
 import Modals from '@/components/global/modals'
-import PageStatus from '@/components/global/page-status'
 
 import AudioPlayer from './components/audio-player'
 import { persistentAtom } from './services/reactive'
-import { WebSocketProvider } from './services/web-socket.context'
 
 import './classes.scss'
 import './fonts.scss'
@@ -30,12 +28,9 @@ const App: ParentComponent = (properties) => {
 
   return (
     <MetaProvider>
-      <WebSocketProvider>
-        <PageStatus />
-        <Modals />
-        {properties.children}
-        <AudioPlayer />
-      </WebSocketProvider>
+      <Modals />
+      {properties.children}
+      <AudioPlayer />
     </MetaProvider>
   )
 }

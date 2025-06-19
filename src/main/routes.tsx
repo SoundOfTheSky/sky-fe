@@ -2,7 +2,6 @@ import { Route } from '@solidjs/router'
 import { lazy } from 'solid-js'
 
 import StorageRoutes from './storage/routes'
-import StudyRoutes from './study/routes'
 
 export default function routes() {
   return (
@@ -14,7 +13,6 @@ export default function routes() {
       />
       <Route path='/timer' component={lazy(() => import('./tools/timer'))} />
       <StorageRoutes />
-      <StudyRoutes />
     </Route>
   )
 }
