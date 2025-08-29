@@ -1,8 +1,9 @@
 import { ParentComponent, Show } from 'solid-js'
 
-import AuthStore from '@/services/auth.store'
+import authStore from '@/services/auth.store'
 import basicStore from '@/services/basic.store'
 import { atom, useGlobalEvent } from '@/services/reactive'
+import { getDefaultFields } from '@/sky-shared/database'
 
 import Input from './form/input'
 
@@ -12,7 +13,7 @@ export default ((properties) => {
   // === Hooks ===
   const { t } = basicStore
   useGlobalEvent('keypress', (event) => {
-    if (AuthStore.me() || AuthStore.loading()) return
+    if (authStore.me()) return
     if (event.code === 'Enter') void login()
   })
 
@@ -26,7 +27,7 @@ export default ((properties) => {
     if (sendingCredentials()) return
     sendingCredentials(true)
     try {
-      await AuthStore.login({
+      await authStore.login({
         username: username().trim(),
         password: password().trim(),
       })
@@ -38,7 +39,8 @@ export default ((properties) => {
     if (sendingCredentials()) return
     sendingCredentials(true)
     try {
-      await AuthStore.register({
+      await authStore.login({
+        ...getDefaultFields(),
         username: username().trim(),
         password: password().trim(),
       })
@@ -49,7 +51,7 @@ export default ((properties) => {
 
   return (
     <Show
-      when={AuthStore.me()}
+      when={authStore.me()}
       fallback={
         <div class={s.authComponent}>
           <div class={s.card}>

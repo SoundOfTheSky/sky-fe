@@ -8,7 +8,7 @@ import {
 import { A } from '@solidjs/router'
 import { Component, Index, createMemo } from 'solid-js'
 
-import AuthStore from '@/services/auth.store'
+import authStore from '@/services/auth.store'
 import basicStore from '@/services/basic.store'
 
 import Icon from '../../components/icon'
@@ -63,13 +63,9 @@ const Sidebar: Component = () => {
           href='/profile'
           activeClass={s.active}
         >
-          <img
-            class={s.avatar}
-            src={AuthStore.me()?.avatar ?? '/avatar.webp'}
-            alt={t('AUTH.AVATAR')}
-          />
+          <img class={s.avatar} src={'/avatar.webp'} alt={t('AUTH.AVATAR')} />
           <span class={s.title}>
-            {AuthStore.me()?.username ?? t('AUTH.ANONYMOUS')}
+            {authStore.me()?.username ?? t('AUTH.ANONYMOUS')}
           </span>
         </A>
       </div>
